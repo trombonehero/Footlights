@@ -1,0 +1,288 @@
+<html>
+	<head>
+		<style type="text/css">
+html
+{
+	font-family: sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+body
+{
+	background-color: black;
+	color: white;
+
+	margin: 0;
+	padding: 0;
+}
+
+h1, h2 { color: #66f; }
+
+#header
+{
+	position: fixed;
+	top: -10px;
+
+	margin: 0;
+	margin-bottom: .25em;
+	text-align: right;
+
+	height: 100px;
+	width: 100%;
+
+	background-image: url('https://d1eceopwgj83ej.cloudfront.net/ztZArPIMcv5lEhRTdcdUacXBrmk=');
+	background-position: top;
+	background-repeat: repeat-x;
+
+	z-index: +1;
+}
+
+#logo
+{
+	position: fixed;
+	top: 4px;
+	left: 12px;
+	z-index: +2;
+}
+
+#content
+{
+	padding-top: 72px;
+	padding-left: 100px;
+	padding-right: 100px;
+	padding-bottom: 40px;
+}
+
+
+#left-sidebar
+{
+	position: fixed;
+	top: 64px;
+	z-index: +1;
+}
+
+#audience-sidebar
+{
+	position: fixed;
+	top: 64px;
+	right: 0em;
+	z-index: +1;
+
+	text-align: right;
+}
+
+#audience-sidebar:before
+{
+	color: #d6d177;
+	content: 'In the Audience';
+	font-size: smaller;
+	font-variant: small-caps;
+	margin-right: 1em;
+	text-align: right;
+}
+
+.sidegroup
+{
+	background: #605d2a;
+	color: #d6d177;
+
+	border: #464301 solid 2px;
+	border-radius: .5em;
+
+	box-shadow: 0 0 16px black;
+
+	margin: .5em;
+	padding: .25em;
+
+	width: 6em;
+
+	text-align: left;
+}
+
+.sidegroup>.group-name
+{
+	font-size: smaller;
+	font-variant: small-caps;
+	text-align: right;
+}
+
+#footer
+{
+	position: fixed;
+	bottom: 0;
+
+	height: 64;
+	width: 100%;
+
+	z-index: +1;
+
+	margin: 0;
+
+	background-image: url('https://d1eceopwgj83ej.cloudfront.net/SEry7Dmx10spdxOVwux8l%2BKm6PWRXAB9WzldakapAe8%3D');
+	background-position: bottom;
+	background-repeat: repeat-x;
+}
+
+#header>#username
+{
+	color: #d6d177;
+	margin: 1em;
+}
+
+.stuff
+{
+	background: white;
+	border: #738bc0 solid 2px;
+	border-radius: 1em;
+	color: black;
+	padding: 1em;
+}
+
+#left-curtain
+{
+	position: fixed;
+	top: 56px;
+	left: -8px;
+	height: 100%;
+	width: 125px;
+
+	z-index: 0;
+
+	background-image: url('https://d1eceopwgj83ej.cloudfront.net/RYjSFKrq-VQp1yEIn-L0jcgg7W8VWkZQmFmu-EIdagU=');
+	background-repeat: no-repeat;
+	background-position: left;
+}
+
+#right-curtain
+{
+	position: fixed;
+	top: 56px;
+	right: -8px;
+	height: 100%;
+	width: 125px;
+
+	z-index: 0;
+
+	background-image: url('https://d1eceopwgj83ej.cloudfront.net/ksYokdAgAe1WkL2nWeyF9i8df3BZPtXdunbb4JE-Qqo=');
+	background-repeat: no-repeat;
+	background-position: right;
+}
+
+a
+{
+	color: #4e71c0;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+a:hover
+{
+	color: #738bc0;
+}
+
+
+#header>*>a
+{
+	color: #d6d177;
+}
+
+#header>*>a:hover
+{
+	color: #605d2a;
+}
+
+
+blockquote
+{
+	font-style: italic;
+	text-align: center;
+}
+		</style>
+	</head>
+
+	<body>
+		<img id="logo" align="left" src="https://d1eceopwgj83ej.cloudfront.net/XTSgylwQWzFXxKF9kL2fyQAiDdcbG-Ml8lQsFeRAF88=" height="64" align="center"/>
+
+		<div id="header">
+			<div id="username"><a href="me">Jonathan Anderson</a></div>
+		</div>
+
+		<div id="footer">
+		</div>
+
+		<div id="left-sidebar">
+			<div class="sidegroup">
+				<div>hi</div>
+			</div>
+
+			<div class="sidegroup">
+				<div>foo</div>
+				<div>bar</div>
+			</div>
+		</div>
+
+		<div id="audience-sidebar">
+			<div class="sidegroup">
+				<div class="group-name">Friends</div>
+				<div>Alice</div>
+				<div>Bob</div>
+			</div>
+
+			<div class="sidegroup">
+				<div class="group-name">Co-workers</div>
+				<div>Carol</div>
+				<div>Steve</div>
+			</div>
+
+			<div class="sidegroup">
+				<div>Eve</div>
+				<div>Mallory</div>
+			</div>
+		</div>
+
+		<div id="left-curtain"></div>
+		<div id="right-curtain"></div>
+
+		<div id="content">
+			<div class="stuff">
+				<center>
+					<img src="https://d1eceopwgj83ej.cloudfront.net/MSMNaWRZsox2jJ90%2BSzf38pOp8F6xs2zqw5KuWkCjfA%3D"/>
+				</center>
+
+				<p>
+				Some social networks want to be your stage manager: they put your life on display for audiences both intended (e.g. your friends, your family) and unintended (e.g. advertisers and misbehaving applications).
+				</p>
+
+				<p>
+				Footlights is different.
+				</p>
+				
+				<p>
+				Footlights lets you choose how to present yourself to all of the audiences in your life.
+				Share however much&mdash;<i>or however little</i>&mdash;you like, with anybody; this is your show.
+				We've built the venue, but this is your production.
+				</p>
+
+				<p>
+				<i>All the world's a stage</i>... it's time to express yourself.
+				</p>
+
+				<center>
+				<p>
+				<a href="start">Get started now.</a>
+				</p>
+				</center>
+<!--
+				<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam dapibus sollicitudin ipsum. Integer viverra ultrices dignissim. Curabitur purus urna, tincidunt a commodo id, mollis sit amet sapien. Mauris tempus iaculis purus, ut malesuada nisl condimentum at. Sed et lectus purus. Mauris nec tristique diam. Vivamus ac massa orci, pharetra pulvinar lacus. Sed metus eros, rutrum sed convallis quis, consectetur sit amet metus. Aliquam nec orci a urna fringilla hendrerit ut at libero. Fusce nisl dui, commodo tincidunt fermentum in, fermentum ut mi. Praesent eros mauris, blandit a fermentum vehicula, facilisis in augue. Nulla magna odio, rutrum in vehicula ac, aliquet sed magna. In luctus est vitae diam dictum porta. Nulla congue auctor libero id pulvinar. Phasellus facilisis, sem eu dignissim ultricies, lorem nunc tincidunt dui, sit amet fringilla justo massa vel velit. Mauris ultrices enim elit, in scelerisque neque.
+				</p>
+
+				<p>
+Quisque sagittis sapien vitae leo cursus euismod. Vestibulum quis nisi tincidunt turpis iaculis aliquet. Pellentesque vehicula, dui et luctus condimentum, tortor massa suscipit lectus, vitae porta arcu nisl at erat. Curabitur id lorem nibh. Cras non felis sed velit mollis interdum. Phasellus rhoncus tincidunt nulla et tristique. Maecenas accumsan vestibulum diam nec mollis. Donec et scelerisque ipsum. Ut libero nibh, iaculis a sagittis sit amet, placerat at magna. Aenean eu turpis non quam tincidunt fermentum. Ut consectetur dolor sit amet sem varius convallis. Maecenas dolor augue, volutpat at bibendum ullamcorper, ultrices mollis dui. Sed quis quam in orci faucibus aliquam eu in sem. Mauris odio est, commodo vitae convallis in, semper id dui. Cras sit amet orci sit amet eros condimentum viverra. Morbi sit amet vestibulum diam.
+				</p>
+-->
+			</div>
+		</div>
+	</body>
+</html>

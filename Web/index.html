@@ -1,0 +1,26 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css"/>
+		<script type="text/javascript">
+function startReload()
+{
+	setTimeout('reload()', 10000);
+}
+
+function reload()
+{
+	var f = document.getElementById('mainframe');
+	f.src = 'http://localhost:4567';
+}
+</script>
+		
+	</head>
+
+	<body>
+		<h1 class="main">Footlights</h1>
+
+		<iframe src="load.html" id="mainframe"></iframe>
+		<script>startReload()</script>
+	</body>
+</html>
+

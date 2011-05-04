@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<script type="text/javascript" src="whitelist.js"></script>
+		<script type="text/javascript" src="atLeastFreeVarNames.js"></script>
+		<script type="text/javascript" src="WeakMap.js"></script>
+		<script type="text/javascript" src="initSES.js"></script>
+		<script type="text/javascript" src="dom-proxy.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="playground.css"/>
+	<body>
+		<h1>ES5/SES Playground</h1>
+
+		<div id="left-sandbox" class="sandboxed"></div>
+		<div id="right-sandbox" class="sandboxed"></div>
+
+		<iframe sandbox id="iframe-sandbox" class="sandboxed">
+		</iframe>
+
+		<div>Main log:</div>
+		<div id="status" class="log"></div>
+
+		<div>Sandbox log:</div>
+		<div id="sandbox-log" class="log"></div>
+
+		<script type="text/javascript">
+'use strict';
+
+(function()
+{
+	initSES(window, whitelist, atLeastFreeVarNames);
+
+	// Set up logging (nice user-visible log boxes + JS console).
+	function log(t)
+	{
+		var entry = document.createElement('div');
+		entry.appendChild(document.createTextNode(t));
+
+		this.appendChild(entry);
+	};
+
+	var status = document.getElementById('status');
+	status.log = log;
+
+	var sandboxLog = document.getElementById('sandbox-log');
+	sandboxLog.log = log;
+
+	var moduleLog = {
+		log: function(text) { sandboxLog.log(text); }
+	};
+
+	function runModule(filename, root, contextName, log)
+	{
+		// Retrieve the sandbox code.
+		var req = new XMLHttpRequest();
+		var filename = 'sandbox.js';
+		req.open('GET', filename);
+		req.onreadystatechange = function statechange()
+		{
+			switch (this.readyState)
+			{
+				case XMLHttpRequest.DONE:
+				case 4:  // Firefox 4 doesn't know that DONE==4!?
+					try
+					{
+						status.log('Compiling ' + filename + '...');
+						var module = cajaVM.compileModule(this.responseText);
+						status.log('Retrieved and compiled ' + filename);
+						moduleLog.log('==== ' + filename + ': "' + contextName + '" ====');
+
+						var ret = module(
+							{
+								context: { name: contextName, root: root },
+								log: log,
+							});
+						status.log('ret: ' + ret);
+					}
+					catch(e)
+					{
+						status.log('Error compiling ' + filename + ': ' + e);
+						status.log(e.stack);
+					}
+					break;
+			}
+		};
+		req.send(null);
+	}
+
+
+	runModule('sandbox.js', proxy(document.getElementById('left-sandbox')),
+	          'left <div>', moduleLog.log);
+	runModule('sandbox.js', proxy(document.getElementById('right-sandbox')),
+	          'right <div>', moduleLog.log);
+	var iframeSandbox = document.getElementById('iframe-sandbox');
+	runModule('sandbox.js', proxy(iframeSandbox.contentDocument.body),
+	          '<iframe>', moduleLog.log);
+})();
+		</script>
+	</body>
+</html>
+

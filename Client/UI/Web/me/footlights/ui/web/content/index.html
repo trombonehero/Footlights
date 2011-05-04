@@ -1,0 +1,72 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="/style/footlights.css"/>
+
+		<script type="text/javascript" src="/ses/whitelist.js"></script>
+		<script type="text/javascript" src="/ses/atLeastFreeVarNames.js"></script>
+		<script type="text/javascript" src="/ses/WeakMap.js"></script>
+		<script type="text/javascript" src="/ses/initSES.js"></script>
+		<script type="text/javascript" src="/ses/dom-proxy.js"></script>
+
+		<script type="text/javascript" src="/sandboxes.js"></script>
+		<script type="text/javascript" src="/module.js"></script>
+
+		<script type="text/javascript" src="/content-updaters.js"></script>
+		<script type="text/javascript" src="/ajax.js"></script>
+		<!--<script type="text/javascript" src="/logging.js"></script>-->
+	</head>
+	
+	<body>
+		<h1>Footlights</h1>
+
+		<div id="root">
+			<div id="status"></div>
+
+			<div id="content">
+				<div id="buttons">Loading buttons...</div>
+			</div>
+		</div>
+
+		<script type="text/javascript">
+'use strict';
+
+// The global context.
+var context =
+{
+	ajax: function(request) { ajax(request, this); },
+	exec: function(code) { eval(code); },
+	name: 'global',
+	root: document.getElementById('content'),
+};
+
+(function()
+{
+	initSES(window, whitelist, atLeastFreeVarNames);
+
+	// Set up logging (nice user-visible log boxes + JS console).
+	function log(t)
+	{
+		var update = document.createElement('p');
+		this.appendChild(update);
+
+		var dateStamp = document.createElement('div');
+		dateStamp.appendChild(document.createTextNode(new Date().toUTCString()));
+		dateStamp.className = 'timestamp';
+
+		update.appendChild(dateStamp);
+		update.appendChild(document.createTextNode(t));
+	};
+
+	var status = document.getElementById('status');
+	status.log = log;
+
+	ajax('initialize', context);
+})();
+		</script>
+
+
+		<!--
+		<iframe src="Footlights.jnlp" height="1" style="border: none"/>
+		-->
+	</body>
+</html>

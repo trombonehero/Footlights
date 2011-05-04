@@ -1,0 +1,109 @@
+html
+{
+	font-family: sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+h1, h2 { color: #66f; }
+
+#status
+{
+	background: #ccf;	
+	border: 1px solid #66f;
+	color: #333;
+	float: left;
+	margin: .5em;
+	padding: .5em;
+	width: 12.5em;
+}
+
+#status:before
+{
+	color: #66f;
+	content: "Status";
+	font-size: smaller;
+	font-weight: bold;
+}
+
+#content
+{
+	background: #eee;	
+	border: 1px solid #666;
+	color: #333;
+	margin: .5em;
+	margin-left: 15em;
+	padding: .5em;
+}
+
+#content:before
+{
+	color: #666;
+	content: "Content";
+	font-size: smaller;
+	font-weight: bold;
+}
+
+.response, .error
+{
+	border: 1px solid;
+	display: block;
+	margin: .5em;
+	padding: .5em;
+}
+
+
+.response { background: #ccc; }
+.error { background: #f99; }
+
+.response .content, .error .message
+{
+	border: 1px dashed;
+	font-family: monospace;
+	margin: .5em;
+	padding: .5em;
+	white-space: pre;
+}
+
+.response:before, .error:before
+{
+	font-size: smaller;
+	font-weight: bold;
+}
+
+.response:before { content: "Ajax Response"; }
+.error:before { content: "Error"; }
+
+.response .type:before { content: "Type: "; }
+
+.timestamp { font-size: smaller; }
+
+#buttons { float: right; }
+
+iframe
+{
+	border: 0;
+	margin: 0;
+	padding: 0;
+}
+
+#mainframe
+{
+	height: 90%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+h1.main
+{
+	float: right;
+	font-size: 150%;
+	margin-bottom: .25em;
+}
+
+a
+{
+	text-decoration: none;
+}
+

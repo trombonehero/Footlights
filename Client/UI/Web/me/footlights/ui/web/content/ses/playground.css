@@ -1,0 +1,41 @@
+html
+{
+	background: #ddf;
+}
+
+.log
+{
+	background: black;
+	border: ridge;
+	color: lightgrey;
+	font-family: monospace;
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+}
+
+.sandboxed
+{
+	background: white;
+	border: 2px dashed orange;
+	margin: 1em;
+	padding: .5em;
+}
+
+.sandboxed:before
+{
+	color: blue;
+	content: "sandboxed content:";
+	display: block;
+	font-size: smaller;
+}
+
+#left-sandbox, #right-sandbox
+{
+	height: 20em;
+	width: 12em;
+}
+
+#left-sandbox { float: left; }
+#right-sandbox { float: right; }
+

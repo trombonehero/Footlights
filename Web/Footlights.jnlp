@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<jnlp spec="1.0+"
+      codebase="https://www-dyn.cl.cam.ac.uk/~jra40/Footlights/" 
+      href="Footlights.jnlp">
+	<information>
+		<title>Footlights</title>
+		<vendor>University of Cambridge Computer Laboratory</vendor>
+		<description>Footlights Client</description>
+		<description kind="short">No description given</description>
+		<homepage href="http://www.cl.cam.ac.uk/~jra40/"/>
+		<offline-allowed/>
+	</information>
+	<security>
+		<all-permissions/>
+	</security>
+	<resources>
+		<jar href="bootstrap.jar"/>
+		<j2se version="1.5+" href="http://java.sun.com/products/autodl/j2se"/>
+	</resources>
+	<application-desc main-class="footlights.boot.Bootstrapper"/>
+</jnlp>
+

@@ -20,14 +20,10 @@ public class Core implements Footlights, KernelInterface
 		File configDir = new File(configDirName);
 		configDir.mkdir();
 
-		try
-		{
-			InputStream keyFile =
-				new FileInputStream(new File(configDirName + "/keychain"));
+		keychain = new Keychain();
+		final String keychainFileName = configDirName + "/keychain";
 
-			// TODO: actually supply a password
-			keychain         = Keychain.load(keyFile, "");
-		}
+		try { keychain.importKeystoreFile(new FileInputStream(new File(keychainFileName))); }
 		catch (IOException e) { throw new Error(e); }
 		catch (GeneralSecurityException e) { throw new Error(e); }
 

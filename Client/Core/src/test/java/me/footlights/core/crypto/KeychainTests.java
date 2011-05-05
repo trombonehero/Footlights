@@ -1,17 +1,10 @@
 package me.footlights.core.crypto;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.security.MessageDigest;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
+import java.security.cert.Certificate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,63 +15,35 @@ public class KeychainTests
 {
 	@Before public void setUp() throws Throwable
 	{
-		keychain = new Keychain(File.createTempFile("tmp", ".keychain"), "");
+		keychain = new Keychain();
+		privateKey = Keychain.PrivateKey.newGenerator().setPrincipalName("test user").generate();
+		publicKey = privateKey.publicKey();
 	}
 
 	@Test public void testGenerate() throws Throwable
 	{
-		PublicKey publicKey = keychain.publicKey;
-		PrivateKey privateKey = keychain.privateKey.getPrivateKey();
-		java.security.cert.Certificate certChain[] =
-			keychain.privateKey.getCertificateChain();
-
-		assertNotNull("Public key should not be null", publicKey);
-		assertNotNull("Private key should not be null", privateKey);
-		assertNotNull("Cert chain should not be null", certChain);
-
+		Certificate certChain[] = privateKey.getCertificateChain();
 		assertEquals("Cert should be self-signed (chain should have length 1)",
 		             1, certChain.length);
 
 		try { certChain[0].verify(publicKey); }
 		catch(SignatureException e) { fail("Cert should verify public key"); }
+
+		// TODO: test en/decryption
 	}
 
-
-	@Test public void testLoad() throws Throwable
+	@Test public void testExportImport() throws Throwable
 	{
-		PublicKey publicKey = keychain.publicKey;
-		PrivateKey privateKey = keychain.privateKey.getPrivateKey();
-		java.security.cert.Certificate certChain[] =
-			keychain.privateKey.getCertificateChain();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		keychain.exportKeystoreFile(out);
 
-		assertNotNull("Public key should not be null", publicKey);
-		assertNotNull("Private key should not be null", privateKey);
-		assertNotNull("Cert chain should not be null", certChain);
+		Keychain copy = new Keychain();
+		copy.importKeystoreFile(new ByteArrayInputStream(out.toByteArray()));
 
-		assertEquals("Cert should be self-signed (chain should have length 1)",
-		             1, certChain.length);
-
-		try { certChain[0].verify(publicKey); }
-		catch(SignatureException e) { fail("Cert should verify public key"); }
-		
-
-		byte expected[] =
-		{
-				-124,   74,  -25,   38,   89,   75,   24, -106,
-				  67,  -48,   53,  -63,  -32,  115,   81,  -92,
-				  89,   40,  121,  -24
-		};
-
-		byte[] fingerprint =
-			MessageDigest.getInstance("SHA1").digest(publicKey.getEncoded());
-
-		assertArrayEquals(expected, fingerprint);
-
-		keychain.finalize();
-		keychain = null;
+		assertEquals(keychain.publicKeys(), copy.publicKeys());
 	}
 
-
+/*
 	@Test public void foo() throws Throwable
 	{
 		String algorithm = "RSA/ECB/OAEPwithSHA-512andMGF1padding";
@@ -107,7 +72,9 @@ public class KeychainTests
 
 		assertEquals(testInput, new String(plaintext.toByteArray()));
 	}
-
+*/
 
 	private Keychain keychain;
+	private Keychain.PrivateKey privateKey;
+	private PublicKey publicKey;
 }

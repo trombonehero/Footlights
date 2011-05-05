@@ -1,214 +1,326 @@
 package me.footlights.core.crypto;
 
 import java.io.*;
-import java.net.URL;
 import java.security.*;
-import java.security.KeyStore.ProtectionParameter;
 import java.security.cert.*;
-import java.security.spec.*;
-import java.util.List;
+import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Map;
 
 import javax.crypto.spec.SecretKeySpec;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 import me.footlights.core.Config;
+import me.footlights.core.MissingParameterException;
 
 import sun.security.x509.*;
 
-import static me.footlights.core.Util.loadBytes;
 
-
-/** Stores crypto keys */
+/** Stores crypto keys. */
 public class Keychain
 {
-	public static Keychain load(InputStream input, String password)
-		throws CertificateException, IOException, KeyStoreException,
-		       NoSuchAlgorithmException, UnrecoverableEntryException
+	public Map<String,PublicKey> publicKeys()
 	{
-		return load(input, password,
-			Config.getInstance().get("crypto.keystore.type"));
+		return Maps.transformValues(privateKeys, PRIVATE_TO_PUBLIC);
 	}
 
-	public static Keychain load(InputStream input, String password, String type)
+	public void store(PrivateKey key)
+	{
+		String name = key.getFingerprint().base64ish();
+
+		if (privateKeys.containsKey(name))
+			assert Arrays.equals(
+					key.key.getPrivateKey().getEncoded(),
+					privateKeys.get(name).key.getPrivateKey().getEncoded());
+
+		privateKeys.put(name, key);
+	}
+
+	public void store(SecretKey key)
+	{
+		String name = key.getFingerprint().base64ish();
+
+		if (secretKeys.containsKey(name))
+			assert Arrays.equals(
+					key.keySpec.getEncoded(),
+					secretKeys.get(name).keySpec.getEncoded());
+
+		secretKeys.put(name, key);
+	}
+
+
+
+	/** Merge a KeyStore file into this Keychain. */
+	public void importKeystoreFile(InputStream input)
 		throws CertificateException, IOException, KeyStoreException,
 		       NoSuchAlgorithmException, UnrecoverableEntryException
 	{
+		importKeystoreFile(input, Config.getInstance().get("crypto.keystore.type"));
+	}
+
+	/** Merge a KeyStore file into this Keychain. */
+	public void importKeystoreFile(InputStream input, String type)
+		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
+		       UnrecoverableEntryException
+	{
+		final String password = getPassword();
+
 		KeyStore store = KeyStore.getInstance(type);
 		store.load(input, password.toCharArray());
-
-		if (!store.containsAlias(DEFAULT_PRIVATE_KEY_NAME))
-			throw new KeyNotFoundException(DEFAULT_PRIVATE_KEY_NAME);
-
 
 		final KeyStore.ProtectionParameter protection =
 			new KeyStore.PasswordProtection(password.toCharArray());
 
-		KeyStore.PrivateKeyEntry privateKey =
-			(KeyStore.PrivateKeyEntry)
-			store.getEntry(DEFAULT_PRIVATE_KEY_NAME, protection);
-
-		return new Keychain(store, privateKey, protection);
-	}
-
-	public static Keychain generate(String password)
-		throws KeyStoreException
-	{
-		return generate(Config.getInstance().get("crypto.keystore.type"));
-	}
-
-	public static Keychain generate(String password, String type)
-		throws KeyStoreException
-	{
-		KeyStore store = KeyStore.getInstance(type);
-	}
-
-
-	Keychain(KeyStore keyStore, KeyStore.PrivateKeyEntry privateKey,
-	                final KeyStore.ProtectionParameter protection)
-	{
-		this.secretKeys = Lists.newArrayList();
-
-		this.keyStore = keyStore;
-		this.privateKey = privateKey;
-
-		this.loadStore =
-			new KeyStore.LoadStoreParameter() {
-				public ProtectionParameter getProtectionParameter() {
-					return protection;
-				}
-			};
-	}
-
-
-	/** Destructor */
-	public void finalize() throws Throwable
-	{
-		if(dirty) keyStore.store(loadStore);
-		super.finalize();
-	}
-
-
-	/** Generate an n-bit keypair */
-	public PublicKey generate(
-			String name, String algorithm, String signAlgorithm, int length)
-		throws GeneralSecurityException
-	{
-		// no, we don't... generate one!
-		X500Name x500Name;
-		try
+		Enumeration<String> aliases = store.aliases();
+		while (aliases.hasMoreElements())
 		{
-			// TODO: config?
-			x500Name = new X500Name(name, "Footlights Users",
-			                        "Footlights", "The Internet");
+			final String alias = aliases.nextElement();
+			final String[] parts = alias.split(ALIAS_SEPARATOR);
+			if (parts.length != 3)
+				throw new KeyStoreException("Expected 'type:algorithm:hash', got '" + alias + "'");
+
+			final String entryType = parts[0].toUpperCase();
+			final String fingerprintAlgorithm = parts[1];
+
+			EntryType t;
+			try { t = EntryType.valueOf(entryType); }
+			catch (IllegalArgumentException e)
+			{
+				throw new KeyStoreException("Invalid keystore entry type '" + parts[0] + "'");
+			}
+
+			KeyStore.Entry entry = store.getEntry(alias, protection);
+			switch (t)
+			{
+				case PRIVATE:
+					KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) entry;
+					store(
+						new PrivateKey(
+							privateKey,
+							Fingerprint.newBuilder()
+								.setAlgorithm(fingerprintAlgorithm)
+								.setContent(privateKey.getCertificate().getPublicKey().getEncoded())
+								.build()));
+					break;
+
+				case SECRET:
+					javax.crypto.SecretKey secretKey = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
+					store(
+						SecretKey.newGenerator()
+							.setCryptoAlgorithm(secretKey.getAlgorithm())
+							.setSignatureAlgorithm(fingerprintAlgorithm)
+							.setBytes(secretKey.getEncoded())
+							.generate());
+					break;
+			}
 		}
-		catch(IOException e) { throw new Error(e); }
-
-
-		CertAndKeyGen gen = new CertAndKeyGen(algorithm, signAlgorithm);
-		gen.generate(length);
-
-		PublicKey publicKey = gen.getPublicKey();
-
-		int validity = Integer.parseInt(
-				Config.getInstance().get("crypto.cert.validity"));
-
-		X509Certificate cert = gen.getSelfCertificate(x500Name, validity);
-
-		java.security.cert.Certificate chain[] = { cert };
-		KeyStore.PrivateKeyEntry privateKey =
-			new KeyStore.PrivateKeyEntry(gen.getPrivateKey(), chain);
-
-		keyStore.setEntry(name, privateKey, loadStore.getProtectionParameter());
-		dirty = true;
-
-		return publicKey;
 	}
 
 
-	public PublicKey publicKey()
+	/** Save a Keychain to a KeyStore file. */
+	void exportKeystoreFile(OutputStream out)
+		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
+		       UnrecoverableEntryException
+   {
+		exportKeystoreFile(out, Config.getInstance().get("crypto.keystore.type"));
+   }
+
+	/** Save a Keychain to a KeyStore file. */
+	void exportKeystoreFile(OutputStream out, String type)
+		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
+		       UnrecoverableEntryException
 	{
-		return privateKey.getCertificate().getPublicKey();
-	}
+		final String password = getPassword();
 
+		KeyStore store = KeyStore.getInstance(type);
+		store.load(null, password.toCharArray());
 
+		final KeyStore.ProtectionParameter protection =
+			new KeyStore.PasswordProtection(password.toCharArray());
 
-	/** Load a public key from a URL */
-	public PublicKey loadPublic(URL url, String algorithm)
-		throws IOException, InvalidKeySpecException, NoSuchAlgorithmException
-	{
-		return loadPublic(loadBytes(url), algorithm);
-	}
+		for (PrivateKey key : privateKeys.values())
+			store.setEntry("private:" + key.getFingerprint().encoded(), key.key, protection);
 
+		for (final SecretKey secret : secretKeys.values())
+			store.setEntry(
+					"secret:" + secret.getFingerprint().encoded(),
+					new KeyStore.SecretKeyEntry(secret.keySpec),
+					protection);
 
-	/** Load a public key from a byte array */
-	public PublicKey loadPublic(byte[] encoded, String algorithm)
-		throws IOException, NoSuchAlgorithmException, InvalidKeySpecException
-	{
-		X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encoded);
-		KeyFactory kf = KeyFactory.getInstance(algorithm);
-
-		return kf.generatePublic(publicKeySpec);
-	}
-
-
-
-	/** Load a private key from a URL */
-	public PrivateKey loadPrivate(URL url, String algorithm)
-		throws IOException, InvalidKeySpecException, NoSuchAlgorithmException
-	{
-		return loadPrivate(loadBytes(url), algorithm);
-	}
-
-
-	/** Load a private key from a byte array */
-	public PrivateKey loadPrivate(byte[] encoded, String algorithm)
-		throws IOException, NoSuchAlgorithmException, InvalidKeySpecException
-	{
-		PKCS8EncodedKeySpec publicKeySpec = new PKCS8EncodedKeySpec(encoded);
-		KeyFactory kf = KeyFactory.getInstance(algorithm);
-
-		return kf.generatePrivate(publicKeySpec);
+		store.store(out, password.toCharArray());
 	}
 	
 	
-	public void addDecryptionKey(
-		String algorithm, SecretKeySpec keySpec, byte[] iv)
-	{
-		// TODO: use the KeyStore
-		SecretKey key = new SecretKey();
-		key.algorithm = algorithm;
-		key.keySpec = keySpec;
-		key.iv = iv;
 
-		secretKeys.add(key);
+	/** A private key, whose bits cannot be extracted outside of Keychain. */
+	static class PrivateKey
+	{
+		public Fingerprint getFingerprint() { return fingerprint; }
+		public PublicKey publicKey() { return certificate().getPublicKey(); }
+		public Certificate certificate() { return key.getCertificate(); }
+		public Certificate[] getCertificateChain()
+		{
+			Certificate[] certs = key.getCertificateChain();
+			return Arrays.copyOf(certs, certs.length);
+		}
+
+		public static Generator newGenerator() { return new Generator(); }
+
+		public static class Generator
+		{
+			public Generator setPrincipalName(String name) throws IOException
+			{
+				x500Name = new X500Name(name, ORG_UNIT, ORGANIZATION, LOCALITY);
+				return this;
+			}
+
+			public Generator setPublicKeyType(String t) { publicKeyType = t; return this; }
+			public Generator setSignatureAlgorithm(String a) { signAlgorithm = a; return this; }
+			public Generator setKeyLength(int l) { keyLength = l; return this; }
+			public Generator setValiditySeconds(int v) { validity = v; return this; }
+
+			public PrivateKey generate()
+				throws CertificateException, InvalidKeyException, MissingParameterException,
+				       NoSuchAlgorithmException, NoSuchProviderException,
+				       SignatureException
+			{
+				CertAndKeyGen gen = new CertAndKeyGen(publicKeyType, signAlgorithm);
+				gen.generate(keyLength);
+
+				if (x500Name == null) throw new MissingParameterException("principal name");
+
+				X509Certificate cert = gen.getSelfCertificate(x500Name, validity);
+				java.security.cert.Certificate chain[] = { cert };
+
+				PrivateKey privateKey = new PrivateKey(
+						new KeyStore.PrivateKeyEntry(gen.getPrivateKey(), chain),
+						Fingerprint.newBuilder()
+							.setAlgorithm(hashAlgorithm)
+							.setContent(gen.getPublicKey().getEncoded())
+							.build());
+
+				return privateKey;
+			}
+
+			private Config config = Config.getInstance();
+
+			private X500Name x500Name;
+
+			private String publicKeyType = config.get("crypto.asym.algorithm");
+			private String hashAlgorithm = config.get("crypto.hash.algorithm");
+			private String signAlgorithm =
+				hashAlgorithm.replaceAll("-", "") + "with" + publicKeyType;
+
+			private int keyLength = config.getInt("crypto.asym.keylen");
+			private int validity = config.getInt("crypto.cert.validity");
+		}
+
+		private PrivateKey(KeyStore.PrivateKeyEntry key, Fingerprint fingerprint)
+		{
+			this.key = key;
+			this.fingerprint = fingerprint;
+		}
+
+		private final KeyStore.PrivateKeyEntry key;
+		private final Fingerprint fingerprint;
 	}
 
 
-	private static final String DEFAULT_PRIVATE_KEY_NAME = "root-private";
-
-
-	/** How the keystore is protected (e.g. password). */
-	private final KeyStore.LoadStoreParameter loadStore;
-
-	/** JCA-provided key store */
-	private final KeyStore keyStore;
-
-	/** Our private keypair. */
-	private final KeyStore.PrivateKeyEntry privateKey;
-
-	/** Is the key chain dirty (needs to be written to disk)? */
-	private boolean dirty;
-
-
-	/** Holds a secret key and an IV */
-	class SecretKey
+	/** A secret, symmetric key. */
+	static class SecretKey
 	{
-		public String algorithm;
-		public SecretKeySpec keySpec;
-		public byte[] iv;
+		Fingerprint getFingerprint() { return fingerprint; }
+
+		public static Generator newGenerator() { return new Generator(); }
+		public static class Generator
+		{
+			public Generator setCryptoAlgorithm(String a) { cryptoAlgorithm = a; return this; }
+			public Generator setBytes(byte[] s) { secret = s; return this; }
+			public Generator setSignatureAlgorithm(String a) throws NoSuchAlgorithmException
+			{
+				fingerprint.setAlgorithm(a);
+				return this;
+			}
+
+			public SecretKey generate() throws NoSuchAlgorithmException
+			{
+				if (secret == null)
+					// TODO: generate random bytes
+					;
+/*
+				AlgorithmFactory.CipherBuilder builder =
+					AlgorithmFactory.newSymmetricCipherBuilder();
+
+				Cipher cipher = builder
+					.setCipherName(cryptoAlgorithm)
+					.setKey(secret)
+					.build();
+*/
+
+				return new SecretKey(
+						new SecretKeySpec(secret, cryptoAlgorithm),
+						fingerprint.setContent(secret).build());
+			}
+
+			private Config config = Config.getInstance();
+
+			private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();
+
+			private byte[] secret = null;
+
+			private String cryptoAlgorithm = config.get("crypto.sym.algorithm");
+		}
+
+		private SecretKey(SecretKeySpec key, Fingerprint fingerprint)
+		{
+			this.keySpec = key;
+			this.fingerprint = fingerprint;
+		}
+
+		private final SecretKeySpec keySpec;
+		private final Fingerprint fingerprint;
 	}
+
+
+
+
+	/** Kinds of things that we store in a Java Keystore. */
+	private enum EntryType
+	{
+		/** A certificate. */
+		CERT,
+
+		/** A private key for a public/private keypair. */
+		PRIVATE,
+
+		/** A secret, symmetric key. */
+		SECRET,
+	}
+
+
+	/** Retrieve the keystore password from somewhere trustworthy (the user?). */
+	private final String getPassword() { return "fubar"; }
+
+
+	private static final String	ALIAS_SEPARATOR  = ":";
+
+	private static final String	LOCALITY         = "The Internet";
+	private static final String	ORGANIZATION     = "Footlights";
+	private static final String	ORG_UNIT         = "Footlights Users";
+	
+	private static final Function<PrivateKey, PublicKey> PRIVATE_TO_PUBLIC =
+		new Function<PrivateKey, PublicKey>()
+		{
+			public PublicKey apply(PrivateKey priv) { return priv.publicKey(); }
+		};
+
+
+	/** Public/private keypairs. */
+	private final Map<String, PrivateKey> privateKeys = Maps.newHashMap();
 
 	/** Secret keys for decrypting blocks */
-	private final List<SecretKey> secretKeys;
+	private final Map<String, SecretKey> secretKeys = Maps.newHashMap();
 }

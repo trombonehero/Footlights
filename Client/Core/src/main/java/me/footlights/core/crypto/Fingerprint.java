@@ -16,6 +16,31 @@ import me.footlights.core.ConfigurationError;
 /** A fingerprint for a number of bytes. */
 public class Fingerprint
 {
+	public static Builder newBuilder() { return new Builder(); }
+
+	public String encoded()
+	{
+		StringBuffer sb = new StringBuffer();
+		sb.append(algorithm.getAlgorithm().toLowerCase());
+		sb.append(":");
+		sb.append(base64ish());
+
+		return sb.toString();
+	}
+
+	public String hex() { return Hex.encodeHexString(bytes.array()); }
+	public String base64ish()
+	{
+		return Base64.encode(bytes.array()).replaceAll("/", "+");
+	}
+
+	public MessageDigest getAlgorithm() { return algorithm; }
+
+	public boolean matches(ByteBuffer b) { return (0 == bytes.compareTo(b)); }
+	public boolean matches(byte[] b) { return matches(ByteBuffer.wrap(b)); }
+
+	public ByteBuffer getBytes() { return bytes.asReadOnlyBuffer(); }
+
 	public static class Builder
 	{
 		public Fingerprint build()
@@ -61,20 +86,6 @@ public class Fingerprint
 		private byte[] bytes;
 	}
 
-	public static Builder newBuilder() { return new Builder(); }
-
-	public MessageDigest getAlgorithm() { return algorithm; }
-
-	public boolean matches(ByteBuffer b) { return (0 == bytes.compareTo(b)); }
-	public boolean matches(byte[] b) { return matches(ByteBuffer.wrap(b)); }
-
-	public String hex() { return Hex.encodeHexString(bytes.array()); }
-	public String base64ish()
-	{
-		return Base64.encode(bytes.array()).replaceAll("/", "+");
-	}
-
-	public ByteBuffer getBytes() { return bytes.asReadOnlyBuffer(); }
 
 	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes)
 	{

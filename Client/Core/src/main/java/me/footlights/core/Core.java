@@ -3,12 +3,11 @@ package me.footlights.core;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-
-import java.security.GeneralSecurityException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.footlights.core.crypto.Keychain;
 import me.footlights.core.plugin.*;
-
 
 
 public class Core implements Footlights, KernelInterface
@@ -24,8 +23,11 @@ public class Core implements Footlights, KernelInterface
 		final String keychainFileName = configDirName + "/keychain";
 
 		try { keychain.importKeystoreFile(new FileInputStream(new File(keychainFileName))); }
-		catch (IOException e) { throw new Error(e); }
-		catch (GeneralSecurityException e) { throw new Error(e); }
+		catch (Exception e)
+		{
+			Logger.getLogger(Core.class.getName())
+				.log(Level.WARNING, "Unable to open keychain at '" + keychainFileName + "'", e);
+		}
 
 		plugins          = new HashMap<String,PluginWrapper>();
 		pluginServer     = new PluginServer(this);

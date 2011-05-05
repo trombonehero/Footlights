@@ -4,35 +4,36 @@ import me.footlights.core.plugin.PluginLoadException;
 import me.footlights.core.plugin.PluginLoader;
 import me.footlights.core.plugin.PluginWrapper;
 
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 
 public class PluginTests
 {
-	protected PluginWrapper run(String url) throws PluginLoadException
+	@Before public void setUp()
 	{
-		me.footlights.core.Core core = new me.footlights.core.Core();
+		footlights = new me.footlights.core.Core();
+		loader = new PluginLoader(footlights);
+	}
 
-		PluginWrapper plugin = new PluginLoader(core).loadPlugin(url);
+	@Test public void testTrivialPlugin() throws Throwable
+	{
+		PluginWrapper plugin = loader.loadPlugin("me.footlights.core.plugin.TrivialPlugin");
 		plugin.run();
 
-		return plugin;
+		assertEquals(TrivialPlugin.OUTPUT, plugin.output());
 	}
 
 
 	/** Load the "good" (non-malicious) test plugin */
-	@Test public void testGoodPlugin() throws PluginLoadException
+	@Test public void testGoodPlugin() throws Throwable
 	{
-		PluginWrapper p =
-			run(PLUGIN + "good.jar!/me.footlights.demo.plugins.good.GoodPlugin");
+		PluginWrapper p = run(
+				PLUGIN.replace("PLUGIN_NAME", "Good")
+				+ "good.jar!/me.footlights.demo.plugins.good.GoodPlugin");
 
-		try { p.output(); }
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-			fail("The \"good\" plugin threw: " + t);
-		}
+		p.output();
 	}
 
 
@@ -60,13 +61,21 @@ public class PluginTests
 		}
 	}
 	*/
-	
+
+	protected PluginWrapper run(String url) throws PluginLoadException
+	{
+		PluginWrapper plugin = loader.loadPlugin(url);
+		plugin.run();
+
+		return plugin;
+	}
 
 
-	final String BASE_URL =
-		"file://"
-		+ System.getProperty("java.class.path").replaceFirst("Client/.*", "Client/JARs");
+	private me.footlights.core.Core footlights;
+	private PluginLoader loader;
 
-	final String PLUGIN = "jar:" + BASE_URL + "/Plugins/";
+	private static final String PLUGIN =
+		"jar:file://"
+		 + System.getProperty("java.class.path")
+		   .replaceFirst("Client/Core/.*", "Client/Plugins/PLUGIN_NAME/target/");
 }
-

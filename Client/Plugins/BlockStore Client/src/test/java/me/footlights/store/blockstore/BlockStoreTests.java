@@ -1,7 +1,10 @@
 package me.footlights.store.blockstore;
 
+import java.net.ConnectException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+
+import junit.framework.Assert;
 
 import me.footlights.core.data.Block;
 import me.footlights.core.data.store.MemoryStore;
@@ -31,7 +34,12 @@ public class BlockStoreTests
 			.build();
 
 		store.store(b);
-		store.flush();
+
+		try { store.flush(); }
+		catch (ConnectException e)
+		{
+			Assert.fail("Failed to connect to local upload server; is Tomcat running?");
+		}
 
 		assertEquals(b.getBytes(), store.retrieve(b.name()));
 	}

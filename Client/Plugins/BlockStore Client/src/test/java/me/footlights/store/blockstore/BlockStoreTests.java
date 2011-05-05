@@ -59,6 +59,6 @@ public class BlockStoreTests
 		store.store(b);
 		store.flush();
 
-		assertEquals(b, store.retrieve(b.name()));
+		assertEquals(b.getBytes(), store.retrieve(b.name()));
 	}
 }

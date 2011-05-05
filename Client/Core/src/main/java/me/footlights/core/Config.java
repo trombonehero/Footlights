@@ -24,6 +24,7 @@ public class Config
 		if(value == null) return "";
 		return String.copyValueOf(value.toCharArray());
 	}
+	public int getInt(String name) { return Integer.parseInt(get(name)); }
 
 	/** Set a configuration value */
 	protected void set(String name, String value)

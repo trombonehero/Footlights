@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import me.footlights.core.Config;
+import me.footlights.core.ConfigurationError;
 import me.footlights.core.data.Block;
 
 import org.apache.tomcat.util.http.fileupload.DefaultFileItemFactory;
@@ -35,22 +36,26 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 /**
  * Servlet to manage the uploading of user data blocks.
  */
-public class BlockUploader extends HttpServlet {
-	public BlockUploader() {
-        super();
+public class BlockUploader extends HttpServlet
+{
+	public BlockUploader()
+	{
+      config = Config.getInstance();
 
-        config = Config.getInstance();
-        uploadArena = new FileUpload(new DefaultFileItemFactory());
+      final String keyId = config.get("amazon.keyId");
+  		final String secret = config.get("amazon.secretKey");
 
-        AWSCredentials cred = new AWSCredentials() {			
-			@Override public String getAWSAccessKeyId() { return keyId; }
+  		if (keyId.isEmpty()) throw new ConfigurationError("Amazon key ID not set");
+  		if (secret.isEmpty()) throw new ConfigurationError("Amazon secret key not set");
+
+  		AWSCredentials cred = new AWSCredentials()
+  		{
+  			@Override public String getAWSAccessKeyId() { return keyId; }
 			@Override public String getAWSSecretKey() { return secret; }
-
-			private final String keyId = config.get("amazon.keyId");
-			private final String secret = config.get("amazon.secretKey");
 		};
 
-        s3 = new AmazonS3Client(cred);
+		s3 = new AmazonS3Client(cred);
+      uploadArena = new FileUpload(new DefaultFileItemFactory());
     }
 
 

@@ -16,7 +16,7 @@ public class KeychainTests
 	@Before public void setUp() throws Throwable
 	{
 		keychain = new Keychain();
-		privateKey = Keychain.PrivateKey.newGenerator().setPrincipalName("test user").generate();
+		privateKey = PrivateKey.newGenerator().setPrincipalName("test user").generate();
 		publicKey = privateKey.publicKey();
 	}
 
@@ -75,6 +75,6 @@ public class KeychainTests
 */
 
 	private Keychain keychain;
-	private Keychain.PrivateKey privateKey;
+	private PrivateKey privateKey;
 	private PublicKey publicKey;
 }

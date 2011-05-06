@@ -93,7 +93,7 @@ public class SecretKey
 
 		public CipherBuilder setInitializationVector(byte[] iv)
 		{
-			if (iv == null) this.iv = null;
+			if ((iv == null) || (iv.length == 0)) this.iv = null;
 			else this.iv = new IvParameterSpec(iv);
 
 			return this;

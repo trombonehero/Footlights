@@ -16,7 +16,7 @@
 	<br/>
 	algorithm: <input name="DIGEST_ALGORITHM"/>
 	<br/>
-	auth: <input name="AUTHENTICATOR"/>
+	auth: <input name="AUTHENTICATOR" type="password"/>
 	<br/>
 	<input type="submit"/>
 </form>

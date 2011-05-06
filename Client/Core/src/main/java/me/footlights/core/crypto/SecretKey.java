@@ -1,6 +1,7 @@
 package me.footlights.core.crypto;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -15,7 +16,7 @@ public class SecretKey
 	public static Generator newGenerator() { return new Generator(); }
 	public static class Generator
 	{
-		public Generator setCryptoAlgorithm(String a) { cryptoAlgorithm = a; return this; }
+		public Generator setAlgorithm(String a) { algorithm = a; return this; }
 		public Generator setBytes(byte[] s) { secret = s; return this; }
 		public Generator setFingerprintAlgorithm(String a) throws NoSuchAlgorithmException
 		{
@@ -26,30 +27,24 @@ public class SecretKey
 		public SecretKey generate() throws NoSuchAlgorithmException
 		{
 			if (secret == null)
-				// TODO: generate random bytes
-				;
-/*
-			AlgorithmFactory.CipherBuilder builder =
-				AlgorithmFactory.newSymmetricCipherBuilder();
+			{
+				AlgorithmFactory.CipherBuilder builder = AlgorithmFactory.newSymmetricCipherBuilder();
+				builder.setCipherName(algorithm);
 
-			Cipher cipher = builder
-				.setCipherName(cryptoAlgorithm)
-				.setKey(secret)
-				.build();
-*/
+				secret = new byte[builder.getKeySize()];
+				SecureRandom.getInstance(config.get("crypto.prng")).nextBytes(secret);
+			}
 
 			return new SecretKey(
-					new SecretKeySpec(secret, cryptoAlgorithm),
+					new SecretKeySpec(secret, algorithm),
 					fingerprint.setContent(secret).build());
 		}
 
 		private Config config = Config.getInstance();
 
-		private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();
-
+		private String algorithm = config.get("crypto.sym.algorithm");
 		private byte[] secret = null;
-
-		private String cryptoAlgorithm = config.get("crypto.sym.algorithm");
+		private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();
 	}
 
 	private SecretKey(SecretKeySpec key, Fingerprint fingerprint)

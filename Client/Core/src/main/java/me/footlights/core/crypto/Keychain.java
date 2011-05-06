@@ -104,7 +104,7 @@ public class Keychain
 					javax.crypto.SecretKey secretKey = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
 					store(
 						SecretKey.newGenerator()
-							.setCryptoAlgorithm(secretKey.getAlgorithm())
+							.setAlgorithm(secretKey.getAlgorithm())
 							.setFingerprintAlgorithm(fingerprintAlgorithm)
 							.setBytes(secretKey.getEncoded())
 							.generate());

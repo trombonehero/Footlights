@@ -12,8 +12,8 @@ import javax.crypto.Cipher;
 
 import com.google.common.collect.Lists;
 
-import me.footlights.core.crypto.AlgorithmFactory;
 import me.footlights.core.crypto.Fingerprint;
+import me.footlights.core.crypto.SecretKey;
 
 
 /**
@@ -95,12 +95,12 @@ public class Block implements FootlightsPrimitive
 			return new Block(links, content, padding, fingerprintBuilder);
 		}
 
-		private Builder() { links = Lists.newArrayList(); }
+		private Builder() {}
 
-		private List<Link> links;
-		private ByteBuffer content;
+		private List<Link> links = Lists.newArrayList();
+		private ByteBuffer content = ByteBuffer.allocate(0);
 		private ByteBuffer padding;
-		private Fingerprint.Builder fingerprintBuilder;
+		private Fingerprint.Builder fingerprintBuilder = Fingerprint.newBuilder();
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -116,24 +116,26 @@ public class Block implements FootlightsPrimitive
 	public String name() { return name; }
 
 	public EncryptedBlock encrypt() throws GeneralSecurityException
-	{ 
-		AlgorithmFactory.CipherBuilder builder =
-			AlgorithmFactory.newSymmetricCipherBuilder();
+	{
+		SecretKey.Generator keygen = SecretKey.newGenerator();
 
-		// generate encryption key from hash
-		byte[] secret = new byte[builder.getKeySize()];
+		int length = keygen.getKeyLength();
+		byte[] secret = new byte[length];
 		try
 		{
 			byte[] hash = Fingerprint.decode(name);
-			System.arraycopy(hash, 0, secret, 0, builder.getKeySize());
+			System.arraycopy(hash, 0, secret, 0, length);
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException("Unable to decode Block name: '" + name + "'");
 		}
 
-		Cipher cipher = builder
-			.setKey(secret)
+		Cipher cipher = keygen
+			.setBytes(secret)
+			.generate()
+			.newCipherBuilder()
+			.setOperation(SecretKey.Operation.ENCRYPT)
 			.build();
 
 		int len = cipher.getOutputSize(bytes.remaining());
@@ -142,7 +144,7 @@ public class Block implements FootlightsPrimitive
 		cipher.doFinal(bytes.asReadOnlyBuffer(), ciphertext);
 
 		Link link = Link.newBuilder()
-			.setAlgorithm(builder.getCipherName())
+			.setAlgorithm(cipher.getAlgorithm())
 			.setKey(secret)
 			.setUri(URI.create(name()))
 			.build();
@@ -270,7 +272,8 @@ public class Block implements FootlightsPrimitive
 
 		// Now that our raw bytes have been completely determined, calculate
 		// the block's name (based on a fingerprint of its contents).
-		this.name = fingerprintBuilder.build().encode();
+		if (fingerprintBuilder == null) fingerprintBuilder = Fingerprint.newBuilder();
+		this.name = fingerprintBuilder.setContent(bytes).build().encode();
 	}
 
 

@@ -10,7 +10,8 @@ import javax.crypto.Cipher;
 
 import me.footlights.core.Preconditions;
 import me.footlights.core.Util;
-import me.footlights.core.crypto.AlgorithmFactory;
+import me.footlights.core.crypto.SecretKey;
+import me.footlights.core.crypto.SecretKey.Operation;
 
 
 /**
@@ -146,9 +147,12 @@ public class Link implements FootlightsPrimitive
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException
 	{
 		if (cipher == null)
-			cipher = AlgorithmFactory.newSymmetricCipherBuilder()
-				.setCipherName(algorithms)
-				.setKey(key)
+			cipher = SecretKey.newGenerator()
+				.setAlgorithm(algorithms)
+				.setBytes(key)
+				.generate()
+				.newCipherBuilder()
+				.setOperation(Operation.DECRYPT)
 				.setInitializationVector(iv)
 				.build();
 

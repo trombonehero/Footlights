@@ -3,7 +3,6 @@ package me.footlights.core;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.footlights.core.crypto.Keychain;

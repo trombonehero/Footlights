@@ -29,7 +29,7 @@ public class Keychain
 
 	public void store(PrivateKey key)
 	{
-		String name = key.getFingerprint().base64ish();
+		String name = key.getFingerprint().encode();
 
 		if (privateKeys.containsKey(name))
 			assert Arrays.equals(
@@ -41,7 +41,7 @@ public class Keychain
 
 	public void store(SecretKey key)
 	{
-		String name = key.getFingerprint().base64ish();
+		String name = key.getFingerprint().encode();
 
 		if (secretKeys.containsKey(name))
 			assert Arrays.equals(

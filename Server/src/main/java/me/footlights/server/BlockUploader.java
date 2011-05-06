@@ -3,7 +3,6 @@ package me.footlights.server;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import me.footlights.core.Config;
 import me.footlights.core.ConfigurationError;
-import me.footlights.core.data.Block;
+import me.footlights.core.crypto.Fingerprint;
 
 import org.apache.tomcat.util.http.fileupload.DefaultFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -174,13 +173,13 @@ public class BlockUploader extends HttpServlet
 			if (bytes == null)
 				throw new IllegalArgumentException("No file attached");
 
-			if (algorithm.isEmpty())
-				algorithm = config.get("crypto.hash.algorithm");
+			Fingerprint.Builder fingerprintBuilder =
+				Fingerprint.newBuilder()
+					.setContent(bytes);
 
-			algorithm = algorithm.toUpperCase();
+			if (!algorithm.isEmpty()) fingerprintBuilder.setAlgorithm(algorithm);
 
-			String actualName =
-				algorithm + ":" + Block.name(ByteBuffer.wrap(bytes), algorithm);
+			String actualName = algorithm + ":" + fingerprintBuilder.build().encode();
 
 			if (name.isEmpty()) name = actualName;
 			else if (!name.equals(actualName))

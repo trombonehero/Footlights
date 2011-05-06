@@ -6,18 +6,14 @@ import java.security.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.LinkedList;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 
-import me.footlights.core.Config;
-import me.footlights.core.Core;
-import me.footlights.core.crypto.AlgorithmFactory;
+import com.google.common.collect.Lists;
 
-import org.apache.commons.codec.binary.Base64;
+import me.footlights.core.crypto.AlgorithmFactory;
+import me.footlights.core.crypto.Fingerprint;
 
 
 /**
@@ -26,26 +22,19 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class Block implements FootlightsPrimitive
 {
-	public static String name(ByteBuffer bytes, String algorithm)
-		throws NoSuchAlgorithmException
-	{
-		MessageDigest hash = MessageDigest.getInstance(algorithm);
-		hash.update(bytes.asReadOnlyBuffer());
-
-		return encode(hash.digest());
-	}
-
 	public static class Builder
 	{
-		public Builder addLink(Link link)
-		{
-			links.add(link);
-			return this;
-		}
+		public Builder addLink(Link link) { links.add(link); return this; }
 
 		public Builder setContent(ByteBuffer content)
 		{
-			this.content = content.asReadOnlyBuffer();
+			content = content.asReadOnlyBuffer();
+			return this;
+		}
+
+		public Builder setNamingAlgorithm(String a) throws NoSuchAlgorithmException
+		{
+			fingerprintBuilder.setAlgorithm(a);
 			return this;
 		}
 
@@ -103,32 +92,15 @@ public class Block implements FootlightsPrimitive
 
 		public Block build() throws FormatException
 		{
-			return new Block(links, content, padding, namingAlgorithm);
+			return new Block(links, content, padding, fingerprintBuilder);
 		}
 
-		private Builder()
-		{
-			links = new LinkedList<Link>();
-
-			String hashAlgorithm =
-				Config.getInstance().get("crypto.hash.algorithm");
-
-			try
-			{
-				namingAlgorithm = MessageDigest.getInstance(hashAlgorithm);
-			}
-			catch (NoSuchAlgorithmException e)
-			{
-				log.log(Level.SEVERE,
-					"The default hash algorithm (" + hashAlgorithm
-					+ ") is unavailable; does a Provider need to be installed?");
-			}
-		}
+		private Builder() { links = Lists.newArrayList(); }
 
 		private List<Link> links;
 		private ByteBuffer content;
 		private ByteBuffer padding;
-		private MessageDigest namingAlgorithm;
+		private Fingerprint.Builder fingerprintBuilder;
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -150,8 +122,15 @@ public class Block implements FootlightsPrimitive
 
 		// generate encryption key from hash
 		byte[] secret = new byte[builder.getKeySize()];
-		byte[] hash = decode(name);
-		System.arraycopy(hash, 0, secret, 0, builder.getKeySize());
+		try
+		{
+			byte[] hash = Fingerprint.decode(name);
+			System.arraycopy(hash, 0, secret, 0, builder.getKeySize());
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Unable to decode Block name: '" + name + "'");
+		}
 
 		Cipher cipher = builder
 			.setKey(secret)
@@ -223,7 +202,7 @@ public class Block implements FootlightsPrimitive
 	 *                   an existing, correctly-padded block.
 	 */
 	private Block(List<Link> links, ByteBuffer content, ByteBuffer padding,
-			MessageDigest namingAlgorithm)  // TODO: class NamingAlgorithm
+			Fingerprint.Builder fingerprintBuilder)
 		throws FormatException
 	{
 		this.links    = Collections.unmodifiableList(links);
@@ -290,20 +269,8 @@ public class Block implements FootlightsPrimitive
 		this.bytes = rawBytes;
 
 		// Now that our raw bytes have been completely determined, calculate
-		// the block's name (based on a hash of its contents).
-		namingAlgorithm.update(bytes.asReadOnlyBuffer());
-		this.name = namingAlgorithm.getAlgorithm()
-			+ ":" + encode(namingAlgorithm.digest());
-	}
-
-	private static String encode(byte[] bytes)
-	{
-		return new String(Base64.encodeBase64(bytes)).replaceAll("/", "+");
-	}
-
-	private static byte[] decode(String name)
-	{
-		return Base64.decodeBase64(name.replaceAll("+", "/").getBytes());
+		// the block's name (based on a fingerprint of its contents).
+		this.name = fingerprintBuilder.build().encode();
 	}
 
 
@@ -326,6 +293,4 @@ public class Block implements FootlightsPrimitive
 
 	/** Raw byte version of the block */
 	private final ByteBuffer bytes;
-
-	private static final Logger log = Logger.getLogger(Core.CORE_LOG_NAME);
 }

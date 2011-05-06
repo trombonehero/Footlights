@@ -6,6 +6,8 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Hex;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import me.footlights.HasBytes;
@@ -16,6 +18,11 @@ import me.footlights.core.ConfigurationError;
 /** A fingerprint for a number of bytes. */
 public class Fingerprint
 {
+	public static byte[] decode(String name) throws Base64DecodingException
+	{
+		return Base64.decode(name.replaceAll("+", "/"));
+	}
+
 	public static Builder newBuilder() { return new Builder(); }
 
 	public String encoded()
@@ -23,13 +30,12 @@ public class Fingerprint
 		StringBuffer sb = new StringBuffer();
 		sb.append(algorithm.getAlgorithm().toLowerCase());
 		sb.append(":");
-		sb.append(base64ish());
+		sb.append(encode());
 
 		return sb.toString();
 	}
 
-	public String hex() { return Hex.encodeHexString(bytes.array()); }
-	public String base64ish()
+	public String encode()
 	{
 		return Base64.encode(bytes.array()).replaceAll("/", "+");
 	}
@@ -86,6 +92,8 @@ public class Fingerprint
 		private byte[] bytes;
 	}
 
+
+	@VisibleForTesting String hex() { return Hex.encodeHexString(bytes.array()); }
 
 	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes)
 	{

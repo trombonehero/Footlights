@@ -179,7 +179,7 @@ public class BlockUploader extends HttpServlet
 
 			if (!algorithm.isEmpty()) fingerprintBuilder.setAlgorithm(algorithm);
 
-			String actualName = algorithm + ":" + fingerprintBuilder.build().encode();
+			String actualName = fingerprintBuilder.build().encode();
 
 			if (name.isEmpty()) name = actualName;
 			else if (!name.equals(actualName))

@@ -136,11 +136,11 @@ public class Keychain
 			new KeyStore.PasswordProtection(password.toCharArray());
 
 		for (PrivateKey key : privateKeys.values())
-			store.setEntry("private:" + key.getFingerprint().encoded(), key.key, protection);
+			store.setEntry("private:" + key.getFingerprint().encode(), key.key, protection);
 
 		for (final SecretKey secret : secretKeys.values())
 			store.setEntry(
-					"secret:" + secret.getFingerprint().encoded(),
+					"secret:" + secret.getFingerprint().encode(),
 					new KeyStore.SecretKeyEntry(secret.keySpec),
 					protection);
 

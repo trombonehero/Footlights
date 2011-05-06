@@ -25,19 +25,14 @@ public class Fingerprint
 
 	public static Builder newBuilder() { return new Builder(); }
 
-	public String encoded()
+	public String encode()
 	{
 		StringBuffer sb = new StringBuffer();
 		sb.append(algorithm.getAlgorithm().toLowerCase());
 		sb.append(":");
-		sb.append(encode());
+		sb.append(Base64.encode(bytes.array()).replaceAll("/", "+"));
 
 		return sb.toString();
-	}
-
-	public String encode()
-	{
-		return Base64.encode(bytes.array()).replaceAll("/", "+");
 	}
 
 	public MessageDigest getAlgorithm() { return algorithm; }

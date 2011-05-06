@@ -26,7 +26,7 @@ public class Core implements Footlights, KernelInterface
 		catch (Exception e)
 		{
 			Logger.getLogger(Core.class.getName())
-				.log(Level.WARNING, "Unable to open keychain at '" + keychainFileName + "'", e);
+				.warning("Unable to open keychain: " + e.getLocalizedMessage());
 		}
 
 		plugins          = new HashMap<String,PluginWrapper>();

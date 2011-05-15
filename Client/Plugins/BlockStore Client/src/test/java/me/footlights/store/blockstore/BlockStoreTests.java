@@ -2,6 +2,7 @@ package me.footlights.store.blockstore;
 
 import java.net.ConnectException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
@@ -57,8 +58,16 @@ public class BlockStoreTests
 			.build();
 
 		store.store(b);
-		store.flush();
 
-		assertEquals(b.getBytes(), store.retrieve(b.name()));
+		try
+		{
+			store.flush();
+			assertEquals(b.getBytes(), store.retrieve(b.name()));
+		}
+		catch (UnknownHostException e)
+		{
+			Logger.getAnonymousLogger().warning(
+				"Failed to resolve blockstore host; not connected to Internet?");
+		}
 	}
 }

@@ -44,6 +44,12 @@ public class Fingerprint
 	public boolean matches(byte[] b) { return matches(ByteBuffer.wrap(b)); }
 
 	public ByteBuffer getBytes() { return bytes.asReadOnlyBuffer(); }
+	public byte[] copyBytes()
+	{
+		byte[] copy = new byte[bytes.remaining()];
+		bytes.get(copy);
+		return copy;
+	}
 
 	public static class Builder
 	{

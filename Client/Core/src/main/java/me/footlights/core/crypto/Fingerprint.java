@@ -18,9 +18,12 @@ import me.footlights.core.ConfigurationError;
 /** A fingerprint for a number of bytes. */
 public class Fingerprint
 {
-	public static byte[] decode(String name) throws Base64DecodingException
+	public static Fingerprint decode(String name)
+		throws Base64DecodingException, NoSuchAlgorithmException
 	{
-		return Base64.decode(name.replaceAll("+", "/"));
+		String parts[] = name.replaceAll("\\+", "/").split(":");
+		MessageDigest algorithm = MessageDigest.getInstance(parts[0]);
+		return new Fingerprint(algorithm, ByteBuffer.wrap(Base64.decode(parts[1])));
 	}
 
 	public static Builder newBuilder() { return new Builder(); }

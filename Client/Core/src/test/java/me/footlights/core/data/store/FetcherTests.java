@@ -16,7 +16,7 @@ public class FetcherTests
 {
 	@Before public void setUp()
 	{
-		store = new DiskStore(null);
+		store = new DiskStore();
 		fetcher = new Fetcher(store);
 	}
 

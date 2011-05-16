@@ -15,7 +15,7 @@ public class DiskStoreTests
 {
 	@Test public void testClearStorage() throws Throwable
 	{
-		Store store = new DiskStore(null);
+		Store store = new DiskStore();
 
 		Block b1 = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3 }))

@@ -121,8 +121,9 @@ public class Block implements FootlightsPrimitive
 		SecretKey.Generator keygen = SecretKey.newGenerator();
 
 		int length = keygen.getKeyLength();
-		byte[] secret = new byte[length];
-		System.arraycopy(fingerprint.getBytes().array(), 0, secret, 0, length);
+		byte[] hashBytes = fingerprint.copyBytes();
+		byte[] secret = new byte[length / 8];
+		System.arraycopy(secret, 0, hashBytes, 0, secret.length);
 
 		Cipher cipher = keygen
 			.setBytes(secret)

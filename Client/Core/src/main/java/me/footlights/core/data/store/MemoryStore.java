@@ -3,6 +3,8 @@ package me.footlights.core.data.store;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import me.footlights.core.data.NoSuchBlockException;
+
 
 
 /** A block store in memory. */
@@ -24,13 +26,16 @@ public class MemoryStore extends LocalStore
 	@Override
 	public void put(String name, ByteBuffer bytes) 
 	{
+		if (name == null) throw new NullPointerException();
 		blocks.put(name, bytes);
 	}
 
-	@Override
-	public ByteBuffer get(String name)
+	@Override public ByteBuffer get(String name) throws NoSuchBlockException
 	{
-		return blocks.get(name).asReadOnlyBuffer();
+		ByteBuffer buffer = blocks.get(name);
+
+		if (buffer == null) throw new NoSuchBlockException(this, name);
+		else return buffer.asReadOnlyBuffer();
 	}
 
 	@Override

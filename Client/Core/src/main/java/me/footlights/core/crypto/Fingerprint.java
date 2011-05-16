@@ -88,6 +88,17 @@ public class Fingerprint
 	}
 
 
+	@Override public boolean equals(Object o)
+	{
+		if (!(o instanceof Fingerprint)) return false;
+		Fingerprint f = (Fingerprint) o;
+
+		if (!algorithm.getAlgorithm().equals(f.algorithm.getAlgorithm())) return false;
+		if (bytes.compareTo(f.bytes) != 0) return false;
+
+		return true;
+	}
+
 	@VisibleForTesting String hex() { return Hex.encodeHexString(bytes.array()); }
 
 	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes)

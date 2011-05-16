@@ -113,7 +113,8 @@ public class Block implements FootlightsPrimitive
 
 	public List<Link> links() { return links; }
 	public ByteBuffer content() { return content.asReadOnlyBuffer(); }
-	public String name() { return name; }
+	public Fingerprint fingerprint() { return fingerprint; }
+	public String name() { return fingerprint.encode(); }
 
 	public EncryptedBlock encrypt() throws GeneralSecurityException
 	{
@@ -121,15 +122,7 @@ public class Block implements FootlightsPrimitive
 
 		int length = keygen.getKeyLength();
 		byte[] secret = new byte[length];
-		try
-		{
-			byte[] hash = Fingerprint.decode(name);
-			System.arraycopy(hash, 0, secret, 0, length);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException("Unable to decode Block name: '" + name + "'");
-		}
+		System.arraycopy(fingerprint.getBytes().array(), 0, secret, 0, length);
 
 		Cipher cipher = keygen
 			.setBytes(secret)
@@ -146,7 +139,7 @@ public class Block implements FootlightsPrimitive
 		Link link = Link.newBuilder()
 			.setAlgorithm(cipher.getAlgorithm())
 			.setKey(secret)
-			.setUri(URI.create(name()))
+			.setUri(URI.create(fingerprint.encode()))
 			.build();
 
 		return EncryptedBlock.newBuilder()
@@ -169,7 +162,7 @@ public class Block implements FootlightsPrimitive
 		try { other = (Block) o; }
 		catch(ClassCastException e) { return false; }
 
-		if (!name.equals(other.name)) return false;
+		if (!fingerprint.equals(other.fingerprint)) return false;
 		if (!links.equals(other.links)) return false;
 
 		if ((content == null) ^ (other.content == null)) return false;
@@ -273,7 +266,7 @@ public class Block implements FootlightsPrimitive
 		// Now that our raw bytes have been completely determined, calculate
 		// the block's name (based on a fingerprint of its contents).
 		if (fingerprintBuilder == null) fingerprintBuilder = Fingerprint.newBuilder();
-		this.name = fingerprintBuilder.setContent(bytes).build().encode();
+		this.fingerprint = fingerprintBuilder.setContent(bytes).build();
 	}
 
 
@@ -289,7 +282,7 @@ public class Block implements FootlightsPrimitive
 	/** PRNG for padding bytes. */
 	private static final Random random = new Random();
 
-	private final String name;
+	private final Fingerprint fingerprint;
 	private final List<Link> links;
 	private final ByteBuffer content;
 	private final ByteBuffer padding;

@@ -95,6 +95,8 @@ public abstract class Store
 	 */
 	private final void store(String name, ByteBuffer bytes) throws IOException
 	{
+		if (name == null) throw new NullPointerException("Expected block name, not null");
+
 		if(cache == null) put(name, bytes);
 		else
 		{

@@ -6,61 +6,63 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
+import me.footlights.core.Config;
 import me.footlights.core.data.Block;
-import me.footlights.core.data.store.MemoryStore;
 import me.footlights.core.data.store.Store;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 public class BlockStoreTests
 {
-	/** For the moment, the server just checks for a shared secret */
-	private static final String SHARED_SECRET = "tuxes26?stye";
+	@BeforeClass public static void setupClass()
+	{
+		sharedSecret = Config.getInstance().get(SHARED_SECRET_KEY);
+	}
 
-
+	/** Test communication with a local BlockStore instance. */
 	@Test public void testLocalStorage() throws Throwable
 	{
-		Store cache = new MemoryStore();
 		Store store = new BlockStoreClient(
-				"d2b0r6sfoq6kur.cloudfront.net",
-				new URL("http://localhost:8080/UploadManager/upload"),
-				SHARED_SECRET, cache);
+				"localhost:8080", new URL("http://localhost:8080/UploadManager/upload"), sharedSecret);
 
 		Block b = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }))
 			.build();
 
-		store.store(b);
-
-		try { store.flush(); }
+		try
+		{
+			store.store(b);
+			store.flush();
+			assertEquals(b.getBytes(), store.retrieve(b.name()));
+		}
 		catch (ConnectException e)
 		{
 			Logger.getAnonymousLogger().warning(
 				"Failed to connect to local upload server; is Tomcat running?");
 		}
-
-		assertEquals(b.getBytes(), store.retrieve(b.name()));
 	}
 
+	/** Test communication with the test server. */
 	@Test public void testRemoteStorage() throws Throwable
 	{
-		Store cache = new MemoryStore();
+		if (sharedSecret.isEmpty())
+			fail("Blockstore shared secret ('" + SHARED_SECRET_KEY + "') not set");
+
 		Store store = new BlockStoreClient(
-				"d2b0r6sfoq6kur.cloudfront.net",
-				new URL("https://upload.footlights.me/upload"),
-				SHARED_SECRET, cache);
+				BLOCKSTORE_DOWNLOAD_HOST, new URL(BLOCKSTORE_UPLOAD_URL), sharedSecret);
 
 		Block b = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }))
 			.build();
 
-		store.store(b);
-
 		try
 		{
+			store.store(b);
 			store.flush();
 			assertEquals(b.getBytes(), store.retrieve(b.name()));
 		}
@@ -70,4 +72,16 @@ public class BlockStoreTests
 				"Failed to resolve blockstore host; not connected to Internet?");
 		}
 	}
+
+	/** Where we download blocks. */
+	private static final String BLOCKSTORE_DOWNLOAD_HOST = "d2b0r6sfoq6kur.cloudfront.net";
+
+	/** Where to upload blocks. */
+	private static final String BLOCKSTORE_UPLOAD_URL = "https://upload.footlights.me/upload";
+
+	/** What the shared secret is called in the config file. */
+	private static final String SHARED_SECRET_KEY = "blockstore.secret";
+
+	/** For the moment, the server just checks for a shared secret */
+	private static String sharedSecret;
 }

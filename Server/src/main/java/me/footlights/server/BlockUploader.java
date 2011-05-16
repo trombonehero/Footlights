@@ -121,7 +121,7 @@ public class BlockUploader extends HttpServlet
 	/** In the future, this will be much more sophisticated! */
 	private static boolean checkAuth(String authenticator)
 	{
-		return (authenticator.equals("tuxes26?stye"));
+		return (authenticator.equals(Config.getInstance().get("blockstore.secret")));
 	}
 
 

@@ -23,6 +23,11 @@ public final class BlockStoreClient extends Store
 		this.key = key;
 	}
 
+	public BlockStoreClient(String down, URL up, String key) throws MalformedURLException
+	{
+		this(down, up, key, null);
+	}
+
 
 	@Override
 	public ByteBuffer get(String name) throws IOException, NoSuchBlockException

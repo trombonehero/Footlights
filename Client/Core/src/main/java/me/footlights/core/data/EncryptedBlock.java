@@ -13,17 +13,12 @@ public class EncryptedBlock
 	{
 		public EncryptedBlock build()
 		{
-			return new EncryptedBlock(ciphertext, name, link);
+			return new EncryptedBlock(ciphertext, link);
 		}
 
 		public Builder setCiphertext(ByteBuffer ciphertext)
 		{
 			this.ciphertext = ciphertext;
-			return this;
-		}
-		public Builder setName(String name)
-		{
-			this.name = name;
 			return this;
 		}
 		public Builder setLink(Link link)
@@ -35,14 +30,13 @@ public class EncryptedBlock
 		private Builder() {}
 
 		private ByteBuffer ciphertext;
-		private String name;
 		private Link link;
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** The name of the block. */
-	public String name() { return name; }
+	public String name() { return link.uri().toString(); }
 
 	/** The ciphertext itself. */
 	public ByteBuffer ciphertext() { return ciphertext.asReadOnlyBuffer(); }
@@ -51,14 +45,14 @@ public class EncryptedBlock
 	public Link link() { return link; }
 
 
-	private EncryptedBlock(ByteBuffer ciphertext, String name, Link link)
+	private EncryptedBlock(ByteBuffer ciphertext, Link link)
 	{
+		if (link == null) throw new NullPointerException("Link to EncryptedBlock must not be null");
+
 		this.ciphertext = ciphertext.asReadOnlyBuffer();
-		this.name = name;
 		this.link = link;
 	}
 
 	private final ByteBuffer ciphertext;
-	private final String name;
 	private final Link link;
 }

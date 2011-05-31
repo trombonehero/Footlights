@@ -133,17 +133,21 @@ public class Config
 	/** Default configuration options */
 	protected Properties defaults()
 	{
-		Properties defaults = new Properties();
+		String[][] values = 
+		{
+			{ "crypto.hash.algorithm", "SHA1" },
+			{ "crypto.sym.algorithm", "AES" },
+			{ "crypto.sym.keylen", "256" },
+			{ "crypto.sym.mode", "CTR" },
+			{ "crypto.sym.padding", "NOPADDING" },
+			{ "crypto.sig.algorithm", "SHA256withRSA" },
+			{ "crypto.keystore.type", "JKS" },
+			{ "crypto.cert.validity", Integer.toString(60 * 60 * 24 * 3650) },
+		};
 
-		defaults.setProperty("crypto.hash.algorithm", "SHA1");
-		defaults.setProperty("crypto.sym.cipher", "AES");
-		defaults.setProperty("crypto.sym.keysize", "128");
-		defaults.setProperty("crypto.sym.mode", "CTR");
-		defaults.setProperty("crypto.sym.padding", "NOPADDING");
-		defaults.setProperty("crypto.sig.algorithm", "SHA256withRSA");
-		defaults.setProperty("crypto.keystore.type", "JKS");
-		defaults.setProperty("crypto.cert.validity",
-		                     Integer.toString(60 * 60 * 24 * 3650));
+		Properties defaults = new Properties();
+		for (String[] pair : values)
+			defaults.setProperty(pair[0], pair[1]);
 
 		return defaults;
 	}

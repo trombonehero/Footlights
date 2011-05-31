@@ -39,23 +39,23 @@ public class BlockUploader extends HttpServlet
 {
 	public BlockUploader()
 	{
-      config = Config.getInstance();
+		config = Config.getInstance();
 
-      final String keyId = config.get("amazon.keyId");
-  		final String secret = config.get("amazon.secretKey");
+		final String keyId = config.get("amazon.keyId");
+		final String secret = config.get("amazon.secretKey");
 
-  		if (keyId.isEmpty()) throw new ConfigurationError("Amazon key ID not set");
-  		if (secret.isEmpty()) throw new ConfigurationError("Amazon secret key not set");
+		if (keyId.isEmpty()) throw new ConfigurationError("Amazon key ID not set");
+		if (secret.isEmpty()) throw new ConfigurationError("Amazon secret key not set");
 
-  		AWSCredentials cred = new AWSCredentials()
-  		{
-  			@Override public String getAWSAccessKeyId() { return keyId; }
+		AWSCredentials cred = new AWSCredentials()
+		{
+			@Override public String getAWSAccessKeyId() { return keyId; }
 			@Override public String getAWSSecretKey() { return secret; }
 		};
 
 		s3 = new AmazonS3Client(cred);
-      uploadArena = new FileUpload(new DefaultFileItemFactory());
-    }
+		uploadArena = new FileUpload(new DefaultFileItemFactory());
+	}
 
 
 	/**
@@ -96,21 +96,21 @@ public class BlockUploader extends HttpServlet
 		}
 
 
-    	InputStream stream = new ByteArrayInputStream(file.bytes);
+		InputStream stream = new ByteArrayInputStream(file.bytes);
 
-    	ObjectMetadata metadata = new ObjectMetadata();
-    	metadata.setContentLength(file.bytes.length);
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(file.bytes.length);
 
-	    try
-	    {
+		try
+		{
 			s3.putObject(USER_DATA_BUCKET, file.name, stream, metadata);
 			s3.setObjectAcl(USER_DATA_BUCKET, file.name, DEFAULT_ACL);
-	    }
-	    catch (AmazonClientException e)
-	    {
-	    	response.sendError(SC_INTERNAL_SERVER_ERROR, e.getMessage());
-	    	return;
-	    }
+		}
+		catch (AmazonClientException e)
+		{
+			response.sendError(SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
 
 		response.setContentType("text/plain");
 		response.setStatus(SC_OK);
@@ -128,7 +128,7 @@ public class BlockUploader extends HttpServlet
 	/** Translate the HTTP request into something that we understand. */
 	private UploadedFile getFile(HttpServletRequest request)
 		throws FileUploadException, NoSuchAlgorithmException,
-		       IllegalArgumentException
+			IllegalArgumentException
 	{
 		UploadedFile file = new UploadedFile();
 
@@ -191,23 +191,23 @@ public class BlockUploader extends HttpServlet
 	}
 
 	/** Fields that we expect the submitter to provide. */
-    private enum FormFields
-    {
-    	AUTHENTICATOR,
-    	DIGEST_ALGORITHM,
-    	EXPECTED_NAME,
-    	FILE_CONTENTS,
-    }
+	private enum FormFields
+	{
+		AUTHENTICATOR,
+		DIGEST_ALGORITHM,
+		EXPECTED_NAME,
+		FILE_CONTENTS,
+	}
 
-    /** User data is public by default (but encrypted!). */
-    private static final CannedAccessControlList DEFAULT_ACL =
-    	CannedAccessControlList.PublicRead;
+	/** User data is public by default (but encrypted!). */
+	private static final CannedAccessControlList DEFAULT_ACL =
+		CannedAccessControlList.PublicRead;
 
 	/** The S3 bucket to store user data in. */
-    private static final String USER_DATA_BUCKET = "me.footlights.userdata";
+	private static final String USER_DATA_BUCKET = "me.footlights.userdata";
 
 
-    /** Temporary storage for uploaded files. */
+	/** Temporary storage for uploaded files. */
 	private final FileUpload uploadArena;
 
 	/** Amazon S3 client. */

@@ -1,5 +1,7 @@
 package me.footlights.core.crypto;
 
+import java.security.InvalidKeyException;
+
 import javax.crypto.Cipher;
 
 import me.footlights.core.crypto.SecretKey.CipherBuilder;
@@ -60,16 +62,24 @@ public class SecretKeyTest
 				.setBytes(secret)
 				.generate();
 
-			CipherBuilder builder =
+			CipherBuilder builder = 
 				key.newCipherBuilder()
 					.setMode(mode)
 					.setInitializationVector(iv);
 
-			Cipher e = builder.setOperation(Operation.ENCRYPT).build();
-			Cipher d = builder.setOperation(Operation.DECRYPT).build();
+			try
+			{
+				Cipher e = builder.setOperation(Operation.ENCRYPT).build();
+				Cipher d = builder.setOperation(Operation.DECRYPT).build();
 
-			assertArrayEquals(ciphertext, e.doFinal(plaintext));
-			assertArrayEquals(plaintext, d.doFinal(ciphertext));
+				assertArrayEquals(ciphertext, e.doFinal(plaintext));
+				assertArrayEquals(plaintext, d.doFinal(ciphertext));
+			}
+			catch (InvalidKeyException e)
+			{
+				fail("Unable to construct an AES cipher with a " + (8 * secret.length)
+					+ "-bit key; is the JCE unlimited strength policy installed?");
+			}
 		}
 	}
 }

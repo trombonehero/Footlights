@@ -135,7 +135,10 @@ public class Config
 	{
 		String[][] values = 
 		{
+			{ "crypto.asym.algorithm", "RSA" },
+			{ "crypto.asym.keylen", "2048" },
 			{ "crypto.hash.algorithm", "SHA1" },
+			{ "crypto.prng", "SHA1PRNG" },
 			{ "crypto.sym.algorithm", "AES" },
 			{ "crypto.sym.keylen", "256" },
 			{ "crypto.sym.mode", "CTR" },

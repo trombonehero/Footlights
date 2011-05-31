@@ -4,11 +4,10 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import me.footlights.HasBytes;
 import me.footlights.core.Config;
@@ -19,11 +18,11 @@ import me.footlights.core.ConfigurationError;
 public class Fingerprint
 {
 	public static Fingerprint decode(String name)
-		throws Base64DecodingException, NoSuchAlgorithmException
+		throws NoSuchAlgorithmException
 	{
 		String parts[] = name.replaceAll("\\+", "/").split(":");
 		MessageDigest algorithm = MessageDigest.getInstance(parts[0]);
-		return new Fingerprint(algorithm, ByteBuffer.wrap(Base64.decode(parts[1])));
+		return new Fingerprint(algorithm, ByteBuffer.wrap(Base64.decodeBase64(parts[1])));
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -33,7 +32,7 @@ public class Fingerprint
 		StringBuffer sb = new StringBuffer();
 		sb.append(algorithm.getAlgorithm().toLowerCase());
 		sb.append(":");
-		sb.append(Base64.encode(bytes.array()).replaceAll("/", "+"));
+		sb.append(new String(Base64.encodeBase64(bytes.array())).replaceAll("/", "+"));
 
 		return sb.toString();
 	}

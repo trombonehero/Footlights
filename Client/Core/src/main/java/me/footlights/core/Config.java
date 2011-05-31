@@ -17,11 +17,11 @@ public class Config
 
 
 	/** Get a configuration value */
-	public String get(String name)
+	public String get(String name) throws NoSuchElementException
 	{
 		String value = properties.getProperty(name);
 
-		if(value == null) return "";
+		if(value == null) throw new NoSuchElementException(name);
 		return String.copyValueOf(value.toCharArray());
 	}
 	public int getInt(String name) { return Integer.parseInt(get(name)); }

@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
  *
  * @author Jonathan Anderson <jon@footlights.me>
  */
-abstract class PreferenceStorageEngine
+public abstract class PreferenceStorageEngine
 {
 	/** Subclasses must implement preferences as raw String objects. */
 	protected abstract String getRaw(String key) throws NoSuchElementException;
@@ -32,10 +32,5 @@ abstract class PreferenceStorageEngine
 	public float getFloat(String key) throws NoSuchElementException
 	{
 		return Float.parseFloat(getRaw(key));
-	}
-
-	public double getDouble(String key)	throws NoSuchElementException
-	{
-		return Double.parseDouble(getRaw(key));
 	}
 }

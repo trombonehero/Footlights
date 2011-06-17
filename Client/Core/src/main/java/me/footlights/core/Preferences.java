@@ -54,15 +54,6 @@ public class Preferences
 		return defaults.getFloat(key);
 	}
 
-	public double getDouble(String key)	throws NoSuchElementException
-	{
-		if (engine != null)
-			try { return engine.getDouble(key); }
-			catch (NoSuchElementException e) {}
-
-		return defaults.getDouble(key);
-	}
-
 
 	/** Singleton constructor */
 	private Preferences(PreferenceStorageEngine prefs)

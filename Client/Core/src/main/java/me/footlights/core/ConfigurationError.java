@@ -4,6 +4,11 @@ package me.footlights.core;
 /** A problem with the Footlights configuration. */
 public class ConfigurationError extends RuntimeException
 {
+	public ConfigurationError(Throwable t)
+	{
+		super(t);
+	}
+
 	public ConfigurationError(String message)
 	{
 		super(message);

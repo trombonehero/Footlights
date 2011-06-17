@@ -15,7 +15,10 @@ public class DiskStoreTests
 {
 	@Test public void testClearStorage() throws Throwable
 	{
-		Store store = new DiskStore();
+		Store store = DiskStore.newBuilder()
+			.createTemporaryDirectory()
+			.setCache(null)
+			.build();
 
 		Block b1 = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3 }))

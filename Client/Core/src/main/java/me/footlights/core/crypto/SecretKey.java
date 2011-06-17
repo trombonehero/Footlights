@@ -10,7 +10,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import me.footlights.core.Config;
+import me.footlights.core.Preferences;
 
 
 /** A secret, symmetric key, whose bits cannot be extracted outside of me.footlights.core.crypto. */
@@ -55,7 +55,7 @@ public class SecretKey
 			if (secret == null)
 			{
 				secret = new byte[keylen];
-				SecureRandom.getInstance(config.get("crypto.prng")).nextBytes(secret);
+				SecureRandom.getInstance(preferences.getString("crypto.prng")).nextBytes(secret);
 			}
 
 			return new SecretKey(
@@ -63,10 +63,9 @@ public class SecretKey
 					fingerprint.setContent(secret).build());
 		}
 
-		private Config config = Config.getInstance();
 
-		private String algorithm = config.get("crypto.sym.algorithm");
-		private int keylen = config.getInt("crypto.sym.keylen");
+		private String algorithm = preferences.getString("crypto.sym.algorithm");
+		private int keylen = preferences.getInt("crypto.sym.keylen");
 		private byte[] secret = null;
 		private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();
 	}
@@ -102,11 +101,9 @@ public class SecretKey
 
 		private CipherBuilder() {}
 
-		private Config config = Config.getInstance();
-
 		private Operation operation = Operation.ENCRYPT;
-		private String mode = config.get("crypto.sym.mode");
-		private String padding = config.get("crypto.sym.padding");
+		private String mode = preferences.getString("crypto.sym.mode");
+		private String padding = preferences.getString("crypto.sym.padding");
 
 		private IvParameterSpec iv;
 	}
@@ -121,4 +118,7 @@ public class SecretKey
 
 	final SecretKeySpec keySpec;
 	private final Fingerprint fingerprint;
+
+	/** Footlights-wide preferences. */
+	private static Preferences preferences = Preferences.getDefaultPreferences();
 }

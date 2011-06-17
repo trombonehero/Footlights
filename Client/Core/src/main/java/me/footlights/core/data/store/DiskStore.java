@@ -7,7 +7,8 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.AbstractCollection;
 import java.util.LinkedList;
 
-import me.footlights.core.Config;
+import me.footlights.core.FileBackedPreferences;
+import me.footlights.core.Preferences;
 import me.footlights.core.data.FormatException;
 import me.footlights.core.data.NoSuchBlockException;
 
@@ -15,22 +16,45 @@ import me.footlights.core.data.NoSuchBlockException;
 /** A block store on disk */
 public class DiskStore extends LocalStore
 {
-	public DiskStore()
+	public static class Builder
 	{
-		this(new MemoryStore());
+		public DiskStore build() { return new DiskStore(dir, cache); }
+
+		public Builder setDirectory(File dir)		{ this.dir = dir;		return this; }
+		public Builder setCache(LocalStore cache)	{ this.cache = cache;	return this; }
+
+		public Builder setDefaultDirectory()
+		{
+			dir = new File(preferences.getString(FileBackedPreferences.CACHE_DIR_KEY));
+			dir.mkdirs();
+
+			return this;
+		}
+
+		public Builder createTemporaryDirectory() throws IOException
+		{
+			dir = File.createTempFile("cache", "dir");
+			dir.delete();
+			dir.mkdir();
+
+			return this;
+		}
+
+		private Builder()
+		{
+			cache = new MemoryStore();
+		}
+
+		private File dir;
+		private LocalStore cache;
 	}
 
-	public DiskStore(LocalStore cache)
+	public static Builder newBuilder() { return new Builder(); }
+
+	private DiskStore(File storageDirectory, LocalStore cache)
 	{
 		super(cache);
-
-		String pathsep = System.getProperty("file.separator");
-		dirname = Config.getInstance().directory() + pathsep + "cache";
-
-		dir = new File(dirname);
-		dir.mkdirs();
-
-		dirname += pathsep;
+		this.dir = storageDirectory;
 	}
 
 
@@ -49,7 +73,7 @@ public class DiskStore extends LocalStore
 	@Override
 	protected void put(String name, ByteBuffer buffer) throws IOException
 	{
-		new FileOutputStream(dirname + name)
+		new FileOutputStream(new File(dir, name))
 			.getChannel()
 			.write(buffer.duplicate());
 	}
@@ -61,7 +85,7 @@ public class DiskStore extends LocalStore
 	{
 		try
 		{
-			File file = new File(dirname + name);
+			File file = new File(dir, name);
 			long len = file.length();
 			
 			if (len <= 0) throw new NoSuchBlockException(this, name);
@@ -72,7 +96,7 @@ public class DiskStore extends LocalStore
 
 			// The file is a valid block, smaller than MAX_FILE_SIZE (so < 2^31).
 			// Read it if it's small, mmap it if it's large.
-			FileChannel channel = new FileInputStream(dirname + name).getChannel();
+			FileChannel channel = new FileInputStream(file).getChannel();
 
 			if (len > MAX_READ_SIZE)
 				return channel.map(MapMode.READ_ONLY, 0, len);
@@ -102,8 +126,8 @@ public class DiskStore extends LocalStore
 	private static int MAX_READ_SIZE = (1 << 20);
 
 	/** The directory that we store files in. */
-	private File dir;
+	private final File dir;
 
-	/** {@link #dir}'s filename. */
-	private String dirname;
+	/** Footlights-wide preferences. */
+	private static Preferences preferences = Preferences.getDefaultPreferences();
 }

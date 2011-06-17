@@ -12,7 +12,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
-import me.footlights.core.Config;
+import me.footlights.core.Preferences;
 import me.footlights.core.MissingParameterException;
 import sun.security.x509.CertAndKeyGen;
 import sun.security.x509.X500Name;
@@ -68,17 +68,19 @@ public class PrivateKey
 			return privateKey;
 		}
 
-		private Config config = Config.getInstance();
+
+		/** Footlights-wide preferences. */
+		private static Preferences preferences = Preferences.getDefaultPreferences();
 
 		private X500Name x500Name;
 
-		private String publicKeyType = config.get("crypto.asym.algorithm");
-		private String hashAlgorithm = config.get("crypto.hash.algorithm");
+		private String publicKeyType = preferences.getString("crypto.asym.algorithm");
+		private String hashAlgorithm = preferences.getString("crypto.hash.algorithm");
 		private String signAlgorithm =
 			hashAlgorithm.replaceAll("-", "") + "with" + publicKeyType;
 
-		private int keyLength = config.getInt("crypto.asym.keylen");
-		private int validity = config.getInt("crypto.cert.validity");
+		private int keyLength = preferences.getInt("crypto.asym.keylen");
+		private int validity = preferences.getInt("crypto.cert.validity");
 	}
 
 	PrivateKey(KeyStore.PrivateKeyEntry key, Fingerprint fingerprint)

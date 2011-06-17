@@ -14,9 +14,12 @@ import me.footlights.core.data.*;
 
 public class FetcherTests
 {
-	@Before public void setUp()
+	@Before public void setUp() throws Exception
 	{
-		store = new DiskStore();
+		store = DiskStore.newBuilder()
+			.createTemporaryDirectory()
+			.build();
+
 		fetcher = new Fetcher(store);
 	}
 

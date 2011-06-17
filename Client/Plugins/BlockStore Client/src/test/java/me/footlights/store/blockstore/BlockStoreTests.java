@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
-import me.footlights.core.Config;
+import me.footlights.core.Preferences;
 import me.footlights.core.data.Block;
 import me.footlights.core.data.store.Store;
 
@@ -21,7 +21,7 @@ public class BlockStoreTests
 {
 	@BeforeClass public static void setupClass()
 	{
-		sharedSecret = Config.getInstance().get(SHARED_SECRET_KEY);
+		sharedSecret = Preferences.getDefaultPreferences().getString(SHARED_SECRET_KEY);
 	}
 
 	/** Test communication with a local BlockStore instance. */

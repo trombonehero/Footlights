@@ -10,7 +10,7 @@ import org.apache.commons.codec.binary.Hex;
 import com.google.common.annotations.VisibleForTesting;
 
 import me.footlights.HasBytes;
-import me.footlights.core.Config;
+import me.footlights.core.Preferences;
 import me.footlights.core.ConfigurationError;
 
 
@@ -83,7 +83,7 @@ public class Fingerprint
 			try
 			{
 				algorithm = MessageDigest.getInstance(
-						Config.getInstance().get("crypto.hash.algorithm"));
+						Preferences.getDefaultPreferences().getString("crypto.hash.algorithm"));
 			}
 			catch (NoSuchAlgorithmException e)
 			{

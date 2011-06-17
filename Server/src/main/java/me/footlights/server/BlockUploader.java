@@ -5,13 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.footlights.core.Config;
+import me.footlights.core.Preferences;
 import me.footlights.core.ConfigurationError;
 import me.footlights.core.crypto.Fingerprint;
 
@@ -37,12 +39,12 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
  */
 public class BlockUploader extends HttpServlet
 {
-	public BlockUploader()
+	public BlockUploader(Preferences preferences)
 	{
-		config = Config.getInstance();
+		this.config = preferences;
 
-		final String keyId = config.get("amazon.keyId");
-		final String secret = config.get("amazon.secretKey");
+		final String keyId = config.getString("amazon.keyId");
+		final String secret = config.getString("amazon.secretKey");
 
 		if (keyId.isEmpty()) throw new ConfigurationError("Amazon key ID not set");
 		if (secret.isEmpty()) throw new ConfigurationError("Amazon secret key not set");
@@ -67,6 +69,12 @@ public class BlockUploader extends HttpServlet
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
+		log.entering(BlockUploader.class.getName(), "doPost", new Object[] { request, response });
+
+		Level[] levels = { Level.SEVERE, Level.WARNING, Level.INFO, Level.FINE, Level.FINER, Level.FINEST };
+		for (Level l : levels)
+			log.log(l, "BlockUploader.doPost(): level " + l);
+
 		final UploadedFile file;
 		try
 		{
@@ -74,23 +82,27 @@ public class BlockUploader extends HttpServlet
 
 			if (!checkAuth(file.auth))
 			{
+				log.info("checkAuth() failed on request from " + request.getRemoteAddr());
 				response.sendError(SC_FORBIDDEN);
 				return;
 			}
 		}
 		catch (FileUploadException e)
 		{
+			log.log(Level.WARNING, "Upload failed", e);
 			response.sendError(SC_INTERNAL_SERVER_ERROR, "Upload failed.");
 			return;
 		}
 		catch (NoSuchAlgorithmException e)
 		{
-			response.sendError(SC_BAD_REQUEST,
+			log.log(Level.INFO, request.getRemoteAddr() + ": invalid naming algorithm", e);
+			response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
 					"Invalid naming algorithm: " + e.getMessage());
 			return;
 		}
 		catch (IllegalArgumentException e)
 		{
+			log.log(Level.SEVERE, request.getRemoteAddr() + ": invalid argument", e);
 			response.sendError(SC_BAD_REQUEST, e.getMessage());
 			return;
 		}
@@ -119,9 +131,9 @@ public class BlockUploader extends HttpServlet
 
 
 	/** In the future, this will be much more sophisticated! */
-	private static boolean checkAuth(String authenticator)
+	private boolean checkAuth(String authenticator)
 	{
-		return (authenticator.equals(Config.getInstance().get("blockstore.secret")));
+		return (authenticator.equals(config.getString("blockstore.secret")));
 	}
 
 
@@ -199,13 +211,15 @@ public class BlockUploader extends HttpServlet
 		FILE_CONTENTS,
 	}
 
+
+	private static final Logger log = Logger.getLogger(BlockUploader.class.getCanonicalName());
+
 	/** User data is public by default (but encrypted!). */
 	private static final CannedAccessControlList DEFAULT_ACL =
 		CannedAccessControlList.PublicRead;
 
 	/** The S3 bucket to store user data in. */
 	private static final String USER_DATA_BUCKET = "me.footlights.userdata";
-
 
 	/** Temporary storage for uploaded files. */
 	private final FileUpload uploadArena;
@@ -214,7 +228,7 @@ public class BlockUploader extends HttpServlet
 	private final AmazonS3Client s3;
 
 	/** Footlights configuration. */
-	private final Config config;
+	private final Preferences config;
 
 
 	private static final long serialVersionUID =

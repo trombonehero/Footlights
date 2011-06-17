@@ -10,7 +10,7 @@ import java.util.Map;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
-import me.footlights.core.Config;
+import me.footlights.core.Preferences;
 
 
 /** Stores crypto keys. */
@@ -52,7 +52,7 @@ public class Keychain
 		throws CertificateException, IOException, KeyStoreException,
 		       NoSuchAlgorithmException, UnrecoverableEntryException
 	{
-		importKeystoreFile(input, Config.getInstance().get("crypto.keystore.type"));
+		importKeystoreFile(input, preferences.getString("crypto.keystore.type"));
 	}
 
 	/** Merge a KeyStore file into this Keychain. */
@@ -119,7 +119,7 @@ public class Keychain
 		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
 		       UnrecoverableEntryException
    {
-		exportKeystoreFile(out, Config.getInstance().get("crypto.keystore.type"));
+		exportKeystoreFile(out, preferences.getString("crypto.keystore.type"));
    }
 
 	/** Save a Keychain to a KeyStore file. */
@@ -182,4 +182,7 @@ public class Keychain
 
 	/** Secret keys for decrypting blocks */
 	private final Map<String, SecretKey> secretKeys = Maps.newHashMap();
+
+	/** Footlights-wide preferences. */
+	private static Preferences preferences = Preferences.getDefaultPreferences();
 }

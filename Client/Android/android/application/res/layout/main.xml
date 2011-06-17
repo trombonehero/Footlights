@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/top_layout"
+    android:layout_width="fill_parent"
+    android:orientation="vertical" android:layout_height="match_parent" android:padding="5dip">
+    <ImageView android:id="@+id/imageView1" android:layout_height="wrap_content" android:src="@drawable/footlights" android:layout_width="match_parent" android:layout_weight="1"></ImageView>
+    <ListView android:layout_width="match_parent" android:layout_height="match_parent" android:id="@+id/eventsList" android:layout_weight="10"></ListView>
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+        <Button android:text="A" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonA"></Button>
+        <Button android:text="B" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonB"></Button>
+        <Button android:text="C" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonC"></Button>
+        <Button android:text="D" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonD"></Button>
+    </LinearLayout>
+</LinearLayout>

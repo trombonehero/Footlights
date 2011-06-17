@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, FootlightsActivity!</string>
+    <string name="app_name">Footlights</string>
+    <string name="intro_p1">&quot;Some social networks want to be your stage manager: they put your life on display for audiences both intended (e.g. your friends, your family) and unintended (e.g. advertisers and misbehaving applications).&quot;</string>
+    <string name="intro_p2">&quot;Footlights is different.&quot;</string>
+    <string name="intro_p3">&quot;Footlights lets you choose how to present yourself to all of the audiences in your life. Share however much—or however little—you like, with anybody; this is your show. We've built the venue, but this is your production.&quot;</string>
+    <string name="intro_p4">&quot;All the world's a stage... it's time to express yourself.&quot;</string>
+</resources>

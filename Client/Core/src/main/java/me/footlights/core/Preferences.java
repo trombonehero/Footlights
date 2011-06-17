@@ -107,10 +107,25 @@ public class Preferences
 
 		// symmetric-key cipher
 		String symPreferences[] = { "AES", "TripleDES", "Blowfish" };
+		String modePreferences[] = { "GCM", "CTR", "CBC" };
+
 		Provider.Service cipher = null;
+		List<String> modes = null;
 
 		for(String p : symPreferences)
-			if((cipher = provider.getService("Cipher", p)) != null) break;
+		{
+			cipher = provider.getService("Cipher", p);
+			if (cipher == null) continue;
+
+			String rawModes = cipher.getAttribute("SupportedModes");
+			if (rawModes == null)
+			{
+				// Not all providers tell us what modes they support (I'm looking at you, Android!).
+				// We'll just have to hope for the best.
+				modes = Arrays.asList(modePreferences);
+			}
+			else modes = Arrays.asList(rawModes.split("\\|"));
+		}
 
 		if(cipher == null)
 		{
@@ -124,10 +139,6 @@ public class Preferences
 
 
 		String mode = null;
-		String m[] = cipher.getAttribute("SupportedModes").split("\\|");
-		List<String> modes = Arrays.asList(m);
-
-		String modePreferences[] = { "GCM", "CTR", "CBC" };
 		for(String p : modePreferences)
 			if(modes.contains(p)) { mode = p; break; }
 

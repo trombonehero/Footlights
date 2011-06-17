@@ -17,6 +17,10 @@ import com.google.common.collect.Maps;
 public class Preferences
 {
 	public static Preferences getDefaultPreferences() { return new Preferences(null); }
+	public static Preferences create(PreferenceStorageEngine engine)
+	{
+		return new Preferences(engine);
+	}
 
 	public String getString(String key) throws NoSuchElementException
 	{

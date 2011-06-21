@@ -1,5 +1,6 @@
 package me.footlights.core;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 
@@ -10,6 +11,8 @@ import java.util.NoSuchElementException;
  */
 public abstract class PreferenceStorageEngine
 {
+	protected abstract Map<String,?> getAll();
+
 	/** Subclasses must implement preferences as raw String objects. */
 	protected abstract String getRaw(String key) throws NoSuchElementException;
 

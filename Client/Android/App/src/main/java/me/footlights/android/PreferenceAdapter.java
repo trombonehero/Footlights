@@ -16,12 +16,12 @@ public class PreferenceAdapter extends PreferenceStorageEngine
 		return new PreferenceAdapter(prefs);
 	}
 
+	@Override protected Map<String,?> getAll() { return prefs.getAll(); }
+
 	@Override protected String getRaw(String key) throws NoSuchElementException
 	{
 		if (!prefs.contains(key)) throw new NoSuchElementException(key);
-
-		Map<String,?> values = prefs.getAll();
-		return values.get(key).toString();
+		return getAll().get(key).toString();
 	}
 
 	@Override public String getString(String key) throws NoSuchElementException

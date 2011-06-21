@@ -26,8 +26,24 @@ public class Preferences
 		return create(FileBackedPreferences.loadFromDefaultLocation());
 	}
 
+	/** Create preferences with an explicit backing engine. */
+	public static Preferences create(PreferenceStorageEngine engine)
+	{
+		return new Preferences(engine);
+	}
+
 
 	// Methods to actually retrieve preferences.
+	public Map<String,?> getAll()
+	{
+		Map<String,Object> everything = Maps.newHashMap();
+
+		everything.putAll(defaults.getAll());
+		if (engine != null) everything.putAll(engine.getAll());
+
+		return everything;
+	}
+
 	public String getString(String key) throws NoSuchElementException
 	{
 		if (engine != null)
@@ -65,12 +81,6 @@ public class Preferences
 	}
 
 
-	/** Create preferences with an explicit backing engine. */
-	static Preferences create(PreferenceStorageEngine engine)
-	{
-		return new Preferences(engine);
-	}
-
 	/** Singleton constructor */
 	private Preferences(PreferenceStorageEngine prefs)
 	{
@@ -80,7 +90,9 @@ public class Preferences
 		{
     		final Map<String,String> defaults = cryptoDefaults();
     		this.defaults = new PreferenceStorageEngine()
-    		{	
+    		{
+				@Override protected Map<String,?> getAll() { return defaults; }
+
     			@Override
     			protected String getRaw(String key) throws NoSuchElementException
     			{

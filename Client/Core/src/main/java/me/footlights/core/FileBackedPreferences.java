@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
+
+import com.google.common.collect.Maps;
 
 
 /**
@@ -70,7 +73,8 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 	}
 
 
-	/** Get the raw string value from the Properties file. */
+	@Override protected Map<String,?> getAll() { return Maps.fromProperties(properties); }
+
 	protected String getRaw(String name) throws NoSuchElementException
 	{
 		String value = properties.getProperty(name);

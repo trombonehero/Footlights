@@ -1,0 +1,17 @@
+This software is built with Maven; get it from http://maven.apache.org/.
+
+To build:
+mvn {compile|test|package}
+
+You can use Eclipse either by running:
+mvn eclipse:eclipse
+
+or installing the m2eclipse plugin (which I've found a little flaky).
+
+
+To hack on the Android app in Eclipse, read:
+http://www.sonatype.com/books/mvnref-book/reference/android-dev-sect-config-build.html
+
+
+#!/jon
+

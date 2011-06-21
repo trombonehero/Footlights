@@ -2,23 +2,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>me.footlights</groupId>
+  <parent>
+    <groupId>me.footlights</groupId>
+    <artifactId>Client</artifactId>
+    <version>HEAD</version>
+  </parent>
+
 	<artifactId>footlights-core</artifactId>
-	<version>r944</version>
-	<packaging>jar</packaging>
-
 	<name>Footlights Core</name>
-	<url>http://footlights.me</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>me.footlights</groupId>
 			<artifactId>footlights-bootstrap</artifactId>
-			<version>r944</version>
+			<version>${version}</version>
 		</dependency>
 
 		<dependency>
@@ -32,41 +31,6 @@
 			<artifactId>google-collections</artifactId>
 			<version>1.0</version>
 		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.2</version>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<includes>
-						<include>**/*Test*.java</include>
-					</includes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
+

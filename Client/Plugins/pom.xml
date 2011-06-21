@@ -3,10 +3,14 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>me.footlights.plugins</groupId>
-	<version>r944</version>
-	<artifactId>footlights-plugins</artifactId>
 
+  <parent>
+    <groupId>me.footlights</groupId>
+    <artifactId>Client</artifactId>
+    <version>HEAD</version>
+  </parent>
+
+	<artifactId>footlights-plugins</artifactId>
 	<name>Footlights Plugins</name>
 
 	<packaging>pom</packaging>
@@ -16,4 +20,12 @@
 		<module>Good</module>
 		<module>Wicked</module>
 	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>footlights-core</artifactId>
+			<version>${version}</version>
+		</dependency>
+	</dependencies>
 </project>

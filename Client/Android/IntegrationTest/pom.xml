@@ -1,90 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>me.footlights</groupId>
-    <artifactId>android-parent</artifactId>
-    <version>HEAD</version>
-  </parent>
+	<parent>
+		<groupId>me.footlights</groupId>
+		<artifactId>android-parent</artifactId>
+		<version>HEAD</version>
+	</parent>
 
-  <artifactId>android-it</artifactId>
-  <name>android - Integration tests</name>
+	<artifactId>android-it</artifactId>
+	<name>android - Integration tests</name>
 
-  <packaging>apk</packaging>
+	<packaging>apk</packaging>
 
-  <properties>
-      <!--
-        When not running a release, we are deploying the plain artifact (so no classifier)
-        This is overridden during the release.
-      -->
-      <zipaligned-classifier></zipaligned-classifier>
-  </properties>
+	<properties>
+			<!--
+				When not running a release, we are deploying the plain artifact (so no classifier)
+				This is overridden during the release.
+			-->
+			<zipaligned-classifier></zipaligned-classifier>
+	</properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android-test</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>me.footlights</groupId>
-      <artifactId>android</artifactId>
-      <type>apk</type>
-      <version>HEAD</version>
-      <classifier>${zipaligned-classifier}</classifier> <!--  classifier set according to the ran profile -->
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.android</groupId>
+			<artifactId>android</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.android</groupId>
+			<artifactId>android-test</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>android</artifactId>
+			<type>apk</type>
+			<version>HEAD</version>
+			<classifier>${zipaligned-classifier}</classifier> <!--	classifier set according to the ran profile -->
+		</dependency>
+	</dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>com.jayway.maven.plugins.android.generation2</groupId>
-        <artifactId>maven-android-plugin</artifactId>
-        <extensions>true</extensions>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.jayway.maven.plugins.android.generation2</groupId>
+				<artifactId>maven-android-plugin</artifactId>
+				<extensions>true</extensions>
+			</plugin>
+		</plugins>
+	</build>
 
-  <profiles>
-    <profile>
-      <id>release</id>
-      <properties>
-        <!--
-          When running a release, we must deployed the final artifact (signed and zipaligned).
-        -->
-        <zipaligned-classifier>aligned</zipaligned-classifier>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>sign-application-it-apk</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>com.jayway.maven.plugins.android.generation2</groupId>
-            <artifactId>maven-android-plugin</artifactId>
-            <configuration>
-              <sign>
-                <debug>false</debug>
-              </sign>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
+	<profiles>
+		<profile>
+			<id>release</id>
+			<properties>
+				<!--
+					When running a release, we must deployed the final artifact (signed and zipaligned).
+				-->
+				<zipaligned-classifier>aligned</zipaligned-classifier>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jarsigner-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-application-it-apk</id>
+								<phase>package</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.jayway.maven.plugins.android.generation2</groupId>
+						<artifactId>maven-android-plugin</artifactId>
+						<configuration>
+							<sign>
+								<debug>false</debug>
+							</sign>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

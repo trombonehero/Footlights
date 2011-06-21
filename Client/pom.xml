@@ -7,7 +7,7 @@
 	<groupId>me.footlights</groupId>
 	<artifactId>Client</artifactId>
 	<version>HEAD</version>
-	<name>Footlights Client</name>
+	<name>Client-Side (Everything)</name>
 
 	<packaging>pom</packaging>
 

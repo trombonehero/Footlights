@@ -11,7 +11,7 @@
   </parent>
 
 	<artifactId>footlights-plugins</artifactId>
-	<name>Footlights Plugins</name>
+	<name>Plugins</name>
 
 	<packaging>pom</packaging>
 

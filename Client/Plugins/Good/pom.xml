@@ -9,7 +9,7 @@
   </parent>
 
 	<artifactId>good-plugin</artifactId>
-	<name>Good Plugin</name>
+	<name>Demo Plugin (well-behaved)</name>
 
 	<packaging>jar</packaging>
 </project>

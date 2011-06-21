@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>android</artifactId>
-	<name>android - Application</name>
+	<name>Android App</name>
 
 	<packaging>apk</packaging>
 

@@ -9,6 +9,7 @@
   </parent>
 
 	<artifactId>footlights-bootstrap</artifactId>
-	<name>Footlights Bootstrapper</name>
+	<name>Desktop Bootstrapper</name>
+
 	<packaging>jar</packaging>
 </project>

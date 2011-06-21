@@ -9,7 +9,7 @@
   </parent>
 
 	<artifactId>wicked-plugin</artifactId>
-	<packaging>jar</packaging>
+	<name>Demo Plugin (wicked)</name>
 
-	<name>Wicked Plugin</name>
+	<packaging>jar</packaging>
 </project>

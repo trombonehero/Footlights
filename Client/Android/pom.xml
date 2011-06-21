@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>android-parent</artifactId>
-	<name>android - Parent</name>
+	<name>Android Stuff (App and Integration Tests)</name>
 
 	<packaging>pom</packaging>
 

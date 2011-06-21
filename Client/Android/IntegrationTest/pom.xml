@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>android-it</artifactId>
-	<name>android - Integration tests</name>
+	<name>Android Integration Tests</name>
 
 	<packaging>apk</packaging>
 

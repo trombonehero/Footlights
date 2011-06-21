@@ -16,15 +16,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android</artifactId>
-    </dependency>
-    <dependency>
-    	<groupId>me.footlights</groupId>
-    	<artifactId>footlights-core</artifactId>
-			<version>${version}</version>
-    </dependency>
-    <dependency>
     	<groupId>com.google.collections</groupId>
     	<artifactId>google-collections</artifactId>
     	<version>1.0</version>

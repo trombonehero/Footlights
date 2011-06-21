@@ -1,5 +1,6 @@
 package me.footlights.core;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -16,12 +17,17 @@ import com.google.common.collect.Maps;
 
 public class Preferences
 {
+	/** Create a Preferences instance with auto-detected default settings. */
 	public static Preferences getDefaultPreferences() { return new Preferences(null); }
-	public static Preferences create(PreferenceStorageEngine engine)
+
+	/** Load Preferences from the default filesystem location. */
+	public static Preferences loadFromDefaultLocation() throws IOException
 	{
-		return new Preferences(engine);
+		return create(FileBackedPreferences.loadFromDefaultLocation());
 	}
 
+
+	// Methods to actually retrieve preferences.
 	public String getString(String key) throws NoSuchElementException
 	{
 		if (engine != null)
@@ -58,6 +64,12 @@ public class Preferences
 		return defaults.getFloat(key);
 	}
 
+
+	/** Create preferences with an explicit backing engine. */
+	static Preferences create(PreferenceStorageEngine engine)
+	{
+		return new Preferences(engine);
+	}
 
 	/** Singleton constructor */
 	private Preferences(PreferenceStorageEngine prefs)

@@ -36,6 +36,11 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 			);
 
 
+	static FileBackedPreferences loadFromDefaultLocation() throws IOException
+	{
+		return load(openOrCreateConfigFile("Footlights"));
+	}
+
 	/** Create the configuration dir and file. */
 	static File openOrCreateConfigFile(String name)
 	{

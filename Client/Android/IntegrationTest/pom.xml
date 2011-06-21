@@ -9,11 +9,10 @@
     <version>HEAD</version>
   </parent>
 
-  <groupId>me.footlights</groupId>
   <artifactId>android-it</artifactId>
-  <version>HEAD</version>
-  <packaging>apk</packaging>
   <name>android - Integration tests</name>
+
+  <packaging>apk</packaging>
 
   <properties>
       <!--
@@ -38,12 +37,6 @@
       <type>apk</type>
       <version>HEAD</version>
       <classifier>${zipaligned-classifier}</classifier> <!--  classifier set according to the ran profile -->
-    </dependency>
-    <dependency>
-      <groupId>me.footlights</groupId>
-      <artifactId>android</artifactId>
-      <type>jar</type>
-      <version>HEAD</version>
     </dependency>
   </dependencies>
 

@@ -3,15 +3,20 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>me.footlights</groupId>
+  <parent>
+    <groupId>me.footlights</groupId>
+    <artifactId>Client</artifactId>
+    <version>HEAD</version>
+  </parent>
+
   <artifactId>android-parent</artifactId>
-  <version>HEAD</version>
-  <packaging>pom</packaging>
   <name>android - Parent</name>
 
+  <packaging>pom</packaging>
+
   <modules>
-    <module>application</module>
-    <module>application-it</module>
+    <module>App</module>
+    <module>IntegrationTest</module>
   </modules>
 
   <dependencyManagement>
@@ -19,13 +24,13 @@
       <dependency>
         <groupId>com.google.android</groupId>
         <artifactId>android</artifactId>
-        <version>2.2.1</version>
+        <version>[2.2.1,)</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>com.google.android</groupId>
         <artifactId>android-test</artifactId>
-        <version>2.2.1</version>
+        <version>[2.2.1,)</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>
@@ -79,7 +84,6 @@
             <removeExistingSignatures>true</removeExistingSignatures>
             <archiveDirectory />
             <archive>${project.build.directory}/${project.build.finalName}.${project.packaging}</archive>
-            <verbose>true</verbose>
             <certs>true</certs>
             <keystore>${sign.keystore}</keystore>
             <alias>${sign.alias}</alias>
@@ -201,5 +205,4 @@
       </properties>
     </profile>
   </profiles>
-
 </project>

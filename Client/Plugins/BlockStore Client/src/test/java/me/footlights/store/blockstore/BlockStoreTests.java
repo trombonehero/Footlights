@@ -19,9 +19,9 @@ import static org.junit.Assert.fail;
 
 public class BlockStoreTests
 {
-	@BeforeClass public static void setupClass()
+	@BeforeClass public static void setupClass() throws Exception
 	{
-		sharedSecret = Preferences.getDefaultPreferences().getString(SHARED_SECRET_KEY);
+		sharedSecret = Preferences.loadFromDefaultLocation().getString(SHARED_SECRET_KEY);
 	}
 
 	/** Test communication with a local BlockStore instance. */

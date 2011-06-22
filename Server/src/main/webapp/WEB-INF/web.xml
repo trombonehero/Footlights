@@ -13,7 +13,7 @@
     <description>Manages the uploading of user data blocks to S3.</description>
     <display-name>BlockUploader</display-name>
     <servlet-name>BlockUploader</servlet-name>
-    <servlet-class>me.footlights.server.BlockUploader</servlet-class>
+    <servlet-class>me.footlights.server.BlockUploadServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>BlockUploader</servlet-name>

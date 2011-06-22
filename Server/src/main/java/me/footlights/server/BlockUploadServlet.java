@@ -37,9 +37,9 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 /**
  * Servlet to manage the uploading of user data blocks.
  */
-public class BlockUploader extends HttpServlet
+public class BlockUploadServlet extends HttpServlet
 {
-	public BlockUploader(Preferences preferences)
+	public BlockUploadServlet(Preferences preferences)
 	{
 		this.config = preferences;
 
@@ -59,6 +59,11 @@ public class BlockUploader extends HttpServlet
 		uploadArena = new FileUpload(new DefaultFileItemFactory());
 	}
 
+	@Override public void init()
+	{
+		authSecret = config.getString("blockstore.secret");
+	}
+
 
 	/**
 	 * Accept a file for upload, unless there's a reason not to:
@@ -69,7 +74,7 @@ public class BlockUploader extends HttpServlet
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		log.entering(BlockUploader.class.getName(), "doPost", new Object[] { request, response });
+		log.entering(BlockUploadServlet.class.getName(), "doPost", new Object[] { request, response });
 
 		Level[] levels = { Level.SEVERE, Level.WARNING, Level.INFO, Level.FINE, Level.FINER, Level.FINEST };
 		for (Level l : levels)
@@ -133,7 +138,7 @@ public class BlockUploader extends HttpServlet
 	/** In the future, this will be much more sophisticated! */
 	private boolean checkAuth(String authenticator)
 	{
-		return (authenticator.equals(config.getString("blockstore.secret")));
+		return (authenticator.equals(authSecret));
 	}
 
 
@@ -212,7 +217,7 @@ public class BlockUploader extends HttpServlet
 	}
 
 
-	private static final Logger log = Logger.getLogger(BlockUploader.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(BlockUploadServlet.class.getCanonicalName());
 
 	/** User data is public by default (but encrypted!). */
 	private static final CannedAccessControlList DEFAULT_ACL =
@@ -227,11 +232,13 @@ public class BlockUploader extends HttpServlet
 	/** Amazon S3 client. */
 	private final AmazonS3Client s3;
 
+	private String authSecret;
+
 	/** Footlights configuration. */
 	private final Preferences config;
 
 
 	private static final long serialVersionUID =
-		("28 Apr 2011 1603h" + BlockUploader.class.getCanonicalName())
+		("28 Apr 2011 1603h" + BlockUploadServlet.class.getCanonicalName())
 		.hashCode();
 }

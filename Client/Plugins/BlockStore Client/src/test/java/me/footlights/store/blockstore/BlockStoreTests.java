@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import me.footlights.core.Preferences;
 import me.footlights.core.data.Block;
 import me.footlights.core.data.store.Store;
@@ -70,6 +72,11 @@ public class BlockStoreTests
 		{
 			Logger.getAnonymousLogger().warning(
 				"Failed to resolve blockstore host; not connected to Internet?");
+		}
+		catch (SSLHandshakeException e)
+		{
+			Logger.getAnonymousLogger().severe(
+				"SSL handshake error; problem with server certificate?");
 		}
 	}
 

@@ -9,7 +9,7 @@
 		<version>HEAD</version>
 	</parent>
 
-	<artifactId>android-parent</artifactId>
+	<artifactId>android</artifactId>
 	<name>Android Stuff (App and Integration Tests)</name>
 
 	<packaging>pom</packaging>

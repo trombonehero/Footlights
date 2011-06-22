@@ -5,11 +5,11 @@
 
 	<parent>
 		<groupId>me.footlights</groupId>
-		<artifactId>android-parent</artifactId>
+		<artifactId>android</artifactId>
 		<version>HEAD</version>
 	</parent>
 
-	<artifactId>android-it</artifactId>
+	<artifactId>android-integration-tests</artifactId>
 	<name>Android Integration Tests</name>
 
 	<packaging>apk</packaging>
@@ -33,10 +33,11 @@
 		</dependency>
 		<dependency>
 			<groupId>me.footlights</groupId>
-			<artifactId>android</artifactId>
+			<artifactId>android-app</artifactId>
 			<type>apk</type>
-			<version>HEAD</version>
-			<classifier>${zipaligned-classifier}</classifier> <!--	classifier set according to the ran profile -->
+			<version>${project.version}</version>
+			<!--	classifier set according to the ran profile -->
+			<classifier>${zipaligned-classifier}</classifier>
 		</dependency>
 	</dependencies>
 

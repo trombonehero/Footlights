@@ -1,10 +1,11 @@
 package me.footlights.server;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,20 +14,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.footlights.core.Preferences;
-import me.footlights.core.ConfigurationError;
-import me.footlights.core.crypto.Fingerprint;
-
 import org.apache.tomcat.util.http.fileupload.DefaultFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileUpload;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.google.common.collect.Maps;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
@@ -39,29 +34,12 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
  */
 public class BlockUploadServlet extends HttpServlet
 {
-	public BlockUploadServlet(Preferences preferences)
+	public BlockUploadServlet()
 	{
-		this.config = preferences;
-
-		final String keyId = config.getString("amazon.keyId");
-		final String secret = config.getString("amazon.secretKey");
-
-		if (keyId.isEmpty()) throw new ConfigurationError("Amazon key ID not set");
-		if (secret.isEmpty()) throw new ConfigurationError("Amazon secret key not set");
-
-		AWSCredentials cred = new AWSCredentials()
-		{
-			@Override public String getAWSAccessKeyId() { return keyId; }
-			@Override public String getAWSSecretKey() { return secret; }
-		};
-
-		s3 = new AmazonS3Client(cred);
 		uploadArena = new FileUpload(new DefaultFileItemFactory());
-	}
 
-	@Override public void init()
-	{
-		authSecret = config.getString("blockstore.secret");
+		Injector injector = Guice.createInjector(new WebAppGuiceModule());
+		uploader = injector.getInstance(Uploader.class);
 	}
 
 
@@ -71,31 +49,51 @@ public class BlockUploadServlet extends HttpServlet
 	 *  - not authorized
 	 *  - incorrect size
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
 		log.entering(BlockUploadServlet.class.getName(), "doPost", new Object[] { request, response });
 
-		Level[] levels = { Level.SEVERE, Level.WARNING, Level.INFO, Level.FINE, Level.FINER, Level.FINEST };
-		for (Level l : levels)
-			log.log(l, "BlockUploader.doPost(): level " + l);
-
-		final UploadedFile file;
-		try
+		// We only accept enctype="multipart/form-data".
+		if (!FileUpload.isMultipartContent(request))
 		{
-			file = getFile(request);
-
-			if (!checkAuth(file.auth))
-			{
-				log.info("checkAuth() failed on request from " + request.getRemoteAddr());
-				response.sendError(SC_FORBIDDEN);
-				return;
-			}
+			response.sendError(SC_BAD_REQUEST, "File not attached");
+			return;
 		}
+
+
+		// Parse the form.
+		final Uploader.Block toUpload;
+		try { toUpload = parseForm(request); }
 		catch (FileUploadException e)
 		{
-			log.log(Level.WARNING, "Upload failed", e);
+			log.log(Level.INFO, "Upload failed", e);
 			response.sendError(SC_INTERNAL_SERVER_ERROR, "Upload failed.");
+			return;
+		}
+		catch (Throwable t)
+		{
+			log.log(Level.SEVERE, "Uncaught exception in BlockUploadServlet.parseForm()", t);
+			response.sendError(SC_INTERNAL_SERVER_ERROR, t.getMessage());
+			return;
+		}
+
+
+		// Upload the block.
+		try
+		{
+			final String name = uploader.upload(toUpload);
+
+			response.setContentType("text/plain");
+			response.setStatus(SC_OK);
+			response.getWriter().write(name);
+		}
+		catch (AccessControlException e)
+		{
+			log.info(
+				"checkAuth() failed on request from " + request.getRemoteAddr()
+				 + "; auth = '" + toUpload.getAuthorization() + "'");
+			response.sendError(SC_FORBIDDEN);
 			return;
 		}
 		catch (NoSuchAlgorithmException e)
@@ -107,105 +105,46 @@ public class BlockUploadServlet extends HttpServlet
 		}
 		catch (IllegalArgumentException e)
 		{
-			log.log(Level.SEVERE, request.getRemoteAddr() + ": invalid argument", e);
+			log.log(Level.INFO, request.getRemoteAddr() + ": invalid argument", e);
 			response.sendError(SC_BAD_REQUEST, e.getMessage());
 			return;
 		}
-
-
-		InputStream stream = new ByteArrayInputStream(file.bytes);
-
-		ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentLength(file.bytes.length);
-
-		try
+		catch (Throwable t)
 		{
-			s3.putObject(USER_DATA_BUCKET, file.name, stream, metadata);
-			s3.setObjectAcl(USER_DATA_BUCKET, file.name, DEFAULT_ACL);
-		}
-		catch (AmazonClientException e)
-		{
-			response.sendError(SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			log.log(Level.SEVERE, "Uncaught exception in uploader.upload()", t);
+			response.sendError(SC_INTERNAL_SERVER_ERROR, t.getMessage());
 			return;
 		}
-
-		response.setContentType("text/plain");
-		response.setStatus(SC_OK);
-		response.getWriter().write(file.name);
 	}
 
 
-	/** In the future, this will be much more sophisticated! */
-	private boolean checkAuth(String authenticator)
+	/** Parse a multipart/form-data POST request. */
+	private Uploader.Block parseForm(HttpServletRequest request) throws FileUploadException
 	{
-		return (authenticator.equals(authSecret));
-	}
-
-
-	/** Translate the HTTP request into something that we understand. */
-	private UploadedFile getFile(HttpServletRequest request)
-		throws FileUploadException, NoSuchAlgorithmException,
-			IllegalArgumentException
-	{
-		UploadedFile file = new UploadedFile();
-
-		// We only accept enctype="multipart/form-data".
-		if (!FileUpload.isMultipartContent(request))
-			throw new IllegalArgumentException("File not attached");
-
-		// Parse the individual form fields. 
 		@SuppressWarnings("unchecked")
 		List<FileItem> items = uploadArena.parseRequest(request);
+
+		final Map<FormFields,byte[]> params = Maps.newHashMap();
 		for (FileItem i: items)
-		{
-			switch (FormFields.valueOf(i.getFieldName()))
+			params.put(FormFields.valueOf(i.getFieldName()), i.get());
+
+		byte[] rawBytes = params.get(FormFields.FILE_CONTENTS);
+		if (rawBytes == null) throw new FileUploadException("No file attached");
+
+		final ByteBuffer bytes = ByteBuffer.wrap(rawBytes).asReadOnlyBuffer();
+		final String auth = new String(params.get(FormFields.AUTHENTICATOR));
+		final String fingerprint = new String(params.get(FormFields.DIGEST_ALGORITHM));
+		final String name = new String(params.get(FormFields.EXPECTED_NAME));
+
+		return new Uploader.Block()
 			{
-				case AUTHENTICATOR:    file.auth = i.getString();         break;
-				case DIGEST_ALGORITHM: file.algorithm = i.getString();    break;
-				case EXPECTED_NAME:    file.name = i.getString();         break;
-				case FILE_CONTENTS:    file.bytes = i.get();              break;
-
-				default:
-					throw new IllegalArgumentException(
-							"Unknown field '" + i.getFieldName() + "'");
-			}
-		}
-
-		file.checkName();
-		return file;
+				@Override public ByteBuffer getBytes() { return bytes; }
+				@Override public String getAuthorization() { return auth; }
+				@Override public String getFingerprintAlgorithm() { return fingerprint; }
+				@Override public String getExpectedName() { return name; }
+			};
 	}
 
-
-	/** Data that the user has uploaded. */
-	private class UploadedFile
-	{
-		private byte[] bytes = null;
-		private String auth = "";
-		private String algorithm = "";
-		private String name = "";
-
-		void checkName()
-			throws IllegalArgumentException, NoSuchAlgorithmException
-		{
-			if (bytes == null)
-				throw new IllegalArgumentException("No file attached");
-
-			Fingerprint.Builder fingerprintBuilder =
-				Fingerprint.newBuilder()
-					.setContent(bytes);
-
-			if (!algorithm.isEmpty()) fingerprintBuilder.setAlgorithm(algorithm);
-
-			String actualName = fingerprintBuilder.build().encode();
-
-			if (name.isEmpty()) name = actualName;
-			else if (!name.equals(actualName))
-				throw new IllegalArgumentException(
-						"Block name (" + actualName
-						 + ") does not match expected name (" + name
-						 + ")");
-		}
-	}
 
 	/** Fields that we expect the submitter to provide. */
 	private enum FormFields
@@ -219,26 +158,14 @@ public class BlockUploadServlet extends HttpServlet
 
 	private static final Logger log = Logger.getLogger(BlockUploadServlet.class.getCanonicalName());
 
-	/** User data is public by default (but encrypted!). */
-	private static final CannedAccessControlList DEFAULT_ACL =
-		CannedAccessControlList.PublicRead;
-
-	/** The S3 bucket to store user data in. */
-	private static final String USER_DATA_BUCKET = "me.footlights.userdata";
-
 	/** Temporary storage for uploaded files. */
 	private final FileUpload uploadArena;
 
-	/** Amazon S3 client. */
-	private final AmazonS3Client s3;
-
-	private String authSecret;
-
-	/** Footlights configuration. */
-	private final Preferences config;
+	/** The client that actually uploads blocks to a backend service. */
+	private final Uploader uploader;
 
 
 	private static final long serialVersionUID =
-		("28 Apr 2011 1603h" + BlockUploadServlet.class.getCanonicalName())
+		("22 Jun 2011 0942h" + BlockUploadServlet.class.getCanonicalName())
 		.hashCode();
 }

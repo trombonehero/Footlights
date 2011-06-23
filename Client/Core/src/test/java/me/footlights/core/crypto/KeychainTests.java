@@ -2,9 +2,9 @@ package me.footlights.core.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,19 +16,14 @@ public class KeychainTests
 	@Before public void setUp() throws Throwable
 	{
 		keychain = new Keychain();
-		privateKey = PrivateKey.newGenerator().setPrincipalName("test user").generate();
-		publicKey = privateKey.publicKey();
+		keychain.store(fingerprint,
+				SigningIdentity.newGenerator()
+					.setPrincipalName("test user")
+					.generate());
 	}
 
 	@Test public void testGenerate() throws Throwable
 	{
-		Certificate certChain[] = privateKey.getCertificateChain();
-		assertEquals("Cert should be self-signed (chain should have length 1)",
-		             1, certChain.length);
-
-		try { certChain[0].verify(publicKey); }
-		catch(SignatureException e) { fail("Cert should verify public key"); }
-
 		// TODO: test en/decryption
 	}
 
@@ -40,7 +35,7 @@ public class KeychainTests
 		Keychain copy = new Keychain();
 		copy.importKeystoreFile(new ByteArrayInputStream(out.toByteArray()));
 
-		assertEquals(keychain.publicKeys(), copy.publicKeys());
+		assertEquals(keychain, copy);
 	}
 
 /*
@@ -75,6 +70,17 @@ public class KeychainTests
 */
 
 	private Keychain keychain;
-	private PrivateKey privateKey;
-	private PublicKey publicKey;
+
+	private static final KeyPair keyPair;
+	private static final Fingerprint fingerprint;
+
+	static
+	{
+		try { keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair(); }
+		catch (NoSuchAlgorithmException e) { throw new Error(e); }
+
+		fingerprint = Fingerprint.newBuilder()
+			.setContent(keyPair.getPublic().getEncoded())
+			.build();
+	}
 }

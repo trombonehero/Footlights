@@ -22,7 +22,7 @@ public class SecretKey
 		DECRYPT(Cipher.DECRYPT_MODE);
 
 		private Operation(int value) { this.value = value; }
-		private int opcode() { return value; }
+		int opcode() { return value; }
 
 		private final int value;
 	};

@@ -1,13 +1,19 @@
 package me.footlights.core.crypto;
 
-import java.io.*;
-import java.security.*;
-import java.security.cert.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.Preferences;
@@ -16,33 +22,22 @@ import me.footlights.core.Preferences;
 /** Stores crypto keys. */
 public class Keychain
 {
-	public Map<String,PublicKey> publicKeys()
+	public void store(Fingerprint fingerprint, SigningIdentity identity)
 	{
-		return Maps.transformValues(privateKeys, PRIVATE_TO_PUBLIC);
-	}
+		if (privateKeys.containsKey(fingerprint))
+			assert identity.equals(privateKeys.get(fingerprint));
 
-	public void store(PrivateKey key)
-	{
-		String name = key.getFingerprint().encode();
-
-		if (privateKeys.containsKey(name))
-			assert Arrays.equals(
-					key.key.getPrivateKey().getEncoded(),
-					privateKeys.get(name).key.getPrivateKey().getEncoded());
-
-		privateKeys.put(name, key);
+		privateKeys.put(fingerprint, identity);
 	}
 
 	public void store(SecretKey key)
 	{
-		String name = key.getFingerprint().encode();
-
-		if (secretKeys.containsKey(name))
+		if (secretKeys.containsKey(key.getFingerprint()))
 			assert Arrays.equals(
 					key.keySpec.getEncoded(),
-					secretKeys.get(name).keySpec.getEncoded());
+					secretKeys.get(key.getFingerprint()).keySpec.getEncoded());
 
-		secretKeys.put(name, key);
+		secretKeys.put(key.getFingerprint(), key);
 	}
 
 
@@ -52,7 +47,7 @@ public class Keychain
 		throws CertificateException, IOException, KeyStoreException,
 		       NoSuchAlgorithmException, UnrecoverableEntryException
 	{
-		importKeystoreFile(input, preferences.getString("crypto.keystore.type"));
+		importKeystoreFile(input, PREFERENCES.getString("crypto.keystore.type"));
 	}
 
 	/** Merge a KeyStore file into this Keychain. */
@@ -60,13 +55,10 @@ public class Keychain
 		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
 		       UnrecoverableEntryException
 	{
-		final String password = getPassword();
+		final char[] password = getPassword().toCharArray();
 
 		KeyStore store = KeyStore.getInstance(type);
-		store.load(input, password.toCharArray());
-
-		final KeyStore.ProtectionParameter protection =
-			new KeyStore.PasswordProtection(password.toCharArray());
+		store.load(input, password);
 
 		Enumeration<String> aliases = store.aliases();
 		while (aliases.hasMoreElements())
@@ -76,32 +68,33 @@ public class Keychain
 			if (parts.length != 3)
 				throw new KeyStoreException("Expected 'type:algorithm:hash', got '" + alias + "'");
 
-			final String entryType = parts[0].toUpperCase();
-			final String fingerprintAlgorithm = parts[1];
-
-			EntryType t;
-			try { t = EntryType.valueOf(entryType); }
+			final EntryType t;
+			try { t = EntryType.valueOf(parts[0].toUpperCase()); }
 			catch (IllegalArgumentException e)
 			{
 				throw new KeyStoreException("Invalid keystore entry type '" + parts[0] + "'");
 			}
 
-			KeyStore.Entry entry = store.getEntry(alias, protection);
+			final String fingerprintAlgorithm = parts[1];
+			final Fingerprint fingerprint =
+				Fingerprint.decode(alias.substring(alias.indexOf(ALIAS_SEPARATOR) + 1));
+
 			switch (t)
 			{
 				case PRIVATE:
-					KeyStore.PrivateKeyEntry privateKey = (KeyStore.PrivateKeyEntry) entry;
-					store(
-						new PrivateKey(
-							privateKey,
-							Fingerprint.newBuilder()
-								.setAlgorithm(fingerprintAlgorithm)
-								.setContent(privateKey.getCertificate().getPublicKey().getEncoded())
-								.build()));
+					PrivateKey key = (PrivateKey) store.getKey(alias, password);
+					Certificate cert = store.getCertificate(alias);
+					if (cert == null)
+						throw new CertificateException(
+								"No certificate stored for private key " + alias);
+
+					store(fingerprint, SigningIdentity.wrap(key, cert));
 					break;
 
 				case SECRET:
-					javax.crypto.SecretKey secretKey = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
+					javax.crypto.SecretKey secretKey =
+						(javax.crypto.SecretKey) store.getKey(alias, password);
+
 					store(
 						SecretKey.newGenerator()
 							.setAlgorithm(secretKey.getAlgorithm())
@@ -119,7 +112,7 @@ public class Keychain
 		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
 		       UnrecoverableEntryException
    {
-		exportKeystoreFile(out, preferences.getString("crypto.keystore.type"));
+		exportKeystoreFile(out, PREFERENCES.getString("crypto.keystore.type"));
    }
 
 	/** Save a Keychain to a KeyStore file. */
@@ -135,8 +128,17 @@ public class Keychain
 		final KeyStore.ProtectionParameter protection =
 			new KeyStore.PasswordProtection(password.toCharArray());
 
-		for (PrivateKey key : privateKeys.values())
-			store.setEntry("private:" + key.getFingerprint().encode(), key.key, protection);
+		for (Fingerprint fingerprint : privateKeys.keySet())
+		{
+			SigningIdentity identity = privateKeys.get(fingerprint);
+			PrivateKey key = identity.getPrivateKey();
+			Certificate certChain[] = { identity.getCertificate() };
+
+			store.setEntry(
+					"private:" + fingerprint.encode(),
+					new KeyStore.PrivateKeyEntry(key, certChain),
+					protection);
+		}
 
 		for (final SecretKey secret : secretKeys.values())
 			store.setEntry(
@@ -148,6 +150,35 @@ public class Keychain
 	}
 
 
+	// Object override
+	@Override public boolean equals(Object other)
+	{
+		if (!(other instanceof Keychain)) return false;
+
+		Keychain o = (Keychain) other;
+
+		if (privateKeys.size() != o.privateKeys.size()) return false;
+		for (Fingerprint fingerprint : privateKeys.keySet())
+		{
+			if (!o.privateKeys.containsKey(fingerprint)) return false;
+
+			SigningIdentity id = privateKeys.get(fingerprint);
+			SigningIdentity otherID = o.privateKeys.get(fingerprint);
+			if (!id.equals(otherID)) return false;
+		}
+
+		if (secretKeys.size() != o.secretKeys.size()) return false;
+		for (Fingerprint fingerprint : secretKeys.keySet())
+		{
+			if (!o.secretKeys.containsKey(fingerprint)) return false;
+
+			SecretKey key = secretKeys.get(fingerprint);
+			SecretKey otherKey = o.secretKeys.get(fingerprint);
+			if (!key.equals(otherKey)) return false;
+		}
+
+		return true;
+	}
 
 
 	/** Kinds of things that we store in a Java Keystore. */
@@ -168,21 +199,15 @@ public class Keychain
 	private final String getPassword() { return "fubar"; }
 
 
+	/** Separates the algorithm and hash in 'algorithm:hash'. */
 	private static final String	ALIAS_SEPARATOR  = ":";
-	
-	private static final Function<PrivateKey, PublicKey> PRIVATE_TO_PUBLIC =
-		new Function<PrivateKey, PublicKey>()
-		{
-			public PublicKey apply(PrivateKey priv) { return priv.publicKey(); }
-		};
-
-
-	/** Public/private keypairs. */
-	private final Map<String, PrivateKey> privateKeys = Maps.newHashMap();
-
-	/** Secret keys for decrypting blocks */
-	private final Map<String, SecretKey> secretKeys = Maps.newHashMap();
 
 	/** Footlights-wide preferences. */
-	private static Preferences preferences = Preferences.getDefaultPreferences();
+	private static final Preferences PREFERENCES = Preferences.getDefaultPreferences();
+
+	/** Public/private keypairs. */
+	private final Map<Fingerprint, SigningIdentity> privateKeys = Maps.newHashMap();
+
+	/** Secret keys for decrypting blocks */
+	private final Map<Fingerprint, SecretKey> secretKeys = Maps.newHashMap();
 }

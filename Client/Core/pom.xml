@@ -20,12 +20,21 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- Crypto provider. -->
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcprov-jdk16</artifactId>
+			<version>140</version>
+		</dependency>
+
+		<!-- Base64 encoding / decoding. -->
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.5</version>
 		</dependency>
 
+		<!-- Miscellaneous collections niceties (e.g. Maps.newHashMap()). -->
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>

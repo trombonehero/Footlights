@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -21,8 +21,14 @@ public class Fingerprint
 		throws NoSuchAlgorithmException
 	{
 		String parts[] = name.replaceAll("\\+", "/").split(":");
-		MessageDigest algorithm = MessageDigest.getInstance(parts[0]);
-		return new Fingerprint(algorithm, ByteBuffer.wrap(Base64.decodeBase64(parts[1])));
+		if (parts.length != 2)
+			throw new IllegalArgumentException("Invalid fingerprint '" + name + "'");
+
+		String algorithmName = parts[0].toLowerCase();
+		String hash = parts[1].toUpperCase();
+
+		MessageDigest algorithm = MessageDigest.getInstance(algorithmName);
+		return new Fingerprint(algorithm, ByteBuffer.wrap(new Base32().decode(hash.getBytes())));
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -32,7 +38,7 @@ public class Fingerprint
 		StringBuffer sb = new StringBuffer();
 		sb.append(algorithm.getAlgorithm().toLowerCase());
 		sb.append(":");
-		sb.append(new String(Base64.encodeBase64(bytes.array())).replaceAll("/", "+"));
+		sb.append(new String(new Base32().encode(bytes.array())).replaceAll("/", "+"));
 
 		return sb.toString();
 	}
@@ -96,12 +102,16 @@ public class Fingerprint
 	}
 
 
+	@Override public String toString() { return encode(); }
+	@Override public int hashCode() { return bytes.duplicate().getInt(); }
 	@Override public boolean equals(Object o)
 	{
 		if (!(o instanceof Fingerprint)) return false;
 		Fingerprint f = (Fingerprint) o;
 
-		if (!algorithm.getAlgorithm().equals(f.algorithm.getAlgorithm())) return false;
+		if (!algorithm.getAlgorithm().toLowerCase()
+				.equals(f.algorithm.getAlgorithm().toLowerCase()))
+			return false;
 		if (bytes.compareTo(f.bytes) != 0) return false;
 
 		return true;

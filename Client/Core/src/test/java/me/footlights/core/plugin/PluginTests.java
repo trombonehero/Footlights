@@ -27,6 +27,7 @@ public class PluginTests
 
 
 	/** Load the "good" (non-malicious) test plugin */
+	/*
 	@Test public void testGoodPlugin() throws Throwable
 	{
 		PluginWrapper p = run(
@@ -35,6 +36,7 @@ public class PluginTests
 
 		p.output();
 	}
+	*/
 
 
 	/** Load the "wicked" test plugin */

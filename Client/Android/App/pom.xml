@@ -29,6 +29,12 @@
 				<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 				<artifactId>maven-android-plugin</artifactId>
 				<extensions>true</extensions>
+				<configuration>
+					<sdk>
+						<platform>10</platform>
+					</sdk>
+					<deleteConflictingFiles>true</deleteConflictingFiles>
+				</configuration>
 			</plugin>
 		</plugins>
 
@@ -162,7 +168,7 @@
 								<outputApk>${project.build.directory}/${project.artifactId}-${project.version}-signed-aligned.apk</outputApk>
 							</zipalign>
 							<sign>
-								<debug>true</debug>
+								<debug>false</debug>
 							</sign>
 						</configuration>
 					</plugin>

@@ -16,7 +16,9 @@
 
 	<modules>
 		<module>App</module>
+		<!--
 		<module>IntegrationTest</module>
+		-->
 	</modules>
 
 	<dependencies>

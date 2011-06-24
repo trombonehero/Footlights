@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>me.footlights</groupId>
-    <artifactId>footlights-plugins</artifactId>
+	<parent>
+		<groupId>me.footlights</groupId>
+		<artifactId>footlights-plugins</artifactId>
 		<version>HEAD</version>
-  </parent>
+	</parent>
 
 	<artifactId>good-plugin</artifactId>
 	<name>Demo Plugin (well-behaved)</name>

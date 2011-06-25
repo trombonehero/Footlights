@@ -131,7 +131,7 @@ public class BlockUploadServlet extends HttpServlet
 		byte[] rawBytes = params.get(FormFields.FILE_CONTENTS);
 		if (rawBytes == null) throw new FileUploadException("No file attached");
 
-		final ByteBuffer bytes = ByteBuffer.wrap(rawBytes).asReadOnlyBuffer();
+		final ByteBuffer bytes = ByteBuffer.wrap(rawBytes);
 		final String auth = new String(params.get(FormFields.AUTHENTICATOR));
 		final String fingerprint = new String(params.get(FormFields.DIGEST_ALGORITHM));
 		final String name = new String(params.get(FormFields.EXPECTED_NAME));

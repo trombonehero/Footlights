@@ -1,5 +1,6 @@
 package me.footlights.server;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -82,23 +83,9 @@ public final class AmazonUploader implements Uploader
 		final ByteBuffer bytes = block.getBytes();
 
 		final ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentLength(block.getBytes().remaining());
+		metadata.setContentLength(bytes.remaining());
 
-		InputStream stream = new InputStream()
-		{
-			public int read() throws IOException
-			{
-				if (!bytes.hasRemaining()) return -1;
-				else return bytes.get();
-			}
-
-			public int read(byte[] into, int off, int len) throws IOException
-			{
-				len = Math.min(len, bytes.remaining());
-				bytes.get(into, off, len);
-				return len;
-			}
-		};
+		InputStream stream = new ByteArrayInputStream(bytes.array());
 
 		try
 		{

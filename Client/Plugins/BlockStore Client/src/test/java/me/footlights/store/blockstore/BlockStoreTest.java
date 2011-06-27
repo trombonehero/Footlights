@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 
-public class BlockStoreTests
+public class BlockStoreTest
 {
 	@BeforeClass public static void setupClass() throws Exception
 	{
@@ -30,7 +30,9 @@ public class BlockStoreTests
 	@Test public void testLocalStorage() throws Throwable
 	{
 		Store store = new BlockStoreClient(
-				"localhost:8080", new URL("http://localhost:8080/UploadManager/upload"), sharedSecret);
+				new URL("http://localhost:8080"),
+				new URL("http://localhost:8080/UploadManager/upload"),
+				sharedSecret);
 
 		Block b = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }))
@@ -56,7 +58,9 @@ public class BlockStoreTests
 			fail("Blockstore shared secret ('" + SHARED_SECRET_KEY + "') not set");
 
 		Store store = new BlockStoreClient(
-				BLOCKSTORE_DOWNLOAD_HOST, new URL(BLOCKSTORE_UPLOAD_URL), sharedSecret);
+				new URL(BLOCKSTORE_DOWNLOAD_HOST),
+				new URL(BLOCKSTORE_UPLOAD_URL),
+				sharedSecret);
 
 		Block b = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }))
@@ -81,7 +85,8 @@ public class BlockStoreTests
 	}
 
 	/** Where we download blocks. */
-	private static final String BLOCKSTORE_DOWNLOAD_HOST = "d2b0r6sfoq6kur.cloudfront.net";
+	private static final String BLOCKSTORE_DOWNLOAD_HOST =
+		"https://s3-eu-west-1.amazonaws.com/me.footlights.userdata";
 
 	/** Where to upload blocks. */
 	private static final String BLOCKSTORE_UPLOAD_URL = "https://upload.footlights.me/upload";

@@ -128,20 +128,33 @@ public class BlockUploadServlet extends HttpServlet
 		for (FileItem i: items)
 			params.put(FormFields.valueOf(i.getFieldName()), i.get());
 
-		byte[] rawBytes = params.get(FormFields.FILE_CONTENTS);
-		if (rawBytes == null) throw new FileUploadException("No file attached");
+		if (!params.containsKey(FormFields.FILE_CONTENTS))
+			throw new FileUploadException("No file attached");
 
+		if (!params.containsKey(FormFields.AUTHENTICATOR))
+			throw new FileUploadException("No authentication given");
+
+		byte[] rawBytes = params.get(FormFields.FILE_CONTENTS);
 		final ByteBuffer bytes = ByteBuffer.wrap(rawBytes);
+
 		final String auth = new String(params.get(FormFields.AUTHENTICATOR));
-		final String fingerprint = new String(params.get(FormFields.DIGEST_ALGORITHM));
-		final String name = new String(params.get(FormFields.EXPECTED_NAME));
+
+		// Optional arguments; might be null byte arrays.
+		final byte[] algorithm = params.get(FormFields.DIGEST_ALGORITHM);
+		final byte[] expectedName = params.get(FormFields.EXPECTED_NAME);
 
 		return new Uploader.Block()
 			{
 				@Override public ByteBuffer getBytes() { return bytes; }
 				@Override public String getAuthorization() { return auth; }
-				@Override public String getFingerprintAlgorithm() { return fingerprint; }
-				@Override public String getExpectedName() { return name; }
+				@Override public String getFingerprintAlgorithm()
+				{
+					return (algorithm == null) ? "" : new String(algorithm);
+				}
+				@Override public String getExpectedName()
+				{
+					return (expectedName == null) ? "" : new String(expectedName);
+				}
 			};
 	}
 

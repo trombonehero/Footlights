@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
  * Unit tests for {@link Link}.
  * @author Jonathan Anderson (jon@footlights.me)
  */
-public class LinkTests
+public class LinkTest
 {
 	/** Ensure that the simplest legal {@link Link} can be built. */
 	@Test public void buildTrivialLink() throws FormatException

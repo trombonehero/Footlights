@@ -12,7 +12,7 @@ import org.junit.Test;
 import me.footlights.core.data.*;
 
 
-public class FetcherTests
+public class FetcherTest
 {
 	@Before public void setUp() throws Exception
 	{

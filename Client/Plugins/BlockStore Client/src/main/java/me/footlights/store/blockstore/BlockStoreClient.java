@@ -1,9 +1,11 @@
 package me.footlights.store.blockstore;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 
 import me.footlights.core.data.*;
@@ -32,57 +34,38 @@ public final class BlockStoreClient extends Store
 	@Override
 	public ByteBuffer get(String name) throws IOException, NoSuchBlockException
 	{
-		URL fileUrl = new URL(downloadBase + "/" + name);
-		InputStream in = fileUrl.openStream();
+		URL fileUrl = new URL(downloadBase + "/" + URLEncoder.encode(name, "utf-8"));
+		HttpURLConnection connection = (HttpURLConnection) fileUrl.openConnection();
 
-		BufferedReader r = new BufferedReader(new InputStreamReader(in));
-
-		// get the HTTP response code, etc.
-		int responseCode = -1;
-		String contentType = "";
-		int len = -1;
-
-		while (true)
+		switch(connection.getResponseCode())
 		{
-			String header = r.readLine().trim();
-
-			if (header.length() == 0)
-				break;
-
-			if (header.startsWith("HTTP/1."))
-				responseCode = Integer.parseInt(header.substring(9, 12));
-
-			else if (header.startsWith("Content-Type: "))
-				contentType = header.substring(14).trim();
-
-			else if (header.startsWith("Content-Length: "))
-				len = Integer.parseInt(header.substring(16).trim());
-		}
-		r.mark(0);
-
-		switch(responseCode)
-		{
-			case -1:
-				throw new IOException("No HTTP response from block store server");
-
 			case 200: break;
 			case 410:
 				throw new NoSuchBlockException(this, name);
 
 			default:
-				throw new IOException("Unknown server response " + responseCode);
+				throw new IOException("Unknown server response " + connection.getResponseCode());
 		}
 
-		if(!contentType.equals("application/encrypted-blob"))
-			throw new IOException("Unknown mime-type '" + contentType + "'");
+		final String type = connection.getContentType();
+		if(!type.equals("application/octet-stream"))
+			throw new IOException("Unknown mime-type '" + type + "'");
 
-		if (len <= 0)
-			throw new IOException("Content-Length not specified");
+		final int len = connection.getContentLength();
+		ByteBuffer data = ByteBuffer.allocate(len);
+		InputStream in = connection.getInputStream();
 
-		ByteBuffer buffer = ByteBuffer.allocate(len);
-		in.read(buffer.array());
+		byte[] buffer = new byte[1024];
+		while (data.position() < len)
+		{
+			int read = in.read(buffer);
+			if (read < 0)
+				throw new IOException("Error reading block from server");
+			data.put(buffer, 0, read);
+		}
 
-		return buffer.asReadOnlyBuffer();
+		data.flip();
+		return data.asReadOnlyBuffer();
 	}
 
 

@@ -13,17 +13,17 @@ import me.footlights.core.data.store.Store;
 /** A client for the Footlights BlockStore */
 public final class BlockStoreClient extends Store
 {
-	public BlockStoreClient(String down, URL up, String key, Store cache)
+	public BlockStoreClient(URL down, URL up, String key, Store cache)
 		throws MalformedURLException
 	{
 		super(cache);
 
-		this.downloadHost = down;
+		this.downloadBase = down;
 		this.uploadHost = up;
 		this.key = key;
 	}
 
-	public BlockStoreClient(String down, URL up, String key) throws MalformedURLException
+	public BlockStoreClient(URL down, URL up, String key) throws MalformedURLException
 	{
 		this(down, up, key, null);
 	}
@@ -32,7 +32,7 @@ public final class BlockStoreClient extends Store
 	@Override
 	public ByteBuffer get(String name) throws IOException, NoSuchBlockException
 	{
-		URL fileUrl = new URL(downloadHost + "/" + name);
+		URL fileUrl = new URL(downloadBase + "/" + name);
 		InputStream in = fileUrl.openStream();
 
 		BufferedReader r = new BufferedReader(new InputStreamReader(in));
@@ -159,7 +159,7 @@ public final class BlockStoreClient extends Store
 
 
 	/** Location of the block store. */
-	private String downloadHost;
+	private URL downloadBase;
 	private URL uploadHost;
 
 	/** Capability to create blocks on the server. */

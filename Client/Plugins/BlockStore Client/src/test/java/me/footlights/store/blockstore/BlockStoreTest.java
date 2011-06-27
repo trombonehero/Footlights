@@ -70,7 +70,7 @@ public class BlockStoreTest
 		{
 			store.store(b);
 			store.flush();
-			assertEquals(b.getBytes(), store.retrieve(b.name()));
+			assertEquals(b, Block.parse(store.retrieve(b.name())));
 		}
 		catch (UnknownHostException e)
 		{

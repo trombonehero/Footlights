@@ -27,17 +27,14 @@ import com.google.common.collect.Maps;
 
 import me.footlights.boot.Bytecode;
 import me.footlights.core.Preconditions;
-import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.Plugin;
-
 
 
 
 public class PluginLoader extends ClassLoader
 {
-	public PluginLoader(KernelInterface kernel)
+	public PluginLoader()
 	{
-		this.kernel      = kernel;
 		coreLoader       = getClass().getClassLoader();
 		plugins          = Maps.newHashMap();
 		pluginClasses    = Maps.newHashMap();
@@ -54,7 +51,7 @@ public class PluginLoader extends ClassLoader
 			Class<?> c = loadClass(uri.toString());
 			Plugin plugin = (Plugin) c.newInstance();
 
-			return new PluginWrapper(name, uri, plugin, kernel, log);
+			return new PluginWrapper(name, uri, plugin, log);
 		}
 		catch(Exception e) { throw new PluginLoadException(uri, e); }
 	}
@@ -263,9 +260,6 @@ public class PluginLoader extends ClassLoader
 		return jar;
 	}
 
-
-	/** The core kernel */
-	private final KernelInterface kernel;
 
 	/** Loads core classes */
 	private final ClassLoader coreLoader;

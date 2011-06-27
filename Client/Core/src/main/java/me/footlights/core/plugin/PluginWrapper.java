@@ -9,17 +9,14 @@ import me.footlights.plugin.Plugin;
 
 
 /** Wrapper for plugins; ensures consistent exception handling */
-public final class PluginWrapper extends Thread
+public final class PluginWrapper
 {
 	/** Constructor */
-	public PluginWrapper(String name, URI url, Plugin plugin, KernelInterface kernel, Logger log)
+	public PluginWrapper(String name, URI url, Plugin plugin, Logger log)
 	{
-		super(name);
-
 		this.name = name;
 		this.url = url;
 		this.plugin = plugin;
-		this.kernel = kernel;
 		this.log = log;
 	}
 
@@ -30,7 +27,7 @@ public final class PluginWrapper extends Thread
 
 
 	/** Run the plugin, trapping exceptions if necessary */
-	@Override public void run() throws PluginException
+	public void run(KernelInterface kernel) throws PluginException
 	{
 		try { plugin.run(kernel, log); }
 		catch(Throwable t)
@@ -48,9 +45,6 @@ public final class PluginWrapper extends Thread
 
 	/** Where the plugin came from. */
 	private final URI url;
-
-	/** The plugin's interface to the Footlights core. */
-	private final KernelInterface kernel;
 
 	/** Plugin-specific log. */
 	private final Logger log;

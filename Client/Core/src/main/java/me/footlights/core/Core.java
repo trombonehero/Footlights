@@ -11,12 +11,10 @@ import com.google.common.collect.Maps;
 import me.footlights.core.crypto.Keychain;
 import me.footlights.core.plugin.PluginLoadException;
 import me.footlights.core.plugin.PluginLoader;
-import me.footlights.core.plugin.PluginServer;
 import me.footlights.core.plugin.PluginWrapper;
-import me.footlights.plugin.KernelInterface;
 
 
-public class Core implements Footlights, KernelInterface
+public class Core implements Footlights
 {
 	public Core()
 	{
@@ -36,7 +34,6 @@ public class Core implements Footlights, KernelInterface
 		}
 
 		plugins          = Maps.newHashMap();
-		pluginServer     = new PluginServer(this);
 		uis              = new LinkedList<UI>();
 	}
 
@@ -53,7 +50,7 @@ public class Core implements Footlights, KernelInterface
 		if(plugins.containsKey(uri)) return plugins.get(uri);
 
 		Logger log = Logger.getLogger(uri.toString());
-		PluginWrapper plugin = new PluginLoader(pluginServer).loadPlugin(name, uri, log);
+		PluginWrapper plugin = new PluginLoader().loadPlugin(name, uri, log);
 
 		plugins.put(uri, plugin);
 		for(UI ui : uis) ui.pluginLoaded(plugin);
@@ -92,9 +89,6 @@ public class Core implements Footlights, KernelInterface
 
 	/** Loaded plugins */
 	private Map<URI,PluginWrapper> plugins;
-
-	/** Handles plugin requests */
-	private PluginServer pluginServer;
 
 	/** UIs which might like to be informed of events */
 	private List<UI> uis;

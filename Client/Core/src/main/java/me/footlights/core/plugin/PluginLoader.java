@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Logger;
 
 import com.google.common.collect.Maps;
 
@@ -36,15 +37,15 @@ public class PluginLoader extends ClassLoader
 {
 	public PluginLoader(KernelInterface kernel)
 	{
-		coreLoader       = getClass().getClassLoader();
 		this.kernel      = kernel;
+		coreLoader       = getClass().getClassLoader();
 		plugins          = Maps.newHashMap();
 		pluginClasses    = Maps.newHashMap();
 		packageURLs      = Maps.newHashMap();
 	}
 
 
-	public PluginWrapper loadPlugin(String name, URI uri) throws PluginLoadException
+	public PluginWrapper loadPlugin(String name, URI uri, Logger log) throws PluginLoadException
 	{
 		try
 		{
@@ -53,7 +54,7 @@ public class PluginLoader extends ClassLoader
 			Class<?> c = loadClass(uri.toString());
 			Plugin plugin = (Plugin) c.newInstance();
 
-			return new PluginWrapper(name, uri, plugin, kernel);
+			return new PluginWrapper(name, uri, plugin, kernel, log);
 		}
 		catch(Exception e) { throw new PluginLoadException(uri, e); }
 	}
@@ -264,10 +265,10 @@ public class PluginLoader extends ClassLoader
 
 
 	/** The core kernel */
-	private KernelInterface kernel;
+	private final KernelInterface kernel;
 
 	/** Loads core classes */
-	private ClassLoader coreLoader;
+	private final ClassLoader coreLoader;
 
 	/** Plugins we've already loaded */
 	private Map<URI,PluginWrapper> plugins;

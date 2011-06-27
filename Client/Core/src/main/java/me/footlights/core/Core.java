@@ -52,7 +52,8 @@ public class Core implements Footlights, KernelInterface
 	{
 		if(plugins.containsKey(uri)) return plugins.get(uri);
 
-		PluginWrapper plugin = new PluginLoader(pluginServer).loadPlugin(name, uri);
+		Logger log = Logger.getLogger(uri.toString());
+		PluginWrapper plugin = new PluginLoader(pluginServer).loadPlugin(name, uri, log);
 
 		plugins.put(uri, plugin);
 		for(UI ui : uis) ui.pluginLoaded(plugin);

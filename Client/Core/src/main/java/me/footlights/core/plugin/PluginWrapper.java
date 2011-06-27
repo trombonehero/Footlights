@@ -12,7 +12,7 @@ import me.footlights.plugin.Plugin;
 public final class PluginWrapper extends Thread
 {
 	/** Constructor */
-	public PluginWrapper(String name, URI url, Plugin plugin, KernelInterface kernel)
+	public PluginWrapper(String name, URI url, Plugin plugin, KernelInterface kernel, Logger log)
 	{
 		super(name);
 
@@ -20,7 +20,7 @@ public final class PluginWrapper extends Thread
 		this.url = url;
 		this.plugin = plugin;
 		this.kernel = kernel;
-		this.log = Logger.getLogger(url.toString());
+		this.log = log;
 	}
 
 

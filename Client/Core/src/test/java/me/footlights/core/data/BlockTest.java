@@ -11,7 +11,7 @@ import me.footlights.core.data.Block;
 import me.footlights.core.data.FormatException;
 
 
-public class BlockTests
+public class BlockTest
 {
 	@Test public void testParsing() throws FormatException
 	{

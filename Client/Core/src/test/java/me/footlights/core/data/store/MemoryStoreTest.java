@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 
-public class MemoryStoreTests
+public class MemoryStoreTest
 {
 	@Before public void setUp() { store = new MemoryStore(); }
 

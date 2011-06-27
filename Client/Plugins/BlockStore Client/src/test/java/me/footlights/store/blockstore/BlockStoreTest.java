@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 
-public class BlockStoreTests
+public class BlockStoreTest
 {
 	@BeforeClass public static void setupClass() throws Exception
 	{

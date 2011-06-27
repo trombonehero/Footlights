@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 
-public class FileTests
+public class FileTest
 {
 	@Test public void anonymousFile() throws Throwable
 	{

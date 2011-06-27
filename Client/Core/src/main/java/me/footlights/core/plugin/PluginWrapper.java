@@ -1,64 +1,57 @@
 package me.footlights.core.plugin;
 
-import java.io.*;
+import java.net.URI;
+import java.util.logging.Logger;
+
+import me.footlights.plugin.KernelInterface;
+import me.footlights.plugin.Plugin;
 
 
 
 /** Wrapper for plugins; ensures consistent exception handling */
-public class PluginWrapper extends Thread
+public final class PluginWrapper extends Thread
 {
 	/** Constructor */
-	public PluginWrapper(String url, Plugin plugin)
+	public PluginWrapper(String name, URI url, Plugin plugin, KernelInterface kernel)
 	{
-		super(plugin.name());
+		super(name);
 
-		this.plugin = plugin;
+		this.name = name;
 		this.url = url;
-		this.output = new ByteArrayOutputStream();
-		this.outWriter = new PrintWriter(this.output);
-
-		plugin.setOutputStream(outWriter);
+		this.plugin = plugin;
+		this.kernel = kernel;
+		this.log = Logger.getLogger(url.toString());
 	}
 
 
-	public Plugin wrapped() { return plugin; }
-	public final String url() { return url; }
+	public final String getPluginName() { return name; }
+	URI getOrigin() { return url; }
+	Plugin getWrappedPlugin() { return plugin; }
 
 
 	/** Run the plugin, trapping exceptions if necessary */
-	public void run()
+	@Override public void run() throws PluginException
 	{
-		try
+		try { plugin.run(kernel, log); }
+		catch(Throwable t)
 		{
-			error = null;
-
-			output.reset();
-			plugin.run();
-			outWriter.flush();
+			throw new PluginException("Error running '" + name + "' (" + url + ")", t);
 		}
-		catch(Throwable t) { error = t; }
 	}
 
 
-	public String output() throws Throwable
-	{
-		if(error != null) throw error;
-		else return output.toString();
-	}
+	/** The actual plugin. */
+	private final Plugin plugin;
 
+	/** The human-readable name that we know the plugin by. */
+	private final String name;
 
-	/** The actual plugin */
-	private Plugin plugin;
+	/** Where the plugin came from. */
+	private final URI url;
 
-	/** Where the plugin came from */
-	private String url;
+	/** The plugin's interface to the Footlights core. */
+	private final KernelInterface kernel;
 
-	/** Any error encountered while running the plugin */
-	private Throwable error;
-
-	/** The plugin's output */
-	private ByteArrayOutputStream output;
-
-	/** For writing to the output stream */
-	private PrintWriter outWriter;
+	/** Plugin-specific log. */
+	private final Logger log;
 }

@@ -1,14 +1,16 @@
 package me.footlights.core.plugin;
 
+import java.net.URI;
 
-/** There was a problem loading a plugin */
+
+/** A problem loading a {@link Plugin}. */
 public class PluginLoadException extends Exception
 {
-	public PluginLoadException(String url, Throwable cause)
+	public PluginLoadException(URI uri, Throwable cause)
 	{
-		super("Failed to load plugin from URL '" + url + "'", cause);
+		super("Failed to load plugin from '" + uri + "'", cause);
 	}
 
 	private static final long serialVersionUID
-		= "footlights.core.plugin.PluginLoadException@2010-02-12/1438h".hashCode();
+		= ("27 Jun 2011 1736h" + PluginLoadException.class.getCanonicalName()).hashCode();
 }

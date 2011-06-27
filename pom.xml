@@ -14,6 +14,7 @@
 
 	<modules>
 		<module>Client</module>
+		<module>PluginAPI</module>
 		<module>Server</module>
 	</modules>
 

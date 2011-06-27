@@ -2,6 +2,7 @@ package me.footlights.core.plugin;
 
 
 import me.footlights.core.Core;
+import me.footlights.plugin.KernelInterface;
 
 
 /** Services requests from plugins */

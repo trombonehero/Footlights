@@ -1,42 +1,34 @@
 package me.footlights.demo.plugins.good;
 
-import java.io.PrintWriter;
 import java.util.Date;
+import java.util.logging.Logger;
+
+import me.footlights.plugin.KernelInterface;
 
 
 /**
  * A well-behaved plugin that legitimately exercises Footlights services.
  * @author jon@footlights.me
  */
-public class GoodPlugin extends me.footlights.core.plugin.Plugin
+public class GoodPlugin implements me.footlights.plugin.Plugin
 {
-	public String name() { return "Good Plugin"; }
-	public void setOutputStream(PrintWriter out) { this.out = out; }
-
-	public void run()
+	@Override public void run(KernelInterface kernel, Logger log) throws Exception
 	{
-		try
-		{
-			out.println("I am a well-behaved plugin.");
-			out.println("The time is " + new Date());
+		log.info("I am a well-behaved plugin.");
+		log.info("The time is " + new Date());
 
-			out.print("Let's test a static method in the Helper class... ");
-			out.println(Helper.staticHelp());
+		log.info("Let's test a static method in the Helper class... ");
+		log.info(Helper.staticHelp());
 
-			out.println("Ok, that was fine. Now a constructor... ");
-			Helper h = new Helper();
+		log.info("Ok, that was fine. Now a constructor... ");
+		Helper h = new Helper();
 
-			out.print("And a regular method... ");
-			out.println(h.help());
+		log.info("And a regular method... ");
+		log.info(h.help());
 
-			out.print("Finally, do a 'syscall'... ");
-			out.println("new UUID: " + kernel.generateUUID());
+		log.info("Finally, do a 'syscall'... ");
+		log.info("new UUID: " + kernel.generateUUID());
 
-			out.println("The plugin works!.");
-		}
-		catch(Exception e) { throw new Error(e); }
+		log.info("The plugin works!.");
 	}
-
-	/** Output stream */
-	private PrintWriter out;
 }

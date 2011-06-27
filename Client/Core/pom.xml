@@ -20,6 +20,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>plugin-api</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- Crypto provider. -->
 		<dependency>
 			<groupId>bouncycastle</groupId>

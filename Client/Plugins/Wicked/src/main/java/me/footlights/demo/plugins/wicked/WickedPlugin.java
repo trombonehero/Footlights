@@ -6,17 +6,16 @@ import java.lang.reflect.*;
 import java.net.*;
 import java.security.AccessControlException;
 import java.security.AccessController;
+import java.util.logging.Logger;
+
+import me.footlights.plugin.KernelInterface;
 
 
-public class WickedPlugin extends me.footlights.core.plugin.Plugin
+public class WickedPlugin implements me.footlights.plugin.Plugin
 {
-	public String name() { return "Wicked Plugin"; }
-	public void setOutputStream(PrintWriter out) { this.output = out; }
-
-
-	public void run() throws SecurityException
+	@Override public void run(KernelInterface kernel, Logger log) throws SecurityException
 	{
-		output.print("Attempting to load a fake 'core' class via URL... ");
+		log.info("Attempting to load a fake 'core' class via URL... ");
 		try
 		{
 			String url = 
@@ -26,47 +25,47 @@ public class WickedPlugin extends me.footlights.core.plugin.Plugin
 			throw new SecurityException(
 					"Encapsulation failure: loaded fake 'core' class");
 		}
-		catch(AccessControlException e) { output.println("denied."); }
-		catch(ClassNotFoundException e) { output.println("not found."); }
+		catch(AccessControlException e) { log.info("denied."); }
+		catch(ClassNotFoundException e) { log.info("not found."); }
 
 
-		output.print("Attempting to load a class in[to] a sealed package... ");
+		log.info("Attempting to load a class in[to] a sealed package... ");
 		try
 		{
-			output.println(me.footlights.core.Test.test());
+			log.info(me.footlights.core.Test.test());
 
 			throw new SecurityException(
 					"Encapsulation failure: loaded footlights.core.Test");
 		}
-		catch(AccessControlException e) { output.println("denied."); }
-		catch(NoClassDefFoundError e) { output.println("not found."); }
+		catch(AccessControlException e) { log.info("denied."); }
+		catch(NoClassDefFoundError e) { log.info("not found."); }
 
 
 
-		output.print("Trying to connect to a wicked website... ");
+		log.info("Trying to connect to a wicked website... ");
 		try
 		{
 			new Socket("www-dyn.cl.cam.ac.uk", 80);
 			throw new SecurityException(
 					"Encapsulation failure: connection succeeded");
 		}
-		catch(AccessControlException e) { output.println("denied."); }
+		catch(AccessControlException e) { log.info("denied."); }
 		catch(IOException e) { throw new Error(e); }
 
 
 
-		output.print("Check access to footlights.core... ");
+		log.info("Check access to footlights.core... ");
 		try
 		{
 			AccessController.checkPermission(
 				new RuntimePermission("accessClassInPackage.footlights.core"));
 			throw new SecurityException("Access granted to footlights.core");
 		}
-		catch(AccessControlException e) { output.println("denied."); }
+		catch(AccessControlException e) { log.info("denied."); }
 
 
 
-		output.print("Check ability to create a new ClassLoader... ");
+		log.info("Check ability to create a new ClassLoader... ");
 		try
 		{
 			AccessController.checkPermission(
@@ -75,11 +74,11 @@ public class WickedPlugin extends me.footlights.core.plugin.Plugin
 			throw new SecurityException(
 					"Encapsulation failure: permission to create ClassLoader");
 		}
-		catch(AccessControlException e) { output.println("denied."); }
+		catch(AccessControlException e) { log.info("denied."); }
 
 
 
-		output.print("Trying to instantiate another plugin... ");
+		log.info("Trying to instantiate another plugin... ");
 		try
 		{
 			Class<?> c = this.getClass().getClassLoader().loadClass(
@@ -91,19 +90,16 @@ public class WickedPlugin extends me.footlights.core.plugin.Plugin
 			Method run = c.getMethod("run", (Class<?>[]) null);
 
 			Object p = c.newInstance();
-			setOut.invoke(p, new Object[] { output });
+			setOut.invoke(p, new Object[] { log });
 			run.invoke(p, (Object[]) null);
 
 			throw new SecurityException(
 					"Encapsulation failure: ran another plugin");
 		}
-		catch(AccessControlException e) { output.println("denied."); }
+		catch(AccessControlException e) { log.info("denied."); }
 		catch(Exception e) { throw new Error(e); }
 
 
-		output.println("Failed to do anything wicked (hooray!).");
+		log.info("Failed to do anything wicked (hooray!).");
 	}
-
-	/** Output stream */
-	private PrintWriter output;
 }

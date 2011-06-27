@@ -1,13 +1,33 @@
 package me.footlights.core.plugin;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.FilePermission;
+import java.io.IOException;
+import java.io.InputStream;
+
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+
+import java.security.AccessController;
+import java.security.CodeSource;
+import java.security.Permissions;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
+
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+
+import com.google.common.collect.Maps;
 
 import me.footlights.boot.Bytecode;
 import me.footlights.core.Preconditions;
+import me.footlights.plugin.KernelInterface;
+import me.footlights.plugin.Plugin;
 
 
 
@@ -18,25 +38,24 @@ public class PluginLoader extends ClassLoader
 	{
 		coreLoader       = getClass().getClassLoader();
 		this.kernel      = kernel;
-		plugins          = new HashMap<String,PluginWrapper>();
-		pluginClasses    = new HashMap<String, Class<?>>();
-		packageURLs      = new HashMap<String, URL>();
+		plugins          = Maps.newHashMap();
+		pluginClasses    = Maps.newHashMap();
+		packageURLs      = Maps.newHashMap();
 	}
 
 
-	public PluginWrapper loadPlugin(String url) throws PluginLoadException
+	public PluginWrapper loadPlugin(String name, URI uri) throws PluginLoadException
 	{
 		try
 		{
-			if(plugins.containsKey(url)) return plugins.get(url);
+			if(plugins.containsKey(uri)) return plugins.get(uri);
 
-			Class<?> c = loadClass(url);
-			Plugin p = (Plugin) c.newInstance();
-			p.setKernel(kernel);
+			Class<?> c = loadClass(uri.toString());
+			Plugin plugin = (Plugin) c.newInstance();
 
-			return new PluginWrapper(url, p);
+			return new PluginWrapper(name, uri, plugin, kernel);
 		}
-		catch(Exception e) { throw new PluginLoadException(url, e); }
+		catch(Exception e) { throw new PluginLoadException(uri, e); }
 	}
 
 
@@ -251,7 +270,7 @@ public class PluginLoader extends ClassLoader
 	private ClassLoader coreLoader;
 
 	/** Plugins we've already loaded */
-	private Map<String,PluginWrapper> plugins;
+	private Map<URI,PluginWrapper> plugins;
 	private Map<String,Class<?>> pluginClasses;
 	private Map<String,URL> packageURLs;
 }

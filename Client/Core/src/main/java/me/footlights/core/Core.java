@@ -1,12 +1,19 @@
 package me.footlights.core;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import com.google.common.collect.Maps;
+
 import me.footlights.core.crypto.Keychain;
-import me.footlights.core.plugin.*;
+import me.footlights.core.plugin.PluginLoadException;
+import me.footlights.core.plugin.PluginLoader;
+import me.footlights.core.plugin.PluginServer;
+import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.KernelInterface;
 
 
 public class Core implements Footlights, KernelInterface
@@ -28,7 +35,7 @@ public class Core implements Footlights, KernelInterface
 				.warning("Unable to open keychain: " + e.getLocalizedMessage());
 		}
 
-		plugins          = new HashMap<String,PluginWrapper>();
+		plugins          = Maps.newHashMap();
 		pluginServer     = new PluginServer(this);
 		uis              = new LinkedList<UI>();
 	}
@@ -41,13 +48,13 @@ public class Core implements Footlights, KernelInterface
 
 
 	/** Load a plugin and wrap it up in a convenient wrapper */
-	public PluginWrapper loadPlugin(String url) throws PluginLoadException
+	public PluginWrapper loadPlugin(String name, URI uri) throws PluginLoadException
 	{
-		if(plugins.containsKey(url)) return plugins.get(url);
+		if(plugins.containsKey(uri)) return plugins.get(uri);
 
-		PluginWrapper plugin = new PluginLoader(pluginServer).loadPlugin(url);
+		PluginWrapper plugin = new PluginLoader(pluginServer).loadPlugin(name, uri);
 
-		plugins.put(url, plugin);
+		plugins.put(uri, plugin);
 		for(UI ui : uis) ui.pluginLoaded(plugin);
 
 		return plugin;
@@ -57,8 +64,8 @@ public class Core implements Footlights, KernelInterface
 	/** Unload a plugin; after calling this, set ALL references to null */
 	public void unloadPlugin(PluginWrapper plugin)
 	{
-		String key = null;
-		for(Entry<String,PluginWrapper> e : plugins.entrySet())
+		URI key = null;
+		for(Entry<URI,PluginWrapper> e : plugins.entrySet())
 			if(e.getValue().equals(plugin))
 			{
 				key = e.getKey();
@@ -83,7 +90,7 @@ public class Core implements Footlights, KernelInterface
 	private Keychain keychain;
 
 	/** Loaded plugins */
-	private Map<String,PluginWrapper> plugins;
+	private Map<URI,PluginWrapper> plugins;
 
 	/** Handles plugin requests */
 	private PluginServer pluginServer;

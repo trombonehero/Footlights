@@ -24,7 +24,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>me.footlights</groupId>
-			<artifactId>footlights-core</artifactId>
+			<artifactId>plugin-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

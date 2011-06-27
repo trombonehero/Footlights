@@ -1,16 +1,19 @@
 package me.footlights.core.plugin;
 
-import java.io.PrintWriter;
+import java.util.logging.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import me.footlights.plugin.KernelInterface;
+import me.footlights.plugin.Plugin;
 
 
-class TrivialPlugin extends Plugin
+class TrivialPlugin implements Plugin
 {
-	final static String OUTPUT = "Hello, world!";
+	@Override public void run(KernelInterface kernel, Logger log)
+	{
+		log.info(OUTPUT);
+	}
 
-	@Override public String name() { return "Trivial Plugin"; }
-	@Override public void setOutputStream(PrintWriter out) { this.out = out; }
-
-	public void run() { out.print(OUTPUT); }
-
-	private PrintWriter out;
+	@VisibleForTesting static String OUTPUT = "The trivial demo plugin is now running";
 }

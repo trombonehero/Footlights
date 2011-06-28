@@ -1,12 +1,7 @@
 package me.footlights.android;
 
-import java.security.Security;
 import java.util.Map;
 
-import roboguice.inject.InjectView;
-
-import me.footlights.core.Core;
-import me.footlights.core.Preferences;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,6 +9,11 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+
+import roboguice.inject.InjectView;
+
+import me.footlights.core.Core;
+import me.footlights.core.Preferences;
 
 
 public class FootlightsActivity extends Activity

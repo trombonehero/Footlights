@@ -88,18 +88,18 @@ public class Preferences
 
 		try
 		{
-    		final Map<String,String> defaults = cryptoDefaults();
-    		this.defaults = new PreferenceStorageEngine()
+    		final Map<String,String> cryptoDefaults = cryptoDefaults(Security.getProvider("BC"));
+    		defaults = new PreferenceStorageEngine()
     		{
-				@Override protected Map<String,?> getAll() { return defaults; }
+				@Override protected Map<String,?> getAll() { return cryptoDefaults; }
 
     			@Override
     			protected String getRaw(String key) throws NoSuchElementException
     			{
-    				if (!defaults.containsKey(key))
+    				if (!cryptoDefaults.containsKey(key))
     					throw new NoSuchElementException(key);
 
-    				return defaults.get(key);
+    				return cryptoDefaults.get(key);
     			}
     		};
 		}
@@ -109,11 +109,10 @@ public class Preferences
 
 
 	/** Set up sensible crypto options */
-	private Map<String,String> cryptoDefaults()
+	private Map<String,String> cryptoDefaults(Provider provider)
 		throws NoSuchAlgorithmException, NoSuchPaddingException
 	{
 		Map<String,String> defaults = Maps.newHashMap();
-
 
 		String[][] values = 
 		{
@@ -127,10 +126,6 @@ public class Preferences
 
 		for (String[] pair : values)
 			defaults.put(pair[0], pair[1]);
-
-
-		Cipher c = Cipher.getInstance("AES");
-		Provider provider = c.getProvider();
 
 
 		// symmetric-key cipher
@@ -151,6 +146,7 @@ public class Preferences
 				// Not all providers tell us what modes they support (I'm looking at you, Android!).
 				// We'll just have to hope for the best.
 				modes = Arrays.asList(modePreferences);
+				break;
 			}
 			else modes = Arrays.asList(rawModes.split("\\|"));
 		}

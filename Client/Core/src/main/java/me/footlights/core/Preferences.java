@@ -4,21 +4,28 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.google.common.collect.Maps;
 
 
 public class Preferences
 {
+	static { Security.addProvider(new BouncyCastleProvider()); }
+
 	/** Create a Preferences instance with auto-detected default settings. */
-	public static Preferences getDefaultPreferences() { return new Preferences(null); }
+	public static Preferences getDefaultPreferences()
+	{
+		return new Preferences(null);
+	}
 
 	/** Load Preferences from the default filesystem location. */
 	public static Preferences loadFromDefaultLocation() throws IOException

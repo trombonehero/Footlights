@@ -1,17 +1,16 @@
 package me.footlights.boot;
 
-
 import java.io.*;
 import java.net.*;
 import java.security.*;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
 public class FootlightsClassLoader extends URLClassLoader
 {
 	/** Constructor */
-	public FootlightsClassLoader(List<URL> classpath) throws MalformedURLException
+	public FootlightsClassLoader(LinkedHashSet<URL> classpath) throws MalformedURLException
 	{
 		super(classpath.toArray(new URL[0]));
 

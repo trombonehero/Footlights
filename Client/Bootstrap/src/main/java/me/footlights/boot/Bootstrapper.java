@@ -7,7 +7,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+
+import com.google.common.collect.Sets;
 
 
 /**
@@ -50,7 +53,7 @@ public class Bootstrapper
 
 		for (UI ui : uis) corePaths.add(ui.sourceDirectory);
 
-		List<URL> coreClasspaths =
+		LinkedHashSet<URL> coreClasspaths =
 			expandCorePath(System.getProperty("java.class.path"),
 					bootPath, corePaths);
 
@@ -95,24 +98,24 @@ public class Bootstrapper
 		System.exit(0);
 	}
 
-	private static List<URL> expandCorePath(final String bootClasspath,
+	private static LinkedHashSet<URL> expandCorePath(final String bootClasspath,
 			final String bootDirectory, final Iterable<String> coreDirectories)
 		throws FileNotFoundException, MalformedURLException
 	{
-		List<URL> classpaths = new ArrayList<URL>();
+		LinkedHashSet<URL> classpaths = Sets.newLinkedHashSet();
 
-		for (String coreDirectory : coreDirectories)
-		{
-			String path = bootClasspath.replace(bootDirectory, coreDirectory);
-			if (path.startsWith("/"))
+		for (final String bootPath : bootClasspath.split(":"))
+			for (String coreDirectory : coreDirectories)
 			{
-				if (!new File(path).exists())
-					throw new FileNotFoundException(path);
+				String path = bootPath.replace(bootDirectory, coreDirectory);
+				if (!new File(path).exists()) continue;
 
-				path = "file:" + path;
+				if (path.startsWith("/")) path = "file:" + path;
+				URL url = new URL(path);
+
+				if (classpaths.contains(url)) continue;
+				else classpaths.add(url);
 			}
-			classpaths.add(new URL(path));
-		}
 
 		return classpaths;
 	}

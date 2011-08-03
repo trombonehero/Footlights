@@ -2,37 +2,29 @@ package me.footlights.android;
 
 import java.util.Map;
 
-import android.app.Activity;
+import com.google.inject.Inject;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
+import roboguice.activity.RoboActivity;
 import roboguice.inject.InjectView;
 
 import me.footlights.core.Core;
 import me.footlights.core.Preferences;
 
 
-public class FootlightsActivity extends Activity
+public class FootlightsActivity extends RoboActivity
 {
-	@InjectView(R.id.buttonA) Button buttonA;
-	@InjectView(R.id.buttonB) Button buttonB;
-	@InjectView(R.id.buttonC) Button buttonC;
-	@InjectView(R.id.buttonD) Button buttonD;
-
-	@InjectView(R.id.eventsList) ListView eventsList;
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-
-		initializeClass(PreferenceManager.getDefaultSharedPreferences(this));
 
 		final EventLog log = new EventLog(this);
 		eventsList.setAdapter(log.adapter());
@@ -51,21 +43,18 @@ public class FootlightsActivity extends Activity
 
 		log.log("Created Footlights core: " + core + "\n");
 
+		Preferences prefs = Preferences.create(PreferenceAdapter.wrap(sharedPrefs));
 		for (Map.Entry<String,?> entry : prefs.getAll().entrySet())
 			log.log(entry.getKey() + ": " + entry.getValue().toString());
 	}
 
-	private static synchronized void initializeClass(SharedPreferences sharedPrefs)
-	{
-		if (classInitialized) return;
+	private @Inject Core core;
+	private @Inject SharedPreferences sharedPrefs;
 
-		core = new Core();
-		prefs = Preferences.create(PreferenceAdapter.wrap(sharedPrefs));
+	private @InjectView(R.id.buttonA) Button buttonA;
+	private @InjectView(R.id.buttonB) Button buttonB;
+	private @InjectView(R.id.buttonC) Button buttonC;
+	private @InjectView(R.id.buttonD) Button buttonD;
 
-		classInitialized = true;
-	}
-
-	private static boolean classInitialized;
-	private static Core core;
-	private static Preferences prefs;
+	private @InjectView(R.id.eventsList) ListView eventsList;
 }

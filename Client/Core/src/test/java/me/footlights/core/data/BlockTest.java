@@ -13,6 +13,17 @@ import me.footlights.core.data.FormatException;
 
 public class BlockTest
 {
+	@Test public void testSetContent() throws Throwable
+	{
+		byte[] orig = new byte[] { 1, 2, 3, 4 };
+		Block b = Block.newBuilder().setContent(ByteBuffer.wrap(orig)).build();
+
+		byte[] copy = new byte[orig.length];
+		b.content().get(copy);
+
+		assertArrayEquals(orig, copy);
+	}
+
 	@Test public void testParsing() throws FormatException
 	{
 		Link link = Link.newBuilder().setUri(URI.create("foo")).build();

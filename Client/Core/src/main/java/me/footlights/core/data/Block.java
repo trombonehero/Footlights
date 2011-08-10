@@ -28,7 +28,7 @@ public class Block implements FootlightsPrimitive
 
 		public Builder setContent(ByteBuffer content)
 		{
-			content = content.asReadOnlyBuffer();
+			this.content = content.asReadOnlyBuffer();
 			return this;
 		}
 

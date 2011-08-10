@@ -1,5 +1,7 @@
 package me.footlights.ui.web.ajax;
 
+import java.net.URI;
+
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
 import me.footlights.ui.web.Constants;
@@ -17,27 +19,24 @@ public class PluginLoader implements AjaxHandler
 	public JavaScript service(Request request) throws Throwable
 	{
 		String url = request.path().replaceFirst("^/?load_plugin%20", "");
+		String name = url;
+
 		if (url.startsWith("/")) url = PLUGIN_BASE + url;
 
-		PluginWrapper plugin = footlights.loadPlugin(url);
-		plugin.run();
+		PluginWrapper plugin = footlights.loadPlugin(name, new URI(url));
+		plugin.run(footlights);
 
 		JavaScript response = new JavaScript();
 		response.append("console.log('\"");
-		response.append(plugin.getName());
-		response.append("\" loaded at ");
-		response.append(plugin.wrapped().loaded().toString());
-		response.append("');");
-		response.append("showAjaxResponse('plugin output', '");
-		response.append(plugin.output().replace("'", "\\'").replace("\n", "\\n"));
-		response.append("');");
+		response.append(plugin.getPluginName());
+		response.append("\" loaded');");
 
 		return response;
 	}
 
 
 
-	/** Plugin URLs */
+	/** Plugin URIs */
 	private static final String PLUGIN_BASE = "jar:" + Constants.PLUGIN_URL;
 
 	private final Footlights footlights;

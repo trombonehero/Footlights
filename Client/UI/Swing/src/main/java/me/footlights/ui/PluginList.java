@@ -45,17 +45,17 @@ public class PluginList extends JPanel implements PluginWatcher
 			pluginPanel.setBorder(BorderFactory.createRaisedBevelBorder());
 			pluginPanel.setLayout(new BoxLayout(pluginPanel, BoxLayout.PAGE_AXIS));
 
-			pluginPanel.add(new JLabel(plugin.wrapped().name()));
+			//pluginPanel.add(new JLabel(plugin.wrapped().name()));
 
 			JButton run = new JButton("Run");
 			run.addActionListener(new ActionListener()
 				{
 					public void actionPerformed(ActionEvent arg0)
 					{
-						plugin.run();
+						//plugin.run();
 						try
 						{
-							log(plugin.output());
+							//log(plugin.output());
 						}
 						catch(Throwable t)
 						{

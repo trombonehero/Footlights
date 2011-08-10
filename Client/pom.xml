@@ -21,5 +21,6 @@
 		<module>Core</module>
 		<module>Plugins</module>
 		<module>PluginIntegrationTest</module>
+		<module>UI</module>
 	</modules>
 </project>

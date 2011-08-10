@@ -1,6 +1,7 @@
 package me.footlights.ui.web.ajax;
 
 import java.io.*;
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.regex.*;
 
@@ -54,7 +55,7 @@ public class AjaxServer implements WebServer
 			{
 				type = "code";
 
-				String output = runPlugin(GOOD_PLUGIN);
+				String output = runPlugin(new URI(GOOD_PLUGIN));
 				output = output.replace("'", "\\'");
 				output = output.replace("\n", "\\n");
 
@@ -64,7 +65,7 @@ public class AjaxServer implements WebServer
 			{
 				type = "code";
 
-				String output = runPlugin(WICKED_PLUGIN);
+				String output = runPlugin(new URI(WICKED_PLUGIN));
 				output = output.replace("'", "\\'");
 				output = output.replace("\n", "\\n");
 
@@ -85,7 +86,7 @@ public class AjaxServer implements WebServer
 		}
 		catch(Throwable e)
 		{
-			Log.log("Error serving URL '" + request + "':");
+			Log.log("Error serving URI '" + request + "':");
 			e.printStackTrace(Log.instance().stream());
 
 			type = "error";
@@ -134,13 +135,12 @@ public class AjaxServer implements WebServer
 		else return contexts.get(contextName);
 	}
 
-	protected String runPlugin(String url) throws Throwable
+	protected String runPlugin(URI url) throws Throwable
 	{
-		PluginWrapper plugin = footlights.loadPlugin(url);
-		plugin.run();
+		PluginWrapper plugin = footlights.loadPlugin("foo", url);
+		plugin.run(footlights);
 
-		String result = "(plugin loaded at " + plugin.wrapped().loaded() + ")\n";
-		result += plugin.output();
+		String result = "(loaded: '" + plugin.getPluginName() + "')\n";
 
 		return result;
 	}
@@ -153,12 +153,12 @@ public class AjaxServer implements WebServer
 	private final LinkedHashMap<String, Context> contexts;
 
 
-	/** Plugin URLs */
+	/** Plugin URIs */
 	public static final String PLUGIN = "jar:" + Constants.PLUGIN_URL;
 
-	public static final String GOOD_PLUGIN
-		= PLUGIN + "/good.jar!/footlights.demo.plugins.good.GoodPlugin";
+	public static final String GOOD_PLUGIN =
+		"/good.jar!/footlights.demo.plugins.good.GoodPlugin";
 
-	public static final String WICKED_PLUGIN
-		= PLUGIN + "/wicked.jar!/footlights.demo.plugins.wicked.WickedPlugin";
+	public static final String WICKED_PLUGIN =
+		"/wicked.jar!/footlights.demo.plugins.wicked.WickedPlugin";
 }

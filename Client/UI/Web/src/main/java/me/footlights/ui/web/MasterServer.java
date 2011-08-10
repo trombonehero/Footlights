@@ -74,7 +74,7 @@ public class MasterServer implements Runnable, WebServer
 				"The request path '" + path + "' contains '..'");
 
 		if(path.equals("/")) path = "index.html";
-		InputStream in = getClass().getResourceAsStream("content/" + path);
+		InputStream in = getClass().getResourceAsStream(path);
 
 		if(in == null)
 			throw new FileNotFoundException("Unable to find '" + path + "'");

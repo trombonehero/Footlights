@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class FileTest
@@ -44,12 +45,15 @@ public class FileTest
 	/** Ensure that a file, composed of several blocks, can be viewed as a seamless unit. */
 	@Test public void seamlessView() throws Throwable
 	{
-		byte[] orig = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-		ByteBuffer b1 = ByteBuffer.wrap(orig, 0, 3);
-		ByteBuffer b2 = ByteBuffer.wrap(orig, 3, 5);
-		List<ByteBuffer> data = Lists.newArrayList(b1, b2);
+		byte[] orig = new byte[64];
+		for (byte i = 0; i < orig.length; i++) orig[i] = i;
 
-		File f = File.newBuilder().setContent(data).freeze();
+		File f = File.newBuilder()
+			.setContent(Lists.newArrayList(ByteBuffer.wrap(orig)))
+			.setDesiredBlockSize(32)
+			.freeze();
+
+		assertTrue(f.content().size() > 1);
 
 		byte[] copy = new byte[orig.length];
 		int bytes = f.getInputStream().read(copy);

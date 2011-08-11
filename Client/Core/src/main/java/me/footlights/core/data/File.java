@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -23,13 +23,15 @@ public class File implements me.footlights.File
 	public static MutableFile newBuilder() { return new MutableFile(); }
 	public static class MutableFile
 	{
-		/** TODO: break content into appropriate-sized blocks. */
-		public synchronized MutableFile setContent(Iterable<ByteBuffer> content)
+		public synchronized final MutableFile setContent(List<ByteBuffer> content)
 		{
-			this.content.clear();
-			for (ByteBuffer b : content)
-				this.content.add(b.asReadOnlyBuffer());
+			this.content = ImmutableList.copyOf(content);
+			return this;
+		}
 
+		public synchronized final MutableFile setDesiredBlockSize(int size)
+		{
+			this.desiredBlockSize = size;
 			return this;
 		}
 
@@ -37,30 +39,83 @@ public class File implements me.footlights.File
 		 * Produce a proper {@link File} by fixing the current contents of this
 		 * {@link MutableFile}.
 		 */
-		public synchronized File freeze() throws FormatException, GeneralSecurityException
+		public synchronized final File freeze() throws FormatException, GeneralSecurityException
 		{
+			// First, break the content into chunks of the appropriate size.
+			final int chunkSize = desiredBlockSize - Block.OVERHEAD_BYTES;
+
+			Iterator<ByteBuffer> i = content.iterator();
+			ByteBuffer next = null;
+
+			List<ByteBuffer> chunked = Lists.newLinkedList();
+			ByteBuffer current = ByteBuffer.allocate(chunkSize);
+
+			while (true)
+			{
+				// Fetch the next input buffer (if necessary). If there are none, we're done.
+				if ((next == null) || !next.hasRemaining())
+				{
+					if (i.hasNext()) next = i.next();
+					else break;
+
+					// If the next batch of content is already the right size, add it directly.
+					if (next.remaining() == chunkSize)
+					{
+						chunked.add(next);
+						continue;
+					}
+				}
+
+				// If the current output buffer is full, create a new one.
+				if (current.remaining() == 0)
+				{
+					chunked.add(current);
+					current = ByteBuffer.allocate(chunkSize);
+				}
+
+				// Copy data from input to output.
+				int toCopy = Math.min(next.remaining(), current.remaining());
+				next.get(current.array(), current.position(), toCopy);
+				current.position(current.position() + toCopy);
+			}
+
+			if (current.position() > 0) chunked.add(current);
+
+			// Next, create {@link Block} objects.
 			List<Block> plaintext = Lists.newLinkedList();
 			List<EncryptedBlock> ciphertext = Lists.newLinkedList();
 
-			for (ByteBuffer b : content)
+			plaintext.clear();
+			ciphertext.clear();
+
+			for (ByteBuffer b : chunked)
 			{
+				b.flip();
 				Block block = Block.newBuilder()
 					.setContent(b)
+					.setDesiredSize(desiredBlockSize)
 					.build();
+
+				if (block.bytes() != desiredBlockSize)
+					throw new FormatException(
+						"Incorrect block size: " + block.bytes()
+						+ "B (expected " + desiredBlockSize + "B)");
 
 				plaintext.add(block);
 				ciphertext.add(block.encrypt());
 			}
 
+			// Finally, create the header. TODO: just embed links in all the blocks.
 			Block.Builder header = Block.newBuilder();
 			for (EncryptedBlock b : ciphertext) header.addLink(b.link());
 
 			return new File(header.build().encrypt(), plaintext, ciphertext);
 		}
 
-		private MutableFile() { this.content = new Vector<ByteBuffer>(); }
+		private MutableFile() {}
 
-		private final Vector<ByteBuffer> content;
+		private Iterable<ByteBuffer> content = Lists.newArrayList();
+		private int desiredBlockSize = 4096;
 	}
 
 

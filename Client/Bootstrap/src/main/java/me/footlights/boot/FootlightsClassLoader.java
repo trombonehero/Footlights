@@ -47,9 +47,6 @@ public class FootlightsClassLoader extends URLClassLoader
 			{
 				URL bigURL = new URL(url.toString() + "/" + name);
 				if(new File(bigURL.getFile()).exists()) return bigURL;
-
-				int i = 0;
-				i++;
 			}
 			catch(MalformedURLException e) { throw new Error(e); }
 		}

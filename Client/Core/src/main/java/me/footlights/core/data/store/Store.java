@@ -36,6 +36,13 @@ public abstract class Store
 		store(block.name(), block.getBytes());
 	}
 
+	/** Store encrypted blocks. */
+	public final void store(Iterable<EncryptedBlock> blocks) throws IOException
+	{
+		for (EncryptedBlock b : blocks)
+			store(b);
+	}
+
 	/** Store an encrypted block. */
 	public final void store(EncryptedBlock block) throws IOException
 	{

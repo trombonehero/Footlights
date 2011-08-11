@@ -12,6 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.crypto.Keychain;
+import me.footlights.core.data.File;
+import me.footlights.core.data.store.DiskStore;
+import me.footlights.core.data.store.Store;
 import me.footlights.core.plugin.PluginLoadException;
 import me.footlights.core.plugin.PluginLoader;
 import me.footlights.core.plugin.PluginWrapper;
@@ -43,6 +46,7 @@ public class Core implements Footlights
 
 		plugins          = Maps.newHashMap();
 		uis              = Lists.newArrayList();
+		store            = DiskStore.newBuilder().setDefaultDirectory().build();
 	}
 
 
@@ -100,4 +104,7 @@ public class Core implements Footlights
 
 	/** UIs which might like to be informed of events */
 	private List<UI> uis;
+
+	/** Where we are storing user data. */
+	private Store store;
 }

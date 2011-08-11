@@ -1,5 +1,9 @@
 package me.footlights.core.plugin;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import me.footlights.File;
 import me.footlights.core.Footlights;
 import me.footlights.plugin.KernelInterface;
 
@@ -18,6 +22,11 @@ public class PluginServer implements KernelInterface
 	{
 		// no security, this is just a silly demo of syscall functionality
 		return kernel.generateUUID();
+	}
+
+	public File save(ByteBuffer data) throws IOException
+	{
+		return kernel.save(data);
 	}
 
 

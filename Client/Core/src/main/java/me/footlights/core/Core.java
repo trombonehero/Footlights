@@ -1,7 +1,9 @@
 package me.footlights.core;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,9 +94,31 @@ public class Core implements Footlights
 	// KernelInterface implementation
 	public java.util.UUID generateUUID() { return java.util.UUID.randomUUID(); }
 
+	@Override public File save(ByteBuffer data) throws IOException
+	{
+		List<ByteBuffer> chunked = Lists.newLinkedList();
+		chunked.add(data);  // TODO: actually chunk properly
+		try
+		{
+			File f = File.newBuilder()
+				.setContent(chunked)
+				.freeze();
+
+			store.store(f.toSave());
+			return f;
+		}
+		catch (Exception e)
+		{
+			String message = "Unable to save user data: " + e.getMessage();
+			log.warning(message);
+			throw new IOException(message);
+		}
+	}
 
 	/** Name of the Core {@link Logger}. */
 	public static final String CORE_LOG_NAME = "me.footlights.core";
+
+	private static Logger log = Logger.getLogger(Core.class.getCanonicalName());
 
 	/** Our keychain */
 	private Keychain keychain;

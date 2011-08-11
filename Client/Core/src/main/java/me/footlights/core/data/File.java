@@ -118,6 +118,15 @@ public class File implements me.footlights.File
 	}
 
 
+	/** Encrypted blocks to be saved in a {@link Store}. */
+	public List<EncryptedBlock> toSave()
+	{
+		LinkedList<EncryptedBlock> everything = Lists.newLinkedList(ciphertext);
+		everything.push(header);
+
+		return everything;
+	}
+
 	/**
 	 * The contents of the file.
 	 *  
@@ -129,15 +138,6 @@ public class File implements me.footlights.File
 		for(Block b : plaintext) content.add(b.content());
 
 		return content;
-	}
-
-	/** Encrypted blocks to be saved in a {@link Store}. */
-	List<EncryptedBlock> toSave()
-	{
-		LinkedList<EncryptedBlock> everything = Lists.newLinkedList(ciphertext);
-		everything.push(header);
-
-		return everything;
 	}
 
 	/** Default constructor; produces an anonymous file */

@@ -32,6 +32,16 @@ public class Block implements FootlightsPrimitive
 			return this;
 		}
 
+		/**
+		 * Specify a particular size for the {@link Block} to end up with.
+		 * If unspecified, the size of the {@link Block} will be a power of 2.
+		 */
+		public Builder setDesiredSize(int bytes)
+		{
+			this.desiredSize = bytes;
+			return this;
+		}
+
 		public Builder setNamingAlgorithm(String a) throws NoSuchAlgorithmException
 		{
 			fingerprintBuilder.setAlgorithm(a);
@@ -92,11 +102,13 @@ public class Block implements FootlightsPrimitive
 
 		public Block build() throws FormatException
 		{
-			return new Block(links, content, padding, fingerprintBuilder);
+			return new Block(links, content, padding, desiredSize,
+				fingerprintBuilder);
 		}
 
 		private Builder() {}
 
+		private int desiredSize = 0;
 		private List<Link> links = Lists.newArrayList();
 		private ByteBuffer content = ByteBuffer.allocate(0);
 		private ByteBuffer padding;
@@ -190,15 +202,16 @@ public class Block implements FootlightsPrimitive
 	/**
 	 * Private constructor; use {@link #parse} or {@link #newBuilder}.
 	 *
-	 * @param padding    Random padding at the end of the block. If null,
-	 *                   the constructor will generate random padding. If
-	 *                   non-null, the padding must be of precisely the
-	 *                   correct length to pad the block out to a total length
-	 *                   of a power of two: <b>only</b> do this when parsing
-	 *                   an existing, correctly-padded block.
+	 * @param padding     Random padding at the end of the block. If null,
+	 *                    the constructor will generate random padding. If
+	 *                    non-null, the padding must be of precisely the
+	 *                    correct length to pad the block out to a total length
+	 *                    of a power of two: <b>only</b> do this when parsing
+	 *                    an existing, correctly-padded block.
+	 * @param desiredSize The desired block size, or 0 for "automatically size to a power of 2"
 	 */
 	private Block(List<Link> links, ByteBuffer content, ByteBuffer padding,
-			Fingerprint.Builder fingerprintBuilder)
+			int desiredSize, Fingerprint.Builder fingerprintBuilder)
 		throws FormatException
 	{
 		this.links    = Collections.unmodifiableList(links);
@@ -208,6 +221,9 @@ public class Block implements FootlightsPrimitive
 		for (Link link : links) byteCount += link.bytes();
 		int dataOffset = byteCount;
 		byteCount += content.limit();
+
+		// Do we want the block to be a particular size?
+		if (desiredSize != 0) byteCount = desiredSize;
 
 		// Calculate N = log_2(length)
 		byte N;
@@ -263,6 +279,10 @@ public class Block implements FootlightsPrimitive
 		// That's the last of the raw bytes.
 		rawBytes.rewind();
 		this.bytes = rawBytes;
+		if ((desiredSize != 0) && (desiredSize != this.bytes.limit()))
+			throw new IllegalArgumentException(
+				"Unable to construct a " + desiredSize + "B block; is it a power of 2?"
+				 + " The nearest possible block size is " + this.bytes.limit() + "B.");
 
 		// Now that our raw bytes have been completely determined, calculate
 		// the block's name (based on a fingerprint of its contents).

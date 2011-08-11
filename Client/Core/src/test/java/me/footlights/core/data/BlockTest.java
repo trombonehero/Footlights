@@ -80,4 +80,26 @@ public class BlockTest
 
 		assertEquals(original, parsed);
 	}
+
+	@Test public void blockSizes() throws Throwable
+	{
+		final int[] acceptable = { 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 65536 };
+		final int[] unacceptable = { 15, 17, 31 };
+
+		for (int size : acceptable)
+		{
+			Block b = Block.newBuilder().setDesiredSize(size).build();
+			assertEquals(size, b.bytes());
+		}
+
+		for (int size : unacceptable)
+		{
+			try
+			{
+				Block.newBuilder().setDesiredSize(size).build();
+				fail("We should not be able to build a " + size + "B Block");
+			}
+			catch (IllegalArgumentException e) { /* correct error */ }
+		}
+	}
 }

@@ -1,14 +1,13 @@
 package me.footlights.core.plugin;
 
-
-import me.footlights.core.Core;
+import me.footlights.core.Footlights;
 import me.footlights.plugin.KernelInterface;
 
 
 /** Services requests from plugins */
 public class PluginServer implements KernelInterface
 {
-	public PluginServer(Core kernel)
+	public PluginServer(Footlights kernel)
 	{
 		this.kernel = kernel;
 	}
@@ -23,5 +22,5 @@ public class PluginServer implements KernelInterface
 
 
 	/** The system core */
-	private Core kernel;
+	private Footlights kernel;
 }

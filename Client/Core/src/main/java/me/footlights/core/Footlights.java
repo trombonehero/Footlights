@@ -4,11 +4,12 @@ import java.net.URI;
 import java.util.*;
 
 import me.footlights.core.plugin.*;
+import me.footlights.plugin.KernelInterface;
 
 
 
 /** Interface to the software core */
-public interface Footlights
+public interface Footlights extends KernelInterface
 {
 	public void registerUI(UI ui);
 	public void deregisterUI(UI ui);

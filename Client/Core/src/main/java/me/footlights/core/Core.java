@@ -1,11 +1,14 @@
 package me.footlights.core;
 
-import java.io.*;
+import java.io.FileInputStream;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.crypto.Keychain;
@@ -20,13 +23,18 @@ public class Core implements Footlights
 	{
 		String configDirName = "~/.footlights/";
 
-		File configDir = new File(configDirName);
+		java.io.File configDir = new java.io.File(configDirName);
 		configDir.mkdir();
 
 		keychain = new Keychain();
 		final String keychainFileName = configDirName + "/keychain";
 
-		try { keychain.importKeystoreFile(new FileInputStream(new File(keychainFileName))); }
+		try
+		{
+			keychain.importKeystoreFile(
+				new FileInputStream(
+					new java.io.File(keychainFileName)));
+		}
 		catch (Exception e)
 		{
 			Logger.getLogger(Core.class.getName())
@@ -34,7 +42,7 @@ public class Core implements Footlights
 		}
 
 		plugins          = Maps.newHashMap();
-		uis              = new LinkedList<UI>();
+		uis              = Lists.newArrayList();
 	}
 
 

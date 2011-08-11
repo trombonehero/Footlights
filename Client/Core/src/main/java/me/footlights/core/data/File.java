@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
  *
  * Files are immutable; to modify a file, you must create and freeze a {@link MutableFile}.
  */
-public class File
+public class File implements me.footlights.File
 {
 	public static MutableFile newBuilder() { return new MutableFile(); }
 	public static class MutableFile

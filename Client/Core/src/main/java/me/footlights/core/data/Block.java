@@ -283,6 +283,14 @@ public class Block implements FootlightsPrimitive
 	/** PRNG for padding bytes. */
 	private static final Random random = new Random();
 
+	/** The number of bytes required to store an empty {@link Block}. */
+	static final int OVERHEAD_BYTES;
+	static
+	{
+		try { OVERHEAD_BYTES = Block.newBuilder().build().bytes(); }
+		catch (FormatException e) { throw new RuntimeException(e); }
+	}
+
 	private final Fingerprint fingerprint;
 	private final List<Link> links;
 	private final ByteBuffer content;

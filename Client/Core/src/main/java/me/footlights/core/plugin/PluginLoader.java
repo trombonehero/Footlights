@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.Maps;
 
-import me.footlights.boot.Bytecode;
 import me.footlights.core.Preconditions;
 import me.footlights.plugin.Plugin;
 

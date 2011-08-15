@@ -26,19 +26,19 @@ public class Core implements Footlights
 {
 	public Core()
 	{
-		String configDirName = "~/.footlights/";
-
-		java.io.File configDir = new java.io.File(configDirName);
-		configDir.mkdir();
+		try { prefs = Preferences.loadFromDefaultLocation(); }
+		catch (IOException e)
+		{
+			log.severe("Unable to load Footlights preferences");
+			throw new RuntimeException(e);
+		}
 
 		keychain = new Keychain();
-		final String keychainFileName = configDirName + "/keychain";
-
 		try
 		{
 			keychain.importKeystoreFile(
 				new FileInputStream(
-					new java.io.File(keychainFileName)));
+					new java.io.File(prefs.getString(FileBackedPreferences.KEYCHAIN_KEY))));
 		}
 		catch (Exception e)
 		{
@@ -48,7 +48,11 @@ public class Core implements Footlights
 
 		plugins          = Maps.newHashMap();
 		uis              = Lists.newArrayList();
-		store            = DiskStore.newBuilder().setDefaultDirectory().build();
+		store            =
+			DiskStore.newBuilder()
+				.setPreferences(prefs)
+				.setDefaultDirectory()
+				.build();
 	}
 
 
@@ -117,8 +121,10 @@ public class Core implements Footlights
 
 	/** Name of the Core {@link Logger}. */
 	public static final String CORE_LOG_NAME = "me.footlights.core";
-
 	private static Logger log = Logger.getLogger(Core.class.getCanonicalName());
+
+	/** User preferences. */
+	private Preferences prefs;
 
 	/** Our keychain */
 	private Keychain keychain;

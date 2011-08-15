@@ -24,19 +24,14 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 	/** The key used to store the cache directory in Preferences. */
 	public static final String CACHE_DIR_KEY = "footlights.cachedir";
 
+	/** The key used to store the location of the Keychain. */
+	static final String KEYCHAIN_KEY = "footlights.keychain";
+
 	/** Path separator ('/' on UNIX, '\' on Windows). */ 
 	private static final String SEP = System.getProperty("file.separator");
 
 	/** The user's home directory. */
 	private static final String HOME = System.getProperty("user.home");
-
-	/** The configuration directory is OS-specific, but always relative to $HOME. */
-	private static final String FOOTLIGHTS_DIRECTORY =
-		HOME + SEP
-			+ (System.getProperty("os.name").equals("Windows")
-				? ("Application Support" + SEP + "Footlights")
-				: (".footlights")
-			);
 
 
 	static FileBackedPreferences loadFromDefaultLocation() throws IOException
@@ -44,23 +39,11 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 		return load(openOrCreateConfigFile("Footlights"));
 	}
 
-	/** Create the configuration dir and file. */
-	static File openOrCreateConfigFile(String name)
-	{
-		// Ensure that the config dir exists.
-		File dir = new File(FOOTLIGHTS_DIRECTORY);
-		dir.mkdirs();
-
-		return new File(dir, name + ".properties");
-	}
-
 
 	/** Load the preferences in a given file. */
 	static FileBackedPreferences load(File file) throws IOException
 	{
 		Properties properties = new Properties();
-		properties.setProperty(CACHE_DIR_KEY, FOOTLIGHTS_DIRECTORY);
-
 		if (file.exists())
 		{
 			InputStream in = new FileInputStream(file); 
@@ -69,7 +52,32 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 		}
     	else file.createNewFile();
 
+		if (!properties.containsKey(CACHE_DIR_KEY))
+			properties.setProperty(CACHE_DIR_KEY, file.getParent() + SEP + "cache");
+
+		if (!properties.containsKey(KEYCHAIN_KEY))
+			properties.setProperty(KEYCHAIN_KEY, file.getParent() + SEP + "keychain");
+
 		return new FileBackedPreferences(properties, file);
+	}
+
+
+	/** Create the configuration dir and file. */
+	private static File openOrCreateConfigFile(String name)
+	{
+		// The Footlights directory is OS-specific.
+		String homeDir = HOME + SEP;
+
+		if (System.getProperty("os.name").contains("Windows"))
+			homeDir += ("Application Support" + SEP + "Footlights");
+		else
+			homeDir += ".footlights";
+
+		// Ensure that the config dir exists.
+		File dir = new File(homeDir);
+		dir.mkdirs();
+
+		return new File(dir, name + ".properties");
 	}
 
 

@@ -95,19 +95,28 @@ public class Preferences
 
 		try
 		{
-    		final Map<String,String> cryptoDefaults = cryptoDefaults(Security.getProvider("BC"));
+			// Provide some sane default for crypto settings and storage locations.
+			final Map<String,String> defaultPrefs = Maps.newHashMap();
+			defaultPrefs.putAll(cryptoDefaults(Security.getProvider("BC")));
+
+			// OS-specific home directory.
+			String homeDir = System.getProperty("user.home") + System.getProperty("path.separator");
+			if (System.getProperty("os.name").contains("Win")) homeDir += "Footlights";
+			else homeDir += ".footlights";
+			defaultPrefs.put("home", homeDir);
+
     		defaults = new PreferenceStorageEngine()
     		{
-				@Override protected Map<String,?> getAll() { return cryptoDefaults; }
+				@Override protected Map<String,?> getAll() { return defaultPrefs; }
 
-    			@Override
-    			protected String getRaw(String key) throws NoSuchElementException
-    			{
-    				if (!cryptoDefaults.containsKey(key))
-    					throw new NoSuchElementException(key);
+				@Override
+				protected String getRaw(String key) throws NoSuchElementException
+				{
+					if (!defaultPrefs.containsKey(key))
+						throw new NoSuchElementException(key);
 
-    				return cryptoDefaults.get(key);
-    			}
+					return defaultPrefs.get(key);
+				}
     		};
 		}
 		catch (GeneralSecurityException e) { throw new ConfigurationError(e); }

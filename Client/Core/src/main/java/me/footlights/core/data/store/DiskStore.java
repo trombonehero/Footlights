@@ -20,12 +20,13 @@ public class DiskStore extends LocalStore
 	{
 		public DiskStore build() { return new DiskStore(dir, cache); }
 
-		public Builder setDirectory(File dir)		{ this.dir = dir;		return this; }
-		public Builder setCache(LocalStore cache)	{ this.cache = cache;	return this; }
+		public Builder setCache(LocalStore cache)			{ this.cache = cache;	return this; }
+		public Builder setDirectory(File dir)				{ this.dir = dir;		return this; }
+		public Builder setPreferences(Preferences prefs)	{ this.prefs = prefs;	return this; }
 
 		public Builder setDefaultDirectory()
 		{
-			dir = new File(preferences.getString(FileBackedPreferences.CACHE_DIR_KEY));
+			dir = new File(prefs.getString(FileBackedPreferences.CACHE_DIR_KEY));
 			dir.mkdirs();
 
 			return this;
@@ -47,6 +48,7 @@ public class DiskStore extends LocalStore
 
 		private File dir;
 		private LocalStore cache;
+		private Preferences prefs = Preferences.getDefaultPreferences();
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -127,7 +129,4 @@ public class DiskStore extends LocalStore
 
 	/** The directory that we store files in. */
 	private final File dir;
-
-	/** Footlights-wide preferences. */
-	private static Preferences preferences = Preferences.getDefaultPreferences();
 }

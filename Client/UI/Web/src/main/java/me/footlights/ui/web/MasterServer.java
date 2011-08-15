@@ -74,6 +74,7 @@ public class MasterServer implements Runnable, WebServer
 				"The request path '" + path + "' contains '..'");
 
 		if(path.equals("/")) path = "index.html";
+		else if (path.startsWith("/")) path = path.substring(1);
 		InputStream in = getClass().getResourceAsStream(path);
 
 		if(in == null)

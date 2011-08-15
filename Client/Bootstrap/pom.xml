@@ -19,5 +19,11 @@
 			<version>1.0</version>
 			<optional>false</optional>
 		</dependency>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>footlights-core</artifactId>
+			<version>HEAD</version>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 </project>

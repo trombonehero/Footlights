@@ -25,10 +25,12 @@ class JavaScript
 	}
 
 	/** JavaScript for an Ajax call. */
-	public static JavaScript ajax(String code)
+	public static JavaScript ajax(String code) { return ajax(code, "context"); }
+	public static JavaScript ajax(String code, String context)
 	{
 		return new JavaScript()
-			.append("context.ajax('")
+			.append(context)
+			.append(".ajax('")
 			.append(JavaScript.sanitizeText(code))
 			.append("')");
 	}

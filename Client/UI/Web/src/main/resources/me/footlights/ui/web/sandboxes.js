@@ -26,6 +26,7 @@ sandboxes.create = function(name, context, x, y, width, height)
 	var sandbox =
 		{
 			ajax: function(request) { ajax(request, this); },
+			exec: function(request) { cajaVM.compileModule(request)({ 'context': this }); },
 			name: name,
 			root: proxy(content),
 		};

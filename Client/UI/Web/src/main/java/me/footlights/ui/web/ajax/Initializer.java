@@ -31,29 +31,18 @@ class Initializer implements AjaxHandler
 		script.append("buttons.innerHTML='';");
 
 		script.append("var foo = sandboxes.create('foo', { appendChild: function(node) { context.root.appendChild(node); } }, 0, 0, 200, 200);");
-/*		script.append("context.root.appendChild(foo.root);");
-		script.append("foo.root.className = 'sandbox';");
-		script.append("foo.root.appendChild(document.createTextNode('foo'));");
-*/
+		script.append("foo.ajax('hello');");
+
 		JavaScript fooAjax = new JavaScript();
 		fooAjax.append("foo.ajax(" + HelloWorldPlugin.PATH + ");");
 
 		script.append(button("Echo", ajax("echo stuff")));
-		script.append(button("Foo", ajax(HelloWorldPlugin.PATH)));
+		script.append(button("Foo", ajax("hello", "foo")));
 		script.append(button("Cajole", ajax("cajole")));
 		script.append(button("Good Plugin",
 				ajax("load_plugin /good.jar!/me.footlights.demo.plugins.good.GoodPlugin")));
 		script.append(button("Wicked Plugin",
 				ajax("load_plugin /wicked.jar!/me.footlights.demo.plugins.wicked.WickedPlugin")));
-
-		/*
-		response.append("var sandbox = document.createElement('div');");
-		response.append("sandbox.className = 'sandbox';");
-		response.append("sandbox.width = 400;");
-		response.append("document.getElementById('response').appendChild(sandbox);");
-		response.append("retrieveAndRunModule('sandbox.js', 'sandboxed', sandbox, log);");
-		response.append("};");
-		*/
 
 		script.append(button("Reset", ajax("reset")));
 

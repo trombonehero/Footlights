@@ -3,7 +3,13 @@
 // Illegal sandbox names: 'create' and 'global'.
 var sandboxes = {};
 
-sandboxes.create = function(name, context, x, y, width, height)
+sandboxes.getOrCreate = function(name, parent, log, x, y, width, height)
+{
+	if (name in sandboxes) return sandboxes[name]
+	else return sandboxes.create(name, parent, log, x, y, width, height)
+}
+
+sandboxes.create = function(name, parent, log, x, y, width, height)
 {
 	var container = document.createElement('div');
 

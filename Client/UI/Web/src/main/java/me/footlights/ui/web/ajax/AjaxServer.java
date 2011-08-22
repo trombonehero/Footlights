@@ -44,7 +44,7 @@ public class AjaxServer implements WebServer
 		// TODO(jon): do this registration somewhere else
 		register(new GlobalContext(footlights));
 		register(new Context("foo").register("hello", new HelloWorldPlugin()));
-		register(new Context("bar").register("hello", new HelloWorldPlugin()));
+		register(new Context("echo").register("echo", new EchoPlugin()));
 	}
 
 	@Override public String name() { return "Ajax"; }

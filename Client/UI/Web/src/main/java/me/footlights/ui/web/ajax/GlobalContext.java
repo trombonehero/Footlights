@@ -28,17 +28,6 @@ class GlobalContext extends Context
 
 		register("initialize", new Initializer());
 		register("load_plugin", new PluginLoader(footlights));
-		register("echo", new AjaxHandler() {
-			@Override
-			public JavaScript service(Request request)
-			{
-				return
-					new JavaScript()
-						.append("showAjaxResponse('echo', '")
-						.append(request.path().replaceFirst("^/?echo%20", ""))
-						.append("');");
-			}
-		});
 		register("reset", new AjaxHandler() {
 			@Override
 			public JavaScript service(Request request)

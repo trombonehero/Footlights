@@ -82,6 +82,24 @@ class Context
 	}
 
 
+	@Override public String toString()
+	{
+		StringBuffer sb = new StringBuffer();
+		sb.append("Context { name: '");
+		sb.append(name);
+		sb.append("', handlers: [ ");
+		for (Map.Entry<String, AjaxHandler> handler : handlers.entrySet())
+		{
+			sb.append("'");
+			sb.append(handler.getKey());
+			sb.append("' ");
+		}
+		sb.append("] }");
+
+		return sb.toString();
+	}
+
+
 	/** Context name, as understood by the ECMAScript. */
 	final String name;
 

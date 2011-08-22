@@ -54,8 +54,11 @@ public class AjaxServer implements WebServer
 		{
 			Context context = getContext(request);
 			if (context != null)
+			{
+				log("Allowing " + context + " to handle request");
 				return new ByteArrayInputStream(
 						context.service(request).toXML().getBytes());
+			}
 		}
 
 		String type = "";

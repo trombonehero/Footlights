@@ -83,7 +83,8 @@ class Context
 	@Override public String toString()
 	{
 		StringBuffer sb = new StringBuffer();
-		sb.append("Context { name: '");
+		sb.append(this.getClass().getSimpleName());
+		sb.append(" { name: '");
 		sb.append(name);
 		sb.append("', handlers: [ ");
 		for (Map.Entry<String, AjaxHandler> handler : handlers.entrySet())

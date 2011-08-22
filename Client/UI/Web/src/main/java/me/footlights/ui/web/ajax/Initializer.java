@@ -30,8 +30,8 @@ class Initializer implements AjaxHandler
 		script.append("var buttons = document.getElementById('buttons');");
 		script.append("buttons.innerHTML='';");
 
-		script.append("var echo = sandboxes.create('echo', { appendChild: function(node) { context.root.appendChild(node); } }, 0, 0, 200, 200);");
-		script.append("var foo = sandboxes.create('foo', { appendChild: function(node) { context.root.appendChild(node); } }, 0, 0, 200, 200);");
+		script.append("var echo = sandboxes.create('echo', rootContext, 0, 0, 200, 200);");
+		script.append("var foo = sandboxes.create('foo', rootContext, 0, 0, 200, 200);");
 		script.append("foo.ajax('hello');");
 
 		JavaScript fooAjax = new JavaScript();

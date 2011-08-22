@@ -31,7 +31,7 @@
 'use strict';
 
 // The global context.
-var context =
+var rootContext =
 {
 	ajax: function(request) { ajax(request, this); },
 	exec: function(code) { eval(code); },
@@ -60,7 +60,7 @@ var context =
 	var status = document.getElementById('status');
 	status.log = log;
 
-	ajax('initialize', context);
+	ajax('initialize', rootContext);
 })();
 		</script>
 

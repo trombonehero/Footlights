@@ -20,8 +20,8 @@ sandboxes.create = function(name, context, x, y, width, height)
 	// TODO: (x,y)
 	content.width = width;
 	content.height = height;
-	
-	context.appendChild(container);
+
+	parent.root.appendChild(container);
 
 	var sandbox =
 		{

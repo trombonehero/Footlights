@@ -25,7 +25,7 @@ class JavaScript
 	}
 
 	/** JavaScript for an Ajax call. */
-	public static JavaScript ajax(String code) { return ajax(code, "context"); }
+	public static JavaScript ajax(String code) { return ajax(code, "rootContext"); }
 	public static JavaScript ajax(String code, String context)
 	{
 		return new JavaScript()

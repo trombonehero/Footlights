@@ -39,32 +39,18 @@ class GlobalContext extends Context
 				return new JavaScript().append("window.location.reload()");
 			}
 		});
-		
-		
-		/*
-			if(request.path().equals("/cajole"))
+
+		register("cajole", new AjaxHandler()
 			{
-				type = "code";
-				context = "to-be-cajoled";
+				@Override public JavaScript service(Request request) throws Throwable
+				{
+					JavaScript code = new JavaScript();
+					code.append(
+						"var sandbox = sandboxes.getOrCreate('sandbox', rootContext, 0, 0, 200, 200);");
+//					code.append("sandbox.ajax('content/sandboxed.js')");
 
-				InputStream in = getClass().getResourceAsStream("content/sandbox.js");
-
-				final char[] buffer = new char[2048];
-				Reader reader = new InputStreamReader(in);
-				int bytes;
-				do {
-				  bytes = reader.read(buffer, 0, buffer.length);
-				  if (bytes > 0) content.append(buffer, 0, bytes);
-				} while (bytes >= 0);
-
-				content.append("");
-				/*
-				content.append("var sandbox = document.createElement('div');");
-				content.append("sandbox.className = 'sandbox';");
-				content.append("sandbox.width = 400;");
-				content.append("document.getElementById('content').appendChild(sandbox);");
-				content.append("retrieveAndRunModule('sandbox.js', 'sandboxed', sandbox, log);");
-				content.append("};");
-		 */
+					return code;
+				}
+			});
 	}
 }

@@ -144,7 +144,12 @@ public class AjaxServer implements WebServer
 	
 	private Context getContext(Request request)
 	{
-		String contextName = request.query().get("context");
+		String contextName = null;
+
+		int slash = request.path().indexOf("/", 1);
+		if (slash > 0)
+			contextName = request.path().substring(1, slash);
+
 		if (contextName == null)
 		{
 			if (contexts.entrySet().isEmpty()) return null;

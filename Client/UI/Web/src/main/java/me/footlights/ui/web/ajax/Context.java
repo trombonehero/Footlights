@@ -41,14 +41,12 @@ class Context
 
 		try
 		{
-			AjaxHandler handler = handlers.get(
-					request.path()
-						.replaceFirst("^/", "")
-						.split("%20")[0]);
+			String path = request.path().replaceFirst("^/.*/", "");
+			AjaxHandler handler = handlers.get(path.split("%20")[0]);
 
 			if (handler == null)
 				throw new IllegalArgumentException(
-					"No '" + request.path() + "' in context " + this);
+					"No '" + path + "' in context " + this);
 
 			builder.append(handler.service(request).exec());
 		}

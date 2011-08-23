@@ -30,6 +30,12 @@ import java.io.PrintWriter;
  */
 class Response
 {
+	/** Shorthand for {@link #newBuilder().setError({@link FileNotFoundException}).build()}. */
+	static Response error(FileNotFoundException e) { return newBuilder().setError(e).build(); }
+
+	/** Shorthand for {@link #newBuilder().setError({@link Throwable}).build()}. */
+	static Response error(Throwable t) { return newBuilder().setError(t).build(); }
+
 	static Builder newBuilder() { return new Builder(); }
 	static class Builder
 	{

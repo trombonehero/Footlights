@@ -45,7 +45,6 @@ public class AjaxServer implements WebServer
 	}
 
 	@Override public String name() { return "Ajax"; }
-	@Override public String mimeType(String request) { return "text/xml"; }
 	@Override public Response handle(Request request)
 	{
 		{

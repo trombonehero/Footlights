@@ -37,31 +37,6 @@ public class MasterServer implements Runnable, WebServer
 
 
 	@Override public String name() { return "Master"; }
-	@Override public String mimeType(String path)
-	{
-		if(Pattern.matches("/", path))
-			return "text/html";
-
-		if(Pattern.matches("/.*\\.css", path))
-			return "text/css";
-
-		else if(Pattern.matches("/.*\\.gif", path))
-			return "image/gif";
-
-		else if(Pattern.matches("/.*\\.html", path))
-			return "text/html";
-
-		else if(Pattern.matches("/.*\\.jpe?g", path))
-			return "image/jpeg";
-
-		else if(Pattern.matches("/.*\\.js", path))
-			return "text/javascript";
-
-		else if(Pattern.matches("/.*\\.png", path))
-			return "image/png";
-
-		return "text/xml";
-	}
 
 	@Override public Response handle(Request request)
 		throws FileNotFoundException, SecurityException
@@ -152,6 +127,34 @@ public class MasterServer implements Runnable, WebServer
 			System.err.println("Web UI dying:");
 			e.printStackTrace(System.err);
 		}
+	}
+
+
+	/** Guess the MIME type for static content. */
+	private String mimeType(String path)
+	{
+		if(Pattern.matches("/", path))
+			return "text/html";
+
+		if(Pattern.matches("/.*\\.css", path))
+			return "text/css";
+
+		else if(Pattern.matches("/.*\\.gif", path))
+			return "image/gif";
+
+		else if(Pattern.matches("/.*\\.html", path))
+			return "text/html";
+
+		else if(Pattern.matches("/.*\\.jpe?g", path))
+			return "image/jpeg";
+
+		else if(Pattern.matches("/.*\\.js", path))
+			return "text/javascript";
+
+		else if(Pattern.matches("/.*\\.png", path))
+			return "image/png";
+
+		return "text/xml";
 	}
 
 

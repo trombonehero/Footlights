@@ -33,6 +33,28 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 		{
 			ajax: function(request) { ajax(request, this); },
 			exec: function(request) { cajaVM.compileModule(request)({ 'context': this }); },
+			load: function(filename)
+				{
+					var req = new XMLHttpRequest();
+					req.open('GET', 'static/' + this.name + '/' + filename);
+					req.onreadystatechange = function statechange()
+					{
+						switch (this.readyState)
+						{
+							case XMLHttpRequest.DONE:
+							case 4:  // Firefox 4 doesn't know that DONE==4!?
+								try { this.exec(this.responseText); }
+								catch(e)
+								{
+									this.log('Error compiling ' + filename + ': ' + e);
+									this.log(e.stack);
+								}
+								break;
+						}
+					};
+					req.send(null);
+				},
+			log: log,
 			name: name,
 			root: proxy(content),
 		};

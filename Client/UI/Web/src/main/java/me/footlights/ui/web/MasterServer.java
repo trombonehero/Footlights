@@ -122,56 +122,19 @@ public class MasterServer implements Runnable, WebServer
 				String rawRequest = in.readLine();
 				if(rawRequest == null) continue;
 
-				StringBuilder sb = new StringBuilder();
-				InputStream content = null;
+				Response.Builder response = Response.newBuilder();
 
 				try
 				{
 					Request request = new Request(rawRequest);
-					content = handle(request);
-
-					sb.append("HTTP/1.1 200 OK\n");
-					sb.append("Content-Type: " + mimeType(request.path()) + "\n");
+					response.setResponse(mimeType(request.path()), handle(request));
 				}
-				catch(FileNotFoundException e)
-				{
-					sb.append("HTTP/1.1 404 File Not Found\n");
-				}
-				catch(Throwable e)
-				{
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					PrintWriter writer = new PrintWriter(baos);
-
-					e.printStackTrace(writer);
-					writer.flush();
-
-					sb.append("HTTP/1.1 500 Server Error\n");
-					sb.append("\n");
-					sb.append("<html><body><pre>");
-					sb.append(baos.toString());
-					sb.append("</pre></body></html>");
-				}
-
-				sb.append("\n");
+				catch(FileNotFoundException e) { response.setError(e); }
+				catch(Throwable t) { response.setError(t); }
 
 				try
 				{
-					OutputStream out = socket.getOutputStream();
-					out.write(sb.toString().getBytes());
-	
-					if(content != null)
-					{
-						byte[] data = new byte[10240];
-						while(true)
-						{
-							int bytes = content.read(data);
-							
-							if(bytes <= 0) break;
-							else out.write(data, 0, bytes);
-						}
-					}
-					out.flush();
-	
+					response.build().write(socket.getOutputStream());
 					log("Response sent");
 	
 					socket.close();

@@ -34,9 +34,6 @@ class Initializer implements AjaxHandler
 		script.append("var foo = sandboxes.create('foo', rootContext, 0, 0, 200, 200);");
 		script.append("foo.ajax('hello');");
 
-		JavaScript fooAjax = new JavaScript();
-		fooAjax.append("foo.ajax(" + HelloWorldPlugin.PATH + ");");
-
 		script.append(button("Echo", ajax("echo stuff", "echo")));
 		script.append(button("Foo", ajax("hello", "foo")));
 		script.append(button("Cajole", ajax("cajole")));

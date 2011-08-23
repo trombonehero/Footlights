@@ -10,15 +10,15 @@
 var foo = 'foo';
 
 try { document.write('EVIL HACKERY'); }
-catch (e) { log.log('document.write() not allowed (good!)'); }
+catch (e) { context.log('document.write() not allowed (good!)'); }
 
 try { alert('EVIL HACKERY - your browser must not support ES5 Strict'); }
-catch (e) { log.log('alert() not allowed (good!)'); }
+catch (e) { context.log('alert() not allowed (good!)'); }
 
 if (context.root.parentNode)
-	log.log('security error: context.root.parentNode != null');
+	context.log('security error: context.root.parentNode != null');
 
-log.log('context.root: ' + JSON.stringify(context.root));
+context.log('context.root: ' + JSON.stringify(context.root));
 
 var text = context.name + ' - brought to you by sandboxed JavaScript code';
 var p = context.root.appendElement('b');
@@ -31,9 +31,9 @@ try
 {
 	var s = context.root.appendElement('script');
 	s.src = 'http://www.google.com/';
-	log.log('Script created a <script/> element (bad!)');
+	context.log('Script created a <script/> element (bad!)');
 }
-catch (e) { log.log('Creating <script/> element not allowed (good!)'); }
+catch (e) { context.log('Creating <script/> element not allowed (good!)'); }
 
 var imageSize = 256;
 var previousSize = imageSize;
@@ -52,7 +52,7 @@ try
 	remoteImage.height = imageSize;
 	remoteImage.width = imageSize;
 }
-catch (e) { log.log('Failed to load remote image (good!)'); }
+catch (e) { context.log('Failed to load remote image (good!)'); }
 
 var remoteImage = context.root.appendElement('img');
 remoteImage.src = 'www.google.com/images/logos/ps_logo2.png';

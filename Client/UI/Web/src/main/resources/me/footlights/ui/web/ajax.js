@@ -13,7 +13,7 @@ function ajaxWithCallback(request, context, callback)
 		xhr.onreadystatechange = function() { callback(request, context); };
 
 		console.log('sending request ' + request + ' to context ' + context.name);
-		request = context.name + '/' + request;
+		request = 'ajax/' + context.name + '/' + request;
 		console.log(request);
 
 		xhr.open('GET', 'http://localhost:4567/' + request, true);

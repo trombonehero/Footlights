@@ -31,7 +31,9 @@ public class WebUI extends me.footlights.core.UI
 		this.port = WEB_PORT;
 
 		log("Starting server() on port " + port +  "...");
-		server = new MasterServer(port, footlights, new AjaxServer(footlights));
+		server = new MasterServer(port, footlights,
+			new AjaxServer(footlights),
+			new StaticContentServer(null));
 	}
 
 

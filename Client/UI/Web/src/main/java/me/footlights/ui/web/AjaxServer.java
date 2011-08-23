@@ -46,15 +46,17 @@ public class AjaxServer implements WebServer
 
 	@Override public String name() { return "Ajax"; }
 	@Override public String mimeType(String request) { return "text/xml"; }
-	@Override public InputStream handle(Request request)
+	@Override public Response handle(Request request)
 	{
 		{
 			Context context = getContext(request);
 			if (context != null)
 			{
 				log("Allowing " + context + " to handle request");
-				return new ByteArrayInputStream(
-						context.service(request).toXML().getBytes());
+				return Response.newBuilder()
+					.setResponse("text/xml",
+						new ByteArrayInputStream(context.service(request).toXML().getBytes()))
+					.build();
 			}
 		}
 
@@ -127,7 +129,9 @@ public class AjaxServer implements WebServer
 		sb.append("\t<content>" + content + "</content>\n");
 		sb.append("</response>");
 
-		return new ByteArrayInputStream(sb.toString().getBytes());
+		return Response.newBuilder()
+			.setResponse("text/xml", new ByteArrayInputStream(sb.toString().getBytes()))
+			.build();
 	}
 
 

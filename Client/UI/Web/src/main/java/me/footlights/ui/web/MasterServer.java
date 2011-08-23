@@ -63,7 +63,7 @@ public class MasterServer implements Runnable, WebServer
 		return "text/xml";
 	}
 
-	@Override public InputStream handle(Request request)
+	@Override public Response handle(Request request)
 		throws FileNotFoundException, SecurityException
 	{
 		String contentPattern = "/(.*\\.((css)|(html)|(ico)|(jpeg)|(js)))?";
@@ -80,7 +80,7 @@ public class MasterServer implements Runnable, WebServer
 	
 	
 	/** Find static content, e.g. HTML, CSS or images */
-	public InputStream findStaticContent(String path)
+	public Response findStaticContent(String path)
 		throws FileNotFoundException, SecurityException
 	{
 		if(path.contains(".."))
@@ -93,8 +93,10 @@ public class MasterServer implements Runnable, WebServer
 
 		if(in == null)
 			throw new FileNotFoundException("Unable to find '" + path + "'");
-		
-		else return in;
+
+		return Response.newBuilder()
+			.setResponse(mimeType(path), in)
+			.build();
 	}
 
 
@@ -121,19 +123,19 @@ public class MasterServer implements Runnable, WebServer
 				String rawRequest = in.readLine();
 				if(rawRequest == null) continue;
 
-				Response.Builder response = Response.newBuilder();
+				Response response;
 
 				try
 				{
 					Request request = new Request(rawRequest);
-					response.setResponse(mimeType(request.path()), handle(request));
+					response = handle(request);
 				}
-				catch(FileNotFoundException e) { response.setError(e); }
-				catch(Throwable t) { response.setError(t); }
+				catch(FileNotFoundException e) { response = Response.error(e); }
+				catch(Throwable t) { response = Response.error(t); }
 
 				try
 				{
-					response.build().write(socket.getOutputStream());
+					response.write(socket.getOutputStream());
 					log("Response sent");
 	
 					socket.close();

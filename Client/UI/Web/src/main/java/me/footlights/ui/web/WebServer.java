@@ -27,6 +27,6 @@ public interface WebServer
 	public String mimeType(String request);
 
 	/** Handle a user request. */
-	public InputStream handle(Request request)
+	public Response handle(Request request)
 		throws FileNotFoundException, SecurityException;
 }

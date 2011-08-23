@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
 import java.io.*;
 import java.net.URI;
@@ -22,9 +22,6 @@ import java.util.regex.*;
 
 import me.footlights.core.*;
 import me.footlights.core.plugin.PluginWrapper;
-import me.footlights.ui.web.Constants;
-import me.footlights.ui.web.Request;
-import me.footlights.ui.web.WebServer;
 
 import static me.footlights.core.Log.log;
 

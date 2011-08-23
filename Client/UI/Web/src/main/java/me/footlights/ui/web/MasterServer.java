@@ -24,7 +24,6 @@ import java.net.SocketException;
 import java.util.regex.*;
 
 import me.footlights.core.Footlights;
-import me.footlights.ui.web.ajax.AjaxServer;
 
 
 /** Acts as a master server for Basic UI, JavaScript and Ajax */

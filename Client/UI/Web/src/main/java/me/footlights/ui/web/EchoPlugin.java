@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
-import me.footlights.ui.web.Request;
 
 
 /** A plugin that echoes its input. */

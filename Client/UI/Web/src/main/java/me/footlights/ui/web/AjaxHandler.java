@@ -13,21 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
-
-import me.footlights.ui.web.Request;
+package me.footlights.ui.web;
 
 
-/** A plugin that just prints "Hello, world!" within its sandbox. */
-class HelloWorldPlugin implements AjaxHandler
+
+/** An object which can process Ajax requests. */
+public interface AjaxHandler
 {
-	static final String PATH = "foo";
-
-	@Override
-	public JavaScript service(Request request) { return CODE; }
-
-	private static final JavaScript CODE =
-		new JavaScript()
-			.append("context.root.appendElement('div')")
-			.append(".appendText('Hello, world!')");
+	/** Service a request. */
+	JavaScript service(Request request) throws Throwable;
 }

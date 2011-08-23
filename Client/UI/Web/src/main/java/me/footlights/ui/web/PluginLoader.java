@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
 import java.net.URI;
 
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
-import me.footlights.ui.web.Constants;
-import me.footlights.ui.web.Request;
 
 
 public class PluginLoader implements AjaxHandler

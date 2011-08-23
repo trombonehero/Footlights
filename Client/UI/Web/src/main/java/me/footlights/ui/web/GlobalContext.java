@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
 import me.footlights.core.Footlights;
-import me.footlights.ui.web.Request;
 
 
 /** The global context - code sent here has full DOM access. */
@@ -47,7 +46,7 @@ class GlobalContext extends Context
 					JavaScript code = new JavaScript();
 					code.append(
 						"var sandbox = sandboxes.getOrCreate('sandbox', rootContext, 0, 0, 200, 200);");
-//					code.append("sandbox.ajax('content/sandboxed.js')");
+					code.append("sandbox.load('sandboxed.js')");
 
 					return code;
 				}

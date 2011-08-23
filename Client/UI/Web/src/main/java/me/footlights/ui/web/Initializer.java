@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
-import me.footlights.ui.web.Request;
 
-import static me.footlights.ui.web.ajax.JavaScript.ajax;
+import static me.footlights.ui.web.JavaScript.ajax;
 
 
 /** Initializes the UI after the static JavaScript has loaded. */

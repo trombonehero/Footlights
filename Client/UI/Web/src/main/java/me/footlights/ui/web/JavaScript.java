@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
 /** Some JavaScript code (guarantee closure?). */
 class JavaScript
@@ -25,14 +25,15 @@ class JavaScript
 	}
 
 	/** JavaScript for an Ajax call. */
-	public static JavaScript ajax(String code) { return ajax(code, "rootContext"); }
+	public static JavaScript ajax(String code) { return ajax(code, "global"); }
 	public static JavaScript ajax(String code, String context)
 	{
 		return new JavaScript()
-			.append(context)
-			.append(".ajax('")
-			.append(JavaScript.sanitizeText(code))
-			.append("')");
+			.append("sandboxes.getOrCreate(")
+			.append("'").append(context).append("', ")
+			.append("sandboxes['global']")
+			.append(")")
+			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("')");
 	}
 
 	/** Make a string safe to put within single quotes. */
@@ -64,7 +65,12 @@ class JavaScript
 	private String code()
 	{
 		// TODO(jon): sanitization?
-		if (frozen == null) frozen = builder.toString();
+		if (frozen == null)
+			frozen = builder.toString()
+				.replaceAll("\\{", "{\n")
+				.replaceAll("\\}", "\n}")
+				.replaceAll(";", ";\n");
+
 		return frozen;
 	}
 

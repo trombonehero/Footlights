@@ -17,7 +17,6 @@ package me.footlights.ui.web;
 
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
-import me.footlights.ui.web.ajax.AjaxServer;
 
 import static me.footlights.core.Log.log;
 import static me.footlights.ui.web.Constants.*;

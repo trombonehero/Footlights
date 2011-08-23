@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web.ajax;
+package me.footlights.ui.web;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import me.footlights.ui.web.Request;
 
 
 /** Handle to a client-side context (ECMAScript sandbox or 'window'). */ 

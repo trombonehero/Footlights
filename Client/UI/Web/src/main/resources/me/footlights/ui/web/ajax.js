@@ -5,11 +5,12 @@ else if(window.ActiveXObject) { xhr = new ActiveXObject("Microsoft.XMLHTTP"); }
 
 
 
-function ajax(request, context)
+function ajax(request, context) { ajaxWithCallback(request, context, ajaxCallback); }
+function ajaxWithCallback(request, context, callback)
 {
 	try
 	{
-		xhr.onreadystatechange = function() { ajaxCallback(request, context); };
+		xhr.onreadystatechange = function() { callback(request, context); };
 
 		console.log('sending request ' + request + ' to context ' + context.name);
 		request = context.name + '/' + request;

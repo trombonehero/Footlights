@@ -25,6 +25,15 @@ import java.util.Map;
 /** A request from the client, broken into path, query and fragment. */
 public class Request
 {
+	/** Identify the "/prefix/of/the/path/to/foo.js". */
+	public String prefix()
+	{
+		int slash = path.indexOf("/", 1);
+
+		if (slash == -1) return "";
+		else return path.substring(1, slash);
+	}
+
 	/**
 	 * Strip the path's prefix.
 	 *

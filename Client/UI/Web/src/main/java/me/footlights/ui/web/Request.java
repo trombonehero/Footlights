@@ -25,6 +25,18 @@ import java.util.Map;
 /** A request from the client, broken into path, query and fragment. */
 public class Request
 {
+	/**
+	 * Strip the path's prefix.
+	 *
+	 * e.g. "/static/path/to/foo.js" becomes "path/to/foo.js"
+	 * @return
+	 */
+	public Request shift()
+	{
+		String stripped = path.substring(path.indexOf("/", 1));
+		return new Request(stripped, query, fragment);
+	}
+
 	/** Construct from an HTTP request string (no body). */
 	Request(String rawRequest) throws InvalidRequestException
 	{
@@ -62,6 +74,13 @@ public class Request
 		}
 
 		path = tmp[0];
+	}
+
+	private Request(String path, Map<String, String> query, String fragment)
+	{
+		this.path = path;
+		this.query = query;
+		this.fragment = fragment;
 	}
 
 	/** The path (everything before '&'). */

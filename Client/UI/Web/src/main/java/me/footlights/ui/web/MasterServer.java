@@ -39,21 +39,25 @@ public class MasterServer implements Runnable, WebServer
 	@Override public String name() { return "Master"; }
 
 	@Override public Response handle(Request request)
-		throws FileNotFoundException, SecurityException
 	{
 		String contentPattern = "/(.*\\.((css)|(html)|(ico)|(jpeg)|(js)))?";
 
-		if(Pattern.matches(contentPattern, request.path()))		
-			return findStaticContent(request.path());
-
-		else
+		try
 		{
-			if(request.equals("shutdown")) done = true;
-			return ajaxServer.handle(request);
+			if(Pattern.matches(contentPattern, request.path()))
+				return findStaticContent(request.path());
+
+			else
+			{
+				if(request.equals("shutdown")) done = true;
+				return ajaxServer.handle(request);
+			}
 		}
+		catch(FileNotFoundException e) { return Response.error(e); }
+		catch(Throwable t) { return Response.error(t); }
 	}
-	
-	
+
+
 	/** Find static content, e.g. HTML, CSS or images */
 	public Response findStaticContent(String path)
 		throws FileNotFoundException, SecurityException
@@ -97,16 +101,7 @@ public class MasterServer implements Runnable, WebServer
 
 				String rawRequest = in.readLine();
 				if(rawRequest == null) continue;
-
-				Response response;
-
-				try
-				{
-					Request request = new Request(rawRequest);
-					response = handle(request);
-				}
-				catch(FileNotFoundException e) { response = Response.error(e); }
-				catch(Throwable t) { response = Response.error(t); }
+				Response response = handle(new Request(rawRequest));
 
 				try
 				{

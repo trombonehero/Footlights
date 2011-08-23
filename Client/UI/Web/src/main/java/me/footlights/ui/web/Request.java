@@ -42,7 +42,12 @@ public class Request
 	 */
 	public Request shift()
 	{
-		String stripped = path.substring(path.indexOf("/", 1));
+		if (path.isEmpty()) return this;
+
+		int slash = path.indexOf("/", 1);
+		if (slash == -1) return this;
+
+		String stripped = path.substring(slash);
 		return new Request(stripped, query, fragment);
 	}
 

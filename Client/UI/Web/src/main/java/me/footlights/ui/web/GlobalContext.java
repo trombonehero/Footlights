@@ -45,7 +45,7 @@ class GlobalContext extends Context
 				{
 					JavaScript code = new JavaScript();
 					code.append(
-						"var sandbox = sandboxes.getOrCreate('sandbox', rootContext, 0, 0, 200, 200);");
+						"var sandbox = sandboxes.getOrCreate('sandbox', rootContext, rootContext.log, 0, 0, 200, 200);");
 					code.append("sandbox.load('sandbox.js')");
 
 					return code;

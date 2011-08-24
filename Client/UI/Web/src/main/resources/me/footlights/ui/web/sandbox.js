@@ -2,9 +2,8 @@
 
 // A script that tries to do various wicked things.
 //
-// Expects two variables to be defined:
-//   context: { name: string, root: proxiedNodeFromDOM }
-//   log: { log: function(messageToBeLogged) }
+// Expects a context to be defined:
+//   context: { name: string, log: function(message), root: proxiedNodeFromDOM }
 
 
 var foo = 'foo';
@@ -18,10 +17,8 @@ catch (e) { context.log('alert() not allowed (good!)'); }
 if (context.root.parentNode)
 	context.log('security error: context.root.parentNode != null');
 
-context.log('context.root: ' + JSON.stringify(context.root));
-
 var text = context.name + ' - brought to you by sandboxed JavaScript code';
-var p = context.root.appendElement('b');
+var p = context.root.appendElement('p');
 var t = p.appendText(text);
 
 var div = context.root.appendElement('div');
@@ -42,7 +39,7 @@ var nextSize = 32;
 var localImage = context.root.appendElement('img');
 localImage.onmouseout = function() { p.style.color = 'black'; };
 localImage.onmouseover = function() { p.style.color = 'blue'; };
-localImage.src = '/images/local.jpeg';
+localImage.src = '/static/footlights/images/local.jpeg';
 localImage.width = imageSize;
 
 try

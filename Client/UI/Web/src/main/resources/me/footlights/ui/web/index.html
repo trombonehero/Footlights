@@ -60,6 +60,7 @@ sandboxes['global'] = rootContext;
 
 	var status = document.getElementById('status');
 	status.log = log;
+	rootContext.log = function(message) { status.log(message); }
 
 	ajax('initialize', rootContext);
 })();

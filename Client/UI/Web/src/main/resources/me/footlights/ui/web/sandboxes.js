@@ -43,11 +43,11 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 						{
 							case XMLHttpRequest.DONE:
 							case 4:  // Firefox 4 doesn't know that DONE==4!?
-								try { this.exec(this.responseText); }
+								try { sandbox.exec(this.responseText); }
 								catch(e)
 								{
-									this.log('Error compiling ' + filename + ': ' + e);
-									this.log(e.stack);
+									log('Error compiling ' + filename + ': ' + e);
+									log(e.stack);
 								}
 								break;
 						}

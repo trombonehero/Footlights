@@ -43,31 +43,34 @@ class StaticContentServer implements WebServer
 
 	@Override public String name() { return "static content server"; }
 
-	@Override public Response handle(Request request) throws SecurityException
+	@Override public Response handle(final Request request) throws SecurityException
 	{
-		String path = request.path();
-		if(path.contains(".."))
+		if(request.path().contains(".."))
 			throw new SecurityException(
-				"The request path '" + path + "' contains '..'");
+				"The request " + request + " contains '..'");
 
-		if(path.equals("/")) path = "index.html";
-		else if (path.startsWith("/")) path = path.substring(1);
+		Response.Builder response = Response.newBuilder();
+		if (request.path().isEmpty())
+			response.setResponse(
+				mimeType("index.html"),
+				this.getClass().getResourceAsStream("index.html"));
 
-		String prefix = request.prefix();
-		if (prefix.isEmpty()) prefix = "footlights";
+		else
+		{
+			Class<?> c = paths.get(request.prefix());
+			if (c == null)
+				return Response.error(
+					new FileNotFoundException("No files under " + request.prefix()));
 
-		Class<?> c = paths.get(request.prefix());
+			String path = request.shift().path();
+			InputStream data = c.getResourceAsStream(path);
+			if (data == null)
+				return Response.error(new FileNotFoundException(path));
 
-		InputStream in = getClass().getResourceAsStream(path);
-		if (c != null)
-			in = c.getResourceAsStream(request.shift().path().substring(1));
+			response.setResponse(mimeType(path), data);
+		}
 
-		if(in == null)
-			return Response.error(new FileNotFoundException("Unable to find '" + path + "'"));
-
-		return Response.newBuilder()
-			.setResponse(mimeType(path), in)
-			.build();
+		return response.build();
 	}
 
 	/** Guess the MIME type for static content. */
@@ -94,5 +97,5 @@ class StaticContentServer implements WebServer
 		return "text/xml";
 	}
 
-	private Map<String,Class<?>> paths;
+	private final Map<String,Class<?>> paths;
 }

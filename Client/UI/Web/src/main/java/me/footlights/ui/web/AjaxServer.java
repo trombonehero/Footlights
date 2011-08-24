@@ -54,7 +54,8 @@ public class AjaxServer implements WebServer
 				log("Allowing " + context + " to handle request");
 				return Response.newBuilder()
 					.setResponse("text/xml",
-						new ByteArrayInputStream(context.service(request).toXML().getBytes()))
+						new ByteArrayInputStream(
+							context.service(request.shift()).toXML().getBytes()))
 					.build();
 			}
 		}
@@ -144,12 +145,7 @@ public class AjaxServer implements WebServer
 	
 	private Context getContext(Request request)
 	{
-		String contextName = null;
-
-		int slash = request.path().indexOf("/", 1);
-		if (slash > 0)
-			contextName = request.path().substring(1, slash);
-
+		String contextName = request.prefix();
 		if (contextName == null)
 		{
 			if (contexts.entrySet().isEmpty()) return null;

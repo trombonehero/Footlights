@@ -28,10 +28,10 @@ public class Request
 	/** Identify the "/prefix/of/the/path/to/foo.js". */
 	public String prefix()
 	{
-		int slash = path.indexOf("/", 1);
+		int slash = path.indexOf("/");
 
 		if (slash == -1) return "";
-		else return path.substring(1, slash);
+		else return path.substring(0, slash);
 	}
 
 	/**
@@ -44,10 +44,10 @@ public class Request
 	{
 		if (path.isEmpty()) return this;
 
-		int slash = path.indexOf("/", 1);
+		int slash = path.indexOf("/");
 		if (slash == -1) return this;
 
-		String stripped = path.substring(slash);
+		String stripped = path.substring(slash + 1);
 		return new Request(stripped, query, fragment);
 	}
 
@@ -87,7 +87,7 @@ public class Request
 			}
 		}
 
-		path = tmp[0];
+		path = tmp[0].replaceFirst("^/*", "");
 	}
 
 	private Request(String path, Map<String, String> query, String fragment)

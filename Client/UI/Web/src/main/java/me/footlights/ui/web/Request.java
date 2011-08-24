@@ -112,9 +112,26 @@ public class Request
 	@Override public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Request { ");
+		sb.append("Request { path:'");
 		sb.append(path);
-		sb.append("}");
+		sb.append("', query:{ ");
+		for (Map.Entry<String, String> entry : query.entrySet())
+		{
+			sb.append("'");
+			sb.append(entry.getKey());
+			sb.append("' => '");
+			sb.append(entry.getValue());
+			sb.append("' ");
+		}
+		sb.append("}, fragment:");
+		if (fragment == null) sb.append(fragment);
+		else
+		{
+			sb.append("'");
+			sb.append(fragment);
+			sb.append("'");
+		}
+		sb.append(" }");
 
 		return sb.toString();
 	}

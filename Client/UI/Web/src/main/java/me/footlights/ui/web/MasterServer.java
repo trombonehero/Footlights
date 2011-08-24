@@ -78,6 +78,8 @@ public class MasterServer implements Runnable, WebServer
 				if(rawRequest == null) continue;
 
 				Request request = new Request(rawRequest);
+				log.info("Request: " + request.toString());
+
 				Response response = handle(request);
 				if (response.isError())
 					log.warning("Error handling " + request + ": " + response.statusMessage());
@@ -85,7 +87,7 @@ public class MasterServer implements Runnable, WebServer
 				try
 				{
 					response.write(socket.getOutputStream());
-					log.fine("Sent response");
+					log.finer("Sent response: " + response);
 					socket.close();
 				}
 				catch(SocketException e)

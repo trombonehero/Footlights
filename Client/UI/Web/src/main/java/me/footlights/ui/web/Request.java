@@ -15,8 +15,6 @@
  */
 package me.footlights.ui.web;
 
-import static me.footlights.core.Log.log;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -65,8 +63,6 @@ public class Request
 		rawRequest = rawRequest
 			.replaceFirst("^GET ", "")
 			.replaceFirst(" HTTP/1.1", "");
-
-		log("Raw request: " + rawRequest);
 
 		// Parse the fragment
 		String[] tmp = rawRequest.split("#");

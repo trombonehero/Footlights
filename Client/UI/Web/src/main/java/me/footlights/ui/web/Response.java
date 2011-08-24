@@ -33,6 +33,9 @@ class Response
 	/** Shorthand for {@link #newBuilder().setError({@link FileNotFoundException}).build()}. */
 	static Response error(FileNotFoundException e) { return newBuilder().setError(e).build(); }
 
+	/** Shorthand for {@link #newBuilder().setError({@link SecurityException}).build()}. */
+	static Response error(SecurityException e) { return newBuilder().setError(e).build(); }
+
 	/** Shorthand for {@link #newBuilder().setError({@link Throwable}).build()}. */
 	static Response error(Throwable t) { return newBuilder().setError(t).build(); }
 
@@ -48,6 +51,7 @@ class Response
 		}
 
 		public Builder setError(FileNotFoundException e) { return setError(404, e); }
+		public Builder setError(SecurityException e) { return setError(403, e); }
 		public Builder setError(Throwable t) { return setError(500, t); }
 
 		private Builder setError(int code, Throwable t)
@@ -118,6 +122,7 @@ class Response
 		switch (httpStatusCode)
 		{
 			case 200: this.httpStatusMessage = "OK";                      break;
+			case 403: this.httpStatusMessage = "Forbidden";               break;
 			case 404: this.httpStatusMessage = "File Not Found";          break;
 			case 500: this.httpStatusMessage = "Internal Server Error";   break;
 			default:

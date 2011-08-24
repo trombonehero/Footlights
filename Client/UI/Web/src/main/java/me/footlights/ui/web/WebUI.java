@@ -15,6 +15,10 @@
  */
 package me.footlights.ui.web;
 
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
 
@@ -29,11 +33,12 @@ public class WebUI extends me.footlights.core.UI
 		super("Web UI", footlights);
 
 		this.port = WEB_PORT;
+		this.plugins = Maps.newHashMap();
 
 		log("Starting server() on port " + port +  "...");
 		server = new MasterServer(port, footlights,
 			new AjaxServer(footlights),
-			new StaticContentServer(null));
+			new StaticContentServer(plugins));
 	}
 
 
@@ -45,11 +50,13 @@ public class WebUI extends me.footlights.core.UI
 
 	@Override public void pluginLoaded(PluginWrapper plugin)
 	{
+		plugins.put(plugin.getPluginName(), plugin);
 //		ui.setStatus("Loaded plugin '" + plugin.getName() + "'.");
 	}
 
 	@Override public void pluginUnloading(PluginWrapper plugin)
 	{
+		plugins.remove(plugin.getPluginName());
 //		ui.setStatus("Unloading plugin '" + plugin.getName() + "'.");
 	}
 
@@ -59,4 +66,7 @@ public class WebUI extends me.footlights.core.UI
 
 	/** The TCP/IP port we're serving from */
 	private final int port;
+
+	/** Currently-loaded plugins. */
+	private final Map<String, PluginWrapper> plugins;
 }

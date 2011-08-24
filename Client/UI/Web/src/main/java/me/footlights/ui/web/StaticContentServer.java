@@ -20,13 +20,25 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Maps;
+
+import me.footlights.core.plugin.PluginWrapper;
+
 
 /** Code to serve static plugin content. */
 class StaticContentServer implements WebServer
 {
-	StaticContentServer(Map<String,? extends Object> plugins)
+	StaticContentServer(Map<String,PluginWrapper> plugins)
 	{
-		this.plugins = plugins;
+		paths = Maps.newHashMap();
+
+		for (Map.Entry<String,PluginWrapper> plugin : plugins.entrySet())
+			paths.put(plugin.getKey(), plugin.getValue().getClass());
+
+		paths.put("footlights", getClass());
+
+		// TODO: this is a temporary cheat for testing.
+		paths.put("sandbox", getClass());
 	}
 
 	@Override public String name() { return "static content server"; }
@@ -40,9 +52,15 @@ class StaticContentServer implements WebServer
 
 		if(path.equals("/")) path = "index.html";
 		else if (path.startsWith("/")) path = path.substring(1);
-		InputStream in = getClass().getResourceAsStream(path);
 
-		// TODO: serve static content from plugins
+		String prefix = request.prefix();
+		if (prefix.isEmpty()) prefix = "footlights";
+
+		Class c = paths.get(request.prefix());
+
+		InputStream in = getClass().getResourceAsStream(path);
+		if (c != null)
+			in = c.getResourceAsStream(request.shift().path().substring(1));
 
 		if(in == null)
 			return Response.error(new FileNotFoundException("Unable to find '" + path + "'"));
@@ -76,5 +94,5 @@ class StaticContentServer implements WebServer
 		return "text/xml";
 	}
 
-	private Map<String,? extends Object> plugins;
+	private Map<String,Class> paths;
 }

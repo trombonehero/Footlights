@@ -75,6 +75,8 @@ class Response
 		private InputStream content;
 	}
 
+	public boolean isError() { return (httpStatusCode != 200); }
+	public String statusMessage() { return httpStatusMessage; }
 
 	public void write(OutputStream out) throws IOException
 	{

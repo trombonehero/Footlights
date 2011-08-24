@@ -15,13 +15,13 @@
  */
 package me.footlights.ui.web;
 
-import static me.footlights.core.Log.log;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.common.collect.Maps;
 
@@ -56,7 +56,7 @@ public class MasterServer implements Runnable, WebServer
 
 	public void run()
 	{
-		log("Starting...");
+		log.entering(getClass().getName(), "run");
 
 		try
 		{
@@ -65,9 +65,9 @@ public class MasterServer implements Runnable, WebServer
 			done = false;
 			while(!done)
 			{
-				log("Waiting for connection...");
+				log.fine("Waiting for connection...");
 				Socket socket = serverSocket.accept();
-				log("Connection accepted.");
+				log.fine("Accepted conncetion from " + socket);
 
 				BufferedReader in =
 					new BufferedReader(
@@ -76,19 +76,21 @@ public class MasterServer implements Runnable, WebServer
 
 				String rawRequest = in.readLine();
 				if(rawRequest == null) continue;
-				Response response = handle(new Request(rawRequest));
+
+				Request request = new Request(rawRequest);
+				Response response = handle(request);
+				if (response.isError())
+					log.warning("Error handling " + request + ": " + response.statusMessage());
 
 				try
 				{
 					response.write(socket.getOutputStream());
-					log("Response sent");
-	
+					log.fine("Sent response");
 					socket.close();
-					log("Closed connection");
 				}
 				catch(SocketException e)
 				{
-					e.printStackTrace(System.err);  // TODO: better handling
+					log.log(Level.SEVERE, "Uncaught SocketException", e);
 				}
 			}
 		}
@@ -99,6 +101,8 @@ public class MasterServer implements Runnable, WebServer
 		}
 	}
 
+
+	private static final Logger log = Logger.getLogger(MasterServer.class.getName());
 
 	private final int port;
 	private boolean done;

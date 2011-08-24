@@ -56,7 +56,7 @@ class StaticContentServer implements WebServer
 		String prefix = request.prefix();
 		if (prefix.isEmpty()) prefix = "footlights";
 
-		Class c = paths.get(request.prefix());
+		Class<?> c = paths.get(request.prefix());
 
 		InputStream in = getClass().getResourceAsStream(path);
 		if (c != null)
@@ -94,5 +94,5 @@ class StaticContentServer implements WebServer
 		return "text/xml";
 	}
 
-	private Map<String,Class> paths;
+	private Map<String,Class<?>> paths;
 }

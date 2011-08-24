@@ -77,7 +77,7 @@ public class MasterServer implements Runnable, WebServer
 				String rawRequest = in.readLine();
 				if(rawRequest == null) continue;
 
-				Request request = new Request(rawRequest);
+				Request request = Request.parse(rawRequest);
 				log.info("Request: " + request.toString());
 
 				Response response = handle(request);

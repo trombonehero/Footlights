@@ -16,13 +16,54 @@
 package me.footlights.ui.web;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 
 /** A request from the client, broken into path, query and fragment. */
 public class Request
 {
+	public static Request parse(String rawRequest) throws InvalidRequestException
+	{
+		if(!rawRequest.startsWith("GET "))
+			throw new InvalidRequestException(rawRequest,
+					"does not begin with \"GET \"");
+
+		if(!rawRequest.matches(".* HTTP/1.[01]$"))
+			throw new InvalidRequestException(rawRequest,
+					"does not end with \" HTTP/1.[01]\"");
+
+		rawRequest = rawRequest
+			.replaceFirst("^GET ", "")
+			.replaceFirst(" HTTP/1.1", "");
+
+		// Parse the fragment
+		String fragment;
+		String[] tmp = rawRequest.split("#");
+		if (tmp.length > 1) fragment = tmp[1];
+		else fragment = null;
+
+		// Parse the query, if it exists
+		Map<String,String> query = Maps.newLinkedHashMap();
+		tmp = tmp[0].split("\\?");
+		if (tmp.length > 1)
+		{
+			for (String pair : tmp[1].split("&"))
+			{
+				String[] keyValue = pair.split("=");
+				String value = (keyValue.length > 1) ? keyValue[1] : null;
+
+				query.put(keyValue[0], value);
+			}
+		}
+
+		String path = tmp[0].replaceFirst("^/*", "");
+
+		return new Request(path, query, fragment);
+	}
+
+
 	/** Identify the "/prefix/of/the/path/to/foo.js". */
 	public String prefix()
 	{
@@ -47,43 +88,6 @@ public class Request
 
 		String stripped = path.substring(slash + 1);
 		return new Request(stripped, query, fragment);
-	}
-
-	/** Construct from an HTTP request string (no body). */
-	Request(String rawRequest) throws InvalidRequestException
-	{
-		if(!rawRequest.startsWith("GET "))
-			throw new InvalidRequestException(rawRequest,
-					"does not begin with \"GET \"");
-
-		if(!rawRequest.matches(".* HTTP/1.[01]$"))
-			throw new InvalidRequestException(rawRequest,
-					"does not end with \" HTTP/1.[01]\"");
-
-		rawRequest = rawRequest
-			.replaceFirst("^GET ", "")
-			.replaceFirst(" HTTP/1.1", "");
-
-		// Parse the fragment
-		String[] tmp = rawRequest.split("#");
-		if (tmp.length > 1) fragment = tmp[1];
-		else fragment = null;
-
-		// Parse the query, if it exists
-		query = new LinkedHashMap<String, String>();
-		tmp = tmp[0].split("\\?");
-		if (tmp.length > 1)
-		{
-			for (String pair : tmp[1].split("&"))
-			{
-				String[] keyValue = pair.split("=");
-				String value = (keyValue.length > 1) ? keyValue[1] : null;
-
-				query.put(keyValue[0], value);
-			}
-		}
-
-		path = tmp[0].replaceFirst("^/*", "");
 	}
 
 	private Request(String path, Map<String, String> query, String fragment)

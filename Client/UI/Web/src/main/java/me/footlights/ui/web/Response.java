@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import static me.footlights.ui.web.HttpResponseCode.*;
+
 
 /**
  * A response to a Web client.
@@ -44,19 +46,19 @@ class Response
 	{
 		public Builder setResponse(String mimeType, InputStream content)
 		{
-			this.httpStatusCode = 200;
+			this.http = OK;
 			this.mimeType = mimeType;
 			this.content = content;
 			return this;
 		}
 
-		public Builder setError(FileNotFoundException e) { return setError(404, e); }
-		public Builder setError(SecurityException e) { return setError(403, e); }
-		public Builder setError(Throwable t) { return setError(500, t); }
+		public Builder setError(FileNotFoundException e) { return setError(FILE_NOT_FOUND, e); }
+		public Builder setError(SecurityException e) { return setError(FORBIDDEN, e); }
+		public Builder setError(Throwable t) { return setError(OTHER_ERROR, t); }
 
-		private Builder setError(int code, Throwable t)
+		private Builder setError(HttpResponseCode http, Throwable t)
 		{
-			this.httpStatusCode = code;
+			this.http = http;
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PrintWriter writer = new PrintWriter(baos);
@@ -71,24 +73,22 @@ class Response
 
 		public Response build()
 		{
-			return new Response(httpStatusCode, mimeType, content);
+			return new Response(http, mimeType, content);
 		}
 
-		private int httpStatusCode = 200;
+		private HttpResponseCode http = OK;
 		private String mimeType = "text/xml";
 		private InputStream content;
 	}
 
-	public boolean isError() { return (httpStatusCode != 200); }
-	public String statusMessage() { return httpStatusMessage; }
+	public boolean isError() { return (http != OK); }
+	public String statusMessage() { return http.toString(); }
 
 	public void write(OutputStream out) throws IOException
 	{
 		StringBuffer headers = new StringBuffer();
 		headers.append("HTTP/1.1 ");
-		headers.append(httpStatusCode);
-		headers.append(" ");
-		headers.append(httpStatusMessage);
+		headers.append(http.toString());
 		headers.append("\n");
 
 		headers.append("Content-Type: ");
@@ -113,25 +113,14 @@ class Response
 		out.flush();
 	}
 
-	private Response(int httpStatusCode, String mimeType, InputStream content)
+	private Response(HttpResponseCode httpResponse, String mimeType, InputStream content)
 	{
-		this.httpStatusCode = httpStatusCode;
+		this.http = httpResponse;
 		this.mimeType = mimeType;
 		this.content = content;
-
-		switch (httpStatusCode)
-		{
-			case 200: this.httpStatusMessage = "OK";                      break;
-			case 403: this.httpStatusMessage = "Forbidden";               break;
-			case 404: this.httpStatusMessage = "File Not Found";          break;
-			case 500: this.httpStatusMessage = "Internal Server Error";   break;
-			default:
-				throw new IllegalArgumentException("Unknown HTTP status code " + httpStatusCode);
-		}
 	}
 
-	private final int httpStatusCode;
-	private final String httpStatusMessage;
+	private final HttpResponseCode http;
 	private final String mimeType;
 	private final InputStream content;
 }

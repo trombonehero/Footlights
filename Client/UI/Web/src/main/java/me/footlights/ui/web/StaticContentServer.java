@@ -46,8 +46,7 @@ class StaticContentServer implements WebServer
 	@Override public Response handle(final Request request) throws SecurityException
 	{
 		if(request.path().contains(".."))
-			throw new SecurityException(
-				"The request " + request + " contains '..'");
+			return Response.error(new SecurityException("'..' present in " + request));
 
 		Response.Builder response = Response.newBuilder();
 		if (request.path().isEmpty())

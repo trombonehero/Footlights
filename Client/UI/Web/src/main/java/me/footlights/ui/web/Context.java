@@ -26,6 +26,18 @@ import com.google.common.collect.Maps;
 /** Handle to a client-side context (ECMAScript sandbox or 'window'). */ 
 class Context
 {
+	/** Construct a {@link Context} with an Ajax handler of last resort. */
+	Context(AjaxHandler defaultHandler)
+	{
+		this.defaultHandler = defaultHandler;
+	}
+
+	/**
+	 * Construct a {@link Context} with no default Ajax handler. Any {@link Request} that does not
+	 * match a registered handler will cause an {@link AjaxResponse.Type.ERROR}.
+	 */
+	Context() { this(null); }
+
 	final AjaxResponse.Builder service(Request request)
 	{
 		AjaxResponse.Builder builder =
@@ -37,9 +49,10 @@ class Context
 			String path = request.path().replaceFirst("^/.*/", "");
 			AjaxHandler handler = handlers.get(path.split("%20")[0]);
 
+			if (handler == null) handler = defaultHandler;
 			if (handler == null)
 				throw new IllegalArgumentException(
-					"No '" + path + "' in context " + this);
+					"Cannot service request '" + path + "' in context " + this);
 
 			builder.append(handler.service(request).exec());
 		}
@@ -92,4 +105,7 @@ class Context
 
 	/** Objects which handle requests. */
 	private final Map<String, AjaxHandler> handlers = Maps.newLinkedHashMap();
+
+	/** {@link AjaxHandler} of last resort, in case no handler matches a {@link Request}. */
+	private final AjaxHandler defaultHandler;
 }

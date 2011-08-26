@@ -33,8 +33,9 @@
 {
 	initSES(window, whitelist, atLeastFreeVarNames);
 
-	// Set up logging (nice user-visible log boxes + JS console).
-	function log(t)
+	// Set up logging (nice user-visible log box).
+	var status = document.getElementById('status');
+	status.log = function(t)
 	{
 		var update = document.createElement('p');
 		this.appendChild(update);
@@ -46,9 +47,6 @@
 		update.appendChild(dateStamp);
 		update.appendChild(document.createTextNode(t));
 	};
-
-	var status = document.getElementById('status');
-	status.log = log;
 
 	// The global context.
 	var rootContext =

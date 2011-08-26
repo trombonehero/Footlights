@@ -59,13 +59,28 @@ class Response
 		private Builder setError(HttpResponseCode http, Throwable t)
 		{
 			this.http = http;
+			this.mimeType = "text/html";
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PrintWriter writer = new PrintWriter(baos);
 
-			t.printStackTrace(writer);
-			writer.flush();
+			writer.println("<html>");
+			writer.print("<head><title>");
+			writer.print(http.toString());
+			writer.println("</title></head>");
+			writer.println("<body>");
+			writer.print("<h1>");
+			writer.print(http.toString());
+			writer.println("</h1>");
 
+			writer.print("<pre>");
+			t.printStackTrace(writer);
+			writer.print("</pre>");
+
+			writer.println("</body>");
+			writer.println("</html>");
+
+			writer.flush();
 			this.content = new ByteArrayInputStream(baos.toByteArray());
 
 			return this;

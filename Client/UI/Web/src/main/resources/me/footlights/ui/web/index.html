@@ -28,11 +28,10 @@
 
 		<script type="text/javascript">
 'use strict';
+initSES(window, whitelist, atLeastFreeVarNames);
 
 (function()
 {
-	initSES(window, whitelist, atLeastFreeVarNames);
-
 	// Set up logging (nice user-visible log box).
 	var status = document.getElementById('status');
 	status.log = function(t)

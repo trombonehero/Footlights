@@ -15,14 +15,17 @@
  */
 package me.footlights.ui.web;
 
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
 
-import static me.footlights.ui.web.JavaScript.ajax;
+import static me.footlights.plugin.JavaScript.ajax;
 
 
 /** Initializes the UI after the static JavaScript has loaded. */
 class Initializer implements AjaxHandler
 {
-	@Override public JavaScript service(Request request)
+	@Override public JavaScript service(WebRequest request)
 	{
 		JavaScript script = new JavaScript();
 

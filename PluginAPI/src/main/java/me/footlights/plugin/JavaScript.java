@@ -13,33 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web;
+package me.footlights.plugin;
+
 
 /** Some JavaScript code (guarantee closure?). */
-class JavaScript
+public class JavaScript
 {
-	JavaScript()
+	public JavaScript()
 	{
 		builder = new StringBuilder();
 		frozen = null;
-	}
-
-	/** JavaScript for an Ajax call. */
-	public static JavaScript ajax(String code) { return ajax(code, "global"); }
-	public static JavaScript ajax(String code, String context)
-	{
-		return new JavaScript()
-			.append("sandboxes.getOrCreate(")
-			.append("'").append(context).append("', ")
-			.append("sandboxes['global']")
-			.append(")")
-			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("')");
-	}
-
-	/** Make a string safe to put within single quotes. */
-	public static String sanitizeText(String input)
-	{
-		return input.replace("'", "\\'").replace("\n", "\\n");
 	}
 
 	public JavaScript append(JavaScript code)
@@ -58,9 +41,27 @@ class JavaScript
 		return this;
 	}
 
+	/** JavaScript for an Ajax call. */
+	public static JavaScript ajax(String code) { return ajax(code, "global"); }
+	public static JavaScript ajax(String code, String context)
+	{
+		return new JavaScript()
+			.append("sandboxes.getOrCreate(")
+			.append("'").append(context).append("', ")
+			.append("sandboxes['global']")
+			.append(")")
+			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("')");
+	}
+
+	/** Make a string safe to put within single quotes. */
+	static String sanitizeText(String input)
+	{
+		return input.replace("'", "\\'").replace("\n", "\\n");
+	}
+
 	String asScript() { return code(); }
 	String asFunction() { return "(function(){" + code() + "})"; }
-	String exec() { return asFunction() + "();"; }
+	public String exec() { return asFunction() + "();"; }
 
 	private String code()
 	{

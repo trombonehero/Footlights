@@ -13,25 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.core.plugin;
+package me.footlights.plugin;
 
-import java.util.logging.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import me.footlights.plugin.AjaxContext;
-import me.footlights.plugin.KernelInterface;
-import me.footlights.plugin.Plugin;
+import java.util.Map;
 
 
-class TrivialPlugin implements Plugin
+/** A request from the client, broken into path, query and fragment. */
+public interface WebRequest
 {
-	@Override public void run(KernelInterface kernel, Logger log)
-	{
-		log.info(OUTPUT);
-	}
+	/** Identify the "/prefix/of/the/path/to/foo.js". */
+	public String prefix();
 
-	@Override public AjaxContext ajaxContext() { return null; }
+	/**
+	 * Strip the path's prefix.
+	 *
+	 * e.g. "/static/path/to/foo.js" becomes "path/to/foo.js"
+	 */
+	public WebRequest shift();
 
-	@VisibleForTesting static String OUTPUT = "The trivial demo plugin is now running";
+	/** The path (everything before '&'). */
+	public String path();
+
+	/** The query (foo=x, bar=y, etc., with no duplicate keys). Never null. */
+	public Map<String, String> query();
+
+	/** Everything after the '#'. */
+	public String fragment();
 }

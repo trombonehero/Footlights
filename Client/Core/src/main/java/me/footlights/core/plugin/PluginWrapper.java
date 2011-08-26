@@ -38,7 +38,7 @@ public final class PluginWrapper
 
 	public final String getPluginName() { return name; }
 	URI getOrigin() { return url; }
-	Plugin getWrappedPlugin() { return plugin; }
+	public Plugin getWrappedPlugin() { return plugin; }
 
 
 	/** Run the plugin, trapping exceptions if necessary */

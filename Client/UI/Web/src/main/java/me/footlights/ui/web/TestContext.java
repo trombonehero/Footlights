@@ -18,6 +18,10 @@ package me.footlights.ui.web;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
+
 
 /** A {@link Context} that communicates with test JavaScript. */
 class TestContext extends Context
@@ -28,7 +32,7 @@ class TestContext extends Context
 		super(new AjaxHandler()
 			{
 				@Override
-				public JavaScript service(Request request)
+				public JavaScript service(WebRequest request)
 					throws FileNotFoundException, IOException, SecurityException
 				{
 					return new JavaScript()

@@ -18,9 +18,17 @@ package me.footlights.plugin;
 import java.util.logging.Logger;
 
 
+
 /** A Footlights plugin. */
 public interface Plugin
 {
 	/** Start running. */
 	public void run(KernelInterface kernel, Logger log) throws Exception;
+
+	/**
+	 * A handler for Ajax requests from the Web UI.
+	 *
+	 * @return null if there is no such handler
+	 */
+	public AjaxContext ajaxContext();
 }

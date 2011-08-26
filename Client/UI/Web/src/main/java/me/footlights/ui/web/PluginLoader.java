@@ -19,6 +19,9 @@ import java.net.URI;
 
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
 
 
 public class PluginLoader implements AjaxHandler
@@ -29,7 +32,7 @@ public class PluginLoader implements AjaxHandler
 	}
 
 	@Override
-	public JavaScript service(Request request) throws Throwable
+	public JavaScript service(WebRequest request) throws Throwable
 	{
 		String url = request.path().replaceFirst("^/?load_plugin%20", "");
 		String name = url;

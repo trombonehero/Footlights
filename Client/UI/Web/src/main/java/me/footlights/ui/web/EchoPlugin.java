@@ -15,13 +15,17 @@
  */
 package me.footlights.ui.web;
 
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
+
 
 
 /** A plugin that echoes its input. */
 class EchoPlugin implements AjaxHandler
 {
 	@Override
-	public JavaScript service(Request request)
+	public JavaScript service(WebRequest request)
 	{
 		return new JavaScript()
 			.append("context.root.appendElement('div')")

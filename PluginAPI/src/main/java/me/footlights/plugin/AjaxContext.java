@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.core.plugin;
-
-import java.util.logging.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import me.footlights.plugin.AjaxContext;
-import me.footlights.plugin.KernelInterface;
-import me.footlights.plugin.Plugin;
+package me.footlights.plugin;
 
 
-class TrivialPlugin implements Plugin
+/** An object which manages Ajax communication with sandboxed JavaScript. */
+public interface AjaxContext
 {
-	@Override public void run(KernelInterface kernel, Logger log)
-	{
-		log.info(OUTPUT);
-	}
-
-	@Override public AjaxContext ajaxContext() { return null; }
-
-	@VisibleForTesting static String OUTPUT = "The trivial demo plugin is now running";
+	/**
+	 * Handle an Ajax {@link WebRequest}.
+	 * 
+	 * @return {@link JavaScript} code to be returned to the sandbox
+	 *
+	 * @throws java.io.FileNotFoundException if the request's "path" can never be handled
+	 * @throws SecurityException if TODO
+	 * @throws Throwable as a last resort; this method may throw anything it likes
+	 */
+	public JavaScript service(WebRequest request)
+		throws java.io.FileNotFoundException, SecurityException, Throwable;
 }

@@ -13,25 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.core.plugin;
+package me.footlights.ui.web;
 
-import java.util.logging.Logger;
+import java.io.FileNotFoundException;
 
-import com.google.common.annotations.VisibleForTesting;
-
+import me.footlights.core.plugin.PluginWrapper;
 import me.footlights.plugin.AjaxContext;
-import me.footlights.plugin.KernelInterface;
-import me.footlights.plugin.Plugin;
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
 
-
-class TrivialPlugin implements Plugin
+class PluginAjaxContext implements AjaxHandler
 {
-	@Override public void run(KernelInterface kernel, Logger log)
+	PluginAjaxContext(PluginWrapper plugin)
 	{
-		log.info(OUTPUT);
+		this.plugin = plugin;
 	}
 
-	@Override public AjaxContext ajaxContext() { return null; }
+	@Override public JavaScript service(WebRequest request) throws Throwable
+	{
+		AjaxContext context = plugin.getWrappedPlugin().ajaxContext();
+		if (context == null) throw new FileNotFoundException(request.path());
 
-	@VisibleForTesting static String OUTPUT = "The trivial demo plugin is now running";
+		else return context.service(request);
+	}
+
+	private final PluginWrapper plugin;
 }

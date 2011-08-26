@@ -18,11 +18,13 @@ package me.footlights.ui.web;
 import java.util.Collections;
 import java.util.Map;
 
+import me.footlights.plugin.WebRequest;
+
 import com.google.common.collect.Maps;
 
 
 /** A request from the client, broken into path, query and fragment. */
-public class Request
+public class Request implements WebRequest
 {
 	public static Request parse(String rawRequest) throws InvalidRequestException
 	{
@@ -79,7 +81,7 @@ public class Request
 	 * e.g. "/static/path/to/foo.js" becomes "path/to/foo.js"
 	 * @return
 	 */
-	public Request shift()
+	public WebRequest shift()
 	{
 		if (path.isEmpty()) return this;
 

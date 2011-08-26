@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.WebRequest;
 
 
 /** Code to serve static plugin content. */
@@ -45,7 +46,7 @@ class StaticContentServer implements WebServer
 
 	@Override public String name() { return "static content server"; }
 
-	@Override public Response handle(final Request request)
+	@Override public Response handle(final WebRequest request)
 		throws FileNotFoundException, IOException, SecurityException
 	{
 		if (request.path().contains(".."))

@@ -15,6 +15,10 @@
  */
 package me.footlights.ui.web;
 
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
+
 
 
 /** A plugin that just prints "Hello, world!" within its sandbox. */
@@ -23,7 +27,7 @@ class HelloWorldPlugin implements AjaxHandler
 	static final String PATH = "foo";
 
 	@Override
-	public JavaScript service(Request request) { return CODE; }
+	public JavaScript service(WebRequest request) { return CODE; }
 
 	private static final JavaScript CODE =
 		new JavaScript()

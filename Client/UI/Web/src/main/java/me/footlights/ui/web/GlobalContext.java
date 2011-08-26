@@ -16,6 +16,9 @@
 package me.footlights.ui.web;
 
 import me.footlights.core.Footlights;
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
 
 
 /** The global context - code sent here has full DOM access. */
@@ -27,7 +30,7 @@ class GlobalContext extends Context
 		register("load_plugin", new PluginLoader(footlights));
 		register("reset", new AjaxHandler() {
 			@Override
-			public JavaScript service(Request request)
+			public JavaScript service(WebRequest request)
 			{
 				while (footlights.plugins().size() > 0)
 					footlights.unloadPlugin(
@@ -40,7 +43,7 @@ class GlobalContext extends Context
 
 		register("cajole", new AjaxHandler()
 			{
-				@Override public JavaScript service(Request request) throws Throwable
+				@Override public JavaScript service(WebRequest request) throws Throwable
 				{
 					JavaScript code = new JavaScript();
 					code.append(

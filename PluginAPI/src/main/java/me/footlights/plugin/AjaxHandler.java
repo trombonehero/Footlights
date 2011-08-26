@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web;
+package me.footlights.plugin;
+
+import me.footlights.plugin.JavaScript;
+import me.footlights.plugin.WebRequest;
 
 
 
@@ -21,5 +24,5 @@ package me.footlights.ui.web;
 public interface AjaxHandler
 {
 	/** Service a request. */
-	JavaScript service(Request request) throws Throwable;
+	JavaScript service(WebRequest request) throws Throwable;
 }

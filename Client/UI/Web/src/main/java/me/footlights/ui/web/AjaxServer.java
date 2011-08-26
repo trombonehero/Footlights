@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 
 import me.footlights.core.*;
 import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.WebRequest;
 
 
 /** Acts as an Ajax server for the JavaScript client */
@@ -42,7 +43,7 @@ public class AjaxServer implements WebServer
 	}
 
 	@Override public String name() { return "Ajax"; }
-	@Override public Response handle(Request request)
+	@Override public Response handle(WebRequest request)
 	{
 		Context context = contexts.get(request.prefix());
 		if (context == null)

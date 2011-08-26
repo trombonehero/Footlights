@@ -18,6 +18,7 @@ package me.footlights.demo.plugins.good;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import me.footlights.plugin.AjaxContext;
 import me.footlights.plugin.KernelInterface;
 
 
@@ -46,4 +47,6 @@ public class GoodPlugin implements me.footlights.plugin.Plugin
 
 		log.info("The plugin works!.");
 	}
+
+	@Override public AjaxContext ajaxContext() { return null; }
 }

@@ -19,6 +19,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
 
+import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.WebRequest;
+
 import com.google.common.collect.Maps;
 
 
@@ -33,12 +36,12 @@ class Context
 	}
 
 	/**
-	 * Construct a {@link Context} with no default Ajax handler. Any {@link Request} that does not
+	 * Construct a {@link Context} with no default Ajax handler. Any {@link WebRequest} that does not
 	 * match a registered handler will cause an {@link AjaxResponse.Type.ERROR}.
 	 */
 	Context() { this(null); }
 
-	final AjaxResponse.Builder service(Request request)
+	final AjaxResponse.Builder service(WebRequest request)
 	{
 		AjaxResponse.Builder builder =
 			AjaxResponse.newBuilder()
@@ -106,6 +109,6 @@ class Context
 	/** Objects which handle requests. */
 	private final Map<String, AjaxHandler> handlers = Maps.newLinkedHashMap();
 
-	/** {@link AjaxHandler} of last resort, in case no handler matches a {@link Request}. */
+	/** {@link AjaxHandler} of last resort, in case no handler matches a {@link WebRequest}. */
 	private final AjaxHandler defaultHandler;
 }

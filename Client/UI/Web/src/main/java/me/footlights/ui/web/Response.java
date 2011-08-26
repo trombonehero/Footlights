@@ -44,6 +44,16 @@ class Response
 	static Builder newBuilder() { return new Builder(); }
 	static class Builder
 	{
+		/** Set the response to just a {@link String}. */
+		public Builder setResponse(String mimeType, String content)
+		{
+			this.http = OK;
+			this.mimeType = mimeType;
+			this.content = new ByteArrayInputStream(content.getBytes());
+			return this;
+		}
+
+		/** Set the response to something interesting. */
 		public Builder setResponse(String mimeType, InputStream content)
 		{
 			this.http = OK;

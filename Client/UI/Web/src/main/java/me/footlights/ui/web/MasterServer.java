@@ -29,7 +29,7 @@ import me.footlights.core.Footlights;
 
 
 /** Acts as a master server for Basic UI, JavaScript and Ajax */
-public class MasterServer implements Runnable, WebServer
+public class MasterServer implements Runnable
 {
 	public MasterServer(int port, Footlights footlights,
 		AjaxServer ajaxServer, StaticContentServer staticServer)
@@ -41,17 +41,6 @@ public class MasterServer implements Runnable, WebServer
 		servers.put("static", staticServer);
 
 		servers.put("ajax", ajaxServer);
-	}
-
-
-	@Override public String name() { return "Master"; }
-
-	@Override public Response handle(Request request)
-	{
-		try { return servers.get(request.prefix()).handle(request.shift()); }
-		catch(FileNotFoundException e) { return Response.error(e); }
-		catch(SecurityException e) { return Response.error(e); }
-		catch(Throwable t) { return Response.error(t); }
 	}
 
 
@@ -81,7 +70,12 @@ public class MasterServer implements Runnable, WebServer
 				Request request = Request.parse(rawRequest);
 				log.info("Request: " + request.toString());
 
-				Response response = handle(request);
+				Response response;
+				try { response = servers.get(request.prefix()).handle(request.shift()); }
+				catch(FileNotFoundException e) { response = Response.error(e); }
+				catch(SecurityException e) { response = Response.error(e); }
+				catch(Throwable t) { response = Response.error(t); }
+
 				if (response.isError())
 					log.warning("Error handling " + request + ": " + response.statusMessage());
 

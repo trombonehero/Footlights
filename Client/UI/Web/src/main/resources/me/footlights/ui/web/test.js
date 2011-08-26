@@ -39,7 +39,7 @@ var nextSize = 32;
 var localImage = context.root.appendElement('img');
 localImage.onmouseout = function() { p.style.color = 'black'; };
 localImage.onmouseover = function() { p.style.color = 'blue'; };
-localImage.src = '/static/footlights/images/local.jpeg';
+localImage.src = '/static/footlights/images/local.png';
 localImage.width = imageSize;
 
 try

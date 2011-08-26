@@ -18,13 +18,13 @@ package me.footlights.ui;
 
 import java.awt.event.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.*;
 
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.*;
-
-
-import static me.footlights.core.Log.log;
 
 
 public class PluginList extends JPanel implements PluginWatcher
@@ -74,8 +74,7 @@ public class PluginList extends JPanel implements PluginWatcher
 						}
 						catch(Throwable t)
 						{
-							log("Error: " + t.getClass().getName());
-							t.printStackTrace();
+							log.log(Level.SEVERE, "Uncaught error; + t.getClass().getName()", t);
 						}
 					}
 				});
@@ -97,6 +96,8 @@ public class PluginList extends JPanel implements PluginWatcher
 		updateUI();
 	}
 
+
+	private static final Logger log = Logger.getLogger(PluginList.class.getName());
 
 	private Footlights footlights;
 	private JPanel plugins;

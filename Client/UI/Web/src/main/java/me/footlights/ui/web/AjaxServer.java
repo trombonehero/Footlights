@@ -18,11 +18,10 @@ package me.footlights.ui.web;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.LinkedHashMap;
+import java.util.logging.Logger;
 
 import me.footlights.core.*;
 import me.footlights.core.plugin.PluginWrapper;
-
-import static me.footlights.core.Log.log;
 
 
 /** Acts as an Ajax server for the JavaScript client */
@@ -50,7 +49,7 @@ public class AjaxServer implements WebServer
 		if (context == null)
 			throw new IllegalArgumentException("No such context '" + context + "'");
 
-		log("Routing request to " + context);
+		log.fine("Routing request to " + context);
 
 		AjaxResponse response =
 			context.service(request.shift())
@@ -84,6 +83,9 @@ public class AjaxServer implements WebServer
 		return result;
 	}
 
+
+	/** Log. */
+	private static final Logger log = Logger.getLogger(AjaxServer.class.getName());
 
 	/** Loads plugins */
 	private final Footlights footlights;

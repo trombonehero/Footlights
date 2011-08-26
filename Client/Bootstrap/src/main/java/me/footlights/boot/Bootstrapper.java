@@ -24,6 +24,7 @@ import java.security.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.common.collect.Sets;
 
@@ -106,7 +107,7 @@ public class Bootstrapper
 		// wait for the UI(s) to exit
 		for (Thread thread : uiThreads) 
 		{
-			System.out.println("Waiting for " + thread.getName() + " to end");
+			log.info("Waiting for " + thread.getName() + " to end");
 			thread.join();
 		}
 
@@ -134,4 +135,8 @@ public class Bootstrapper
 
 		return classpaths;
 	}
+
+
+	/** Log. */
+	private static final Logger log = Logger.getLogger(Bootstrapper.class.getName());
 }

@@ -16,13 +16,13 @@
 package me.footlights.ui.web;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.google.common.collect.Maps;
 
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
 
-import static me.footlights.core.Log.log;
 import static me.footlights.ui.web.Constants.*;
 
 
@@ -35,7 +35,7 @@ public class WebUI extends me.footlights.core.UI
 		this.port = WEB_PORT;
 		this.plugins = Maps.newHashMap();
 
-		log("Starting server() on port " + port +  "...");
+		log.info("Starting server() on port " + port);
 		server = new MasterServer(port, footlights,
 			new AjaxServer(footlights),
 			new StaticContentServer(plugins));
@@ -60,6 +60,9 @@ public class WebUI extends me.footlights.core.UI
 //		ui.setStatus("Unloading plugin '" + plugin.getName() + "'.");
 	}
 
+
+	/** Log. */
+	private static final Logger log = Logger.getLogger(WebUI.class.getName());
 
 	/** The main web server */
 	private MasterServer server;

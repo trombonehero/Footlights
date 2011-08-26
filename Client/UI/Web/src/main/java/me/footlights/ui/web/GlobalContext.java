@@ -48,7 +48,7 @@ class GlobalContext extends Context
 
 					try
 					{
-						server.register("sandbox", new Context().register("foo", new TestHandler()));
+						server.register("sandbox", new TestContext());
 						code.append("sandbox.load('test.js');");
 					}
 					catch (Exception e)

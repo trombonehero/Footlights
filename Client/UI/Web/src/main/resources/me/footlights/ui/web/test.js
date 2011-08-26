@@ -67,7 +67,7 @@ remoteImage.width = imageSize;
 
 remoteImage.onclick = function()
 	{
-		context.ajax('foo');
+		context.ajax('Clicked the remote image');
 	};
 
 localImage.onclick = function()
@@ -76,6 +76,7 @@ localImage.onclick = function()
 		var tmp = previousSize;
 		previousSize = nextSize;
 		nextSize = tmp;
+		context.ajax('Clicked the local image');
 	};
 
 return 42;

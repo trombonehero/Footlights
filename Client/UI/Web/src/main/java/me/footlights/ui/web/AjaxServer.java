@@ -34,12 +34,13 @@ public class AjaxServer implements WebServer
 	{
 		this.footlights = footlights;
 		this.contexts = new LinkedHashMap<String, Context>();
+		this.globalContext = new GlobalContext(footlights, this);
+
+		init();
 
 		// TODO(jon): do this registration somewhere else
-		register("global", new GlobalContext(footlights));
 		register("foo", new Context().register("hello", new HelloWorldPlugin()));
 		register("echo", new Context().register("echo", new EchoPlugin()));
-		register("sandbox", new Context().register("foo", new TestHandler()));
 	}
 
 	@Override public String name() { return "Ajax"; }
@@ -64,10 +65,16 @@ public class AjaxServer implements WebServer
 	}
 
 
+	synchronized void init()
+	{
+		contexts.clear();
+		register("global", globalContext);
+	}
+
 	synchronized void register(String name, Context context)
 	{
 		if (contexts.containsKey(name))
-			throw new RuntimeException(context + " already registered");
+			throw new RuntimeException(name + " already registered");
 
 		contexts.put(name, context);
 	}
@@ -89,6 +96,9 @@ public class AjaxServer implements WebServer
 
 	/** Loads plugins */
 	private final Footlights footlights;
+
+	/** Global context to handle top-level Ajax requests. */
+	private final GlobalContext globalContext;
 
 	/** Plugin/sandbox contexts. */
 	private final LinkedHashMap<String, Context> contexts;

@@ -21,7 +21,7 @@ import me.footlights.core.Footlights;
 /** The global context - code sent here has full DOM access. */
 class GlobalContext extends Context
 {
-	GlobalContext(final Footlights footlights)
+	GlobalContext(final Footlights footlights, final AjaxServer server)
 	{
 		register("initialize", new Initializer());
 		register("load_plugin", new PluginLoader(footlights));
@@ -44,8 +44,16 @@ class GlobalContext extends Context
 					JavaScript code = new JavaScript();
 					code.append(
 						"var sandbox = sandboxes.getOrCreate('sandbox', rootContext, rootContext.log, 0, 0, 200, 200);");
-					code.append("sandbox.load('test.js')");
 
+					try
+					{
+						server.register("sandbox", new Context().register("foo", new TestHandler()));
+						code.append("sandbox.load('test.js');");
+					}
+					catch (Exception e)
+					{
+						code.append("sandbox.log('Error registering context: " + e + "')");
+					}
 					return code;
 				}
 			});

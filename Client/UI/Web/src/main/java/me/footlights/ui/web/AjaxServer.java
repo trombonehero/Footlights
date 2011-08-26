@@ -37,10 +37,10 @@ public class AjaxServer implements WebServer
 		this.contexts = new LinkedHashMap<String, Context>();
 
 		// TODO(jon): do this registration somewhere else
-		register(new GlobalContext(footlights));
-		register(new Context("foo").register("hello", new HelloWorldPlugin()));
-		register(new Context("echo").register("echo", new EchoPlugin()));
-		register(new Context("sandbox").register("foo", new TestHandler()));
+		register("global", new GlobalContext(footlights));
+		register("foo", new Context().register("hello", new HelloWorldPlugin()));
+		register("echo", new Context().register("echo", new EchoPlugin()));
+		register("sandbox", new Context().register("foo", new TestHandler()));
 	}
 
 	@Override public String name() { return "Ajax"; }
@@ -52,7 +52,11 @@ public class AjaxServer implements WebServer
 
 		log("Routing request to " + context);
 
-		AjaxResponse response = context.service(request.shift());
+		AjaxResponse response =
+			context.service(request.shift())
+				.setContext(request.prefix())
+				.build()
+			;
 
 		return Response.newBuilder()
 			.setResponse("text/xml",
@@ -61,12 +65,12 @@ public class AjaxServer implements WebServer
 	}
 
 
-	synchronized void register(Context context)
+	synchronized void register(String name, Context context)
 	{
-		if (contexts.containsKey(context.name))
+		if (contexts.containsKey(name))
 			throw new RuntimeException(context + " already registered");
 
-		contexts.put(context.name, context);
+		contexts.put(name, context);
 	}
 
 

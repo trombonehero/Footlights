@@ -23,8 +23,6 @@ class GlobalContext extends Context
 {
 	GlobalContext(final Footlights footlights)
 	{
-		super("global");
-
 		register("initialize", new Initializer());
 		register("load_plugin", new PluginLoader(footlights));
 		register("reset", new AjaxHandler() {

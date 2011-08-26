@@ -17,26 +17,20 @@ package me.footlights.ui.web;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 
 
 /** Handle to a client-side context (ECMAScript sandbox or 'window'). */ 
 class Context
 {
-	Context(String name)
-	{
-		this.name = name;
-		this.handlers = new LinkedHashMap<String, AjaxHandler>();
-	}
-
-	final AjaxResponse service(Request request)
+	final AjaxResponse.Builder service(Request request)
 	{
 		AjaxResponse.Builder builder =
 			AjaxResponse.newBuilder()
-				.setType(AjaxResponse.Type.CODE)
-				.setContext(this.name);
+				.setType(AjaxResponse.Type.CODE);
 
 		try
 		{
@@ -63,7 +57,7 @@ class Context
 			builder.append(baos.toString());
 		} 
 
-		return builder.build();
+		return builder;
 	}
 
 	synchronized
@@ -83,9 +77,7 @@ class Context
 	{
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.getClass().getSimpleName());
-		sb.append(" { name: '");
-		sb.append(name);
-		sb.append("', handlers: [ ");
+		sb.append(" { handlers: [ ");
 		for (Map.Entry<String, AjaxHandler> handler : handlers.entrySet())
 		{
 			sb.append("'");
@@ -98,9 +90,6 @@ class Context
 	}
 
 
-	/** Context name, as understood by the ECMAScript. */
-	final String name;
-
 	/** Objects which handle requests. */
-	private final Map<String, AjaxHandler> handlers;
+	private final Map<String, AjaxHandler> handlers = Maps.newLinkedHashMap();
 }

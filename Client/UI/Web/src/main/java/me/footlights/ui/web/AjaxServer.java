@@ -37,10 +37,6 @@ public class AjaxServer implements WebServer
 		this.globalContext = new GlobalContext(footlights, this);
 
 		init();
-
-		// TODO(jon): do this registration somewhere else
-		register("foo", new Context().register("hello", new HelloWorldPlugin()));
-		register("echo", new Context().register("echo", new EchoPlugin()));
 	}
 
 	@Override public String name() { return "Ajax"; }
@@ -69,6 +65,10 @@ public class AjaxServer implements WebServer
 	{
 		contexts.clear();
 		register("global", globalContext);
+
+		// TODO(jon): get rid of this demo hack
+		register("foo", new Context().register("hello", new HelloWorldPlugin()));
+		register("echo", new Context().register("echo", new EchoPlugin()));
 	}
 
 	synchronized void register(String name, Context context)

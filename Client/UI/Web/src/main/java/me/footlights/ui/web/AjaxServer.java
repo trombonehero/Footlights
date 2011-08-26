@@ -20,6 +20,8 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
+import com.google.common.collect.Maps;
+
 import me.footlights.core.*;
 import me.footlights.core.plugin.PluginWrapper;
 
@@ -33,7 +35,7 @@ public class AjaxServer implements WebServer
 	public AjaxServer(Footlights footlights)
 	{
 		this.footlights = footlights;
-		this.contexts = new LinkedHashMap<String, Context>();
+		this.contexts = Maps.newLinkedHashMap();
 		this.globalContext = new GlobalContext(footlights, this);
 
 		init();

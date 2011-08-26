@@ -29,16 +29,6 @@
 		<script type="text/javascript">
 'use strict';
 
-// The global context.
-var rootContext =
-{
-	ajax: function(request) { ajax(request, this); },
-	exec: function(code) { eval(code); },
-	name: 'global',
-	root: document.getElementById('content'),
-};
-sandboxes['global'] = rootContext;
-
 (function()
 {
 	initSES(window, whitelist, atLeastFreeVarNames);
@@ -59,7 +49,17 @@ sandboxes['global'] = rootContext;
 
 	var status = document.getElementById('status');
 	status.log = log;
-	rootContext.log = function(message) { status.log(message); }
+
+	// The global context.
+	var rootContext =
+	{
+		ajax: function(request) { ajax(request, this); },
+		exec: function(code) { eval(code); },
+		log:  function(message) { status.log(message); },
+		name: 'global',
+		root: document.getElementById('content'),
+	};
+	sandboxes['global'] = rootContext;
 
 	ajax('initialize', rootContext);
 })();

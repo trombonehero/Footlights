@@ -15,16 +15,14 @@
  */
 package me.footlights.ui.web;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.LinkedHashMap;
-import java.util.regex.*;
 
 import me.footlights.core.*;
 import me.footlights.core.plugin.PluginWrapper;
 
 import static me.footlights.core.Log.log;
-
 
 
 /** Acts as an Ajax server for the JavaScript client */
@@ -48,90 +46,17 @@ public class AjaxServer implements WebServer
 	@Override public String name() { return "Ajax"; }
 	@Override public Response handle(Request request)
 	{
-		{
-			Context context = getContext(request);
-			if (context != null)
-			{
-				log("Allowing " + context + " to handle request");
-				return Response.newBuilder()
-					.setResponse("text/xml",
-						new ByteArrayInputStream(
-							context.service(request.shift()).toXML().getBytes()))
-					.build();
-			}
-		}
+		Context context = contexts.get(request.prefix());
+		if (context == null)
+			throw new IllegalArgumentException("No such context '" + context + "'");
 
-		String type = "";
-		String context = DEFAULT_CONTEXT;
-		StringBuilder content = new StringBuilder();
+		log("Routing request to " + context);
 
-		log("Processing Ajax command...");
-
-		try
-		{
-			if (Pattern.matches("/run_good.*", request.path()))
-			{
-				type = "code";
-
-				String output = runPlugin(new URI(GOOD_PLUGIN));
-				output = output.replace("'", "\\'");
-				output = output.replace("\n", "\\n");
-
-				content.append("showAjaxResponse('plugin output', '" + output + "')");
-			}
-			else if (Pattern.matches("/run_evil.*", request.path()))
-			{
-				type = "code";
-
-				String output = runPlugin(new URI(WICKED_PLUGIN));
-				output = output.replace("'", "\\'");
-				output = output.replace("\n", "\\n");
-
-				content.append("showAjaxResponse('plugin output', '" + output + "');");
-			}
-			else if (request.path().equals("/shutdown"))
-			{
-				log("shutdown");
-
-				type = "shutdown";
-				content.append("Client shutting down...");
-			}
-			else
-			{
-				type = "error";
-				content.append("unknown Ajax request '" + request + "'");
-			}
-		}
-		catch(Throwable e)
-		{
-			Log.log("Error serving URI '" + request + "':");
-			e.printStackTrace(Log.instance().stream());
-
-			type = "error";
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintWriter writer = new PrintWriter(baos);
-
-			e.printStackTrace(writer);
-			writer.flush();
-
-			content.append(baos.toString());
-		}
-
-		String contentString = content.toString();
-		contentString = contentString.replace("<", "%3C");
-		contentString = contentString.replace(">", "%3E");
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("<?xml version=\"1.0\"?>\n");
-		sb.append("<response>\n");
-		sb.append("\t<type>" + type + "</type>\n");
-		sb.append("\t<context>" + context + "</context>\n");
-		sb.append("\t<content>" + content + "</content>\n");
-		sb.append("</response>");
+		AjaxResponse response = context.service(request.shift());
 
 		return Response.newBuilder()
-			.setResponse("text/xml", new ByteArrayInputStream(sb.toString().getBytes()))
+			.setResponse("text/xml",
+				new ByteArrayInputStream(response.toXML().getBytes()))
 			.build();
 	}
 
@@ -143,19 +68,9 @@ public class AjaxServer implements WebServer
 
 		contexts.put(context.name, context);
 	}
-	
-	private Context getContext(Request request)
-	{
-		String contextName = request.prefix();
-		if (contextName == null)
-		{
-			if (contexts.entrySet().isEmpty()) return null;
-			return contexts.entrySet().iterator().next().getValue();
-		}
-		else return contexts.get(contextName);
-	}
 
-	protected String runPlugin(URI url) throws Throwable
+
+	private String runPlugin(URI url) throws Throwable
 	{
 		PluginWrapper plugin = footlights.loadPlugin("foo", url);
 		plugin.run(footlights);
@@ -171,14 +86,4 @@ public class AjaxServer implements WebServer
 
 	/** Plugin/sandbox contexts. */
 	private final LinkedHashMap<String, Context> contexts;
-
-
-	/** Plugin URIs */
-	public static final String PLUGIN = "jar:" + Constants.PLUGIN_URL;
-
-	public static final String GOOD_PLUGIN =
-		"/good.jar!/footlights.demo.plugins.good.GoodPlugin";
-
-	public static final String WICKED_PLUGIN =
-		"/wicked.jar!/footlights.demo.plugins.wicked.WickedPlugin";
 }

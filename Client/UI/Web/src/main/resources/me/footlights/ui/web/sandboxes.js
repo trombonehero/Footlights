@@ -56,7 +56,7 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 				},
 			log: log,
 			name: name,
-			root: proxy(content),
+			root: proxy(content, name),
 		};
 
 	sandboxes[name] = sandbox;		

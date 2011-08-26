@@ -47,7 +47,7 @@ localImage.onmouseover = function()
 	this.style.opacity = 0.5;
 	p.style.color = 'blue';
 };
-localImage.src = '/static/footlights/images/local.png';
+localImage.src = 'images/local.png';
 localImage.width = imageSize;
 
 try

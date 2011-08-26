@@ -4,7 +4,7 @@
 //   appendText(text)              returns a proxied Text node
 //   appendElement(type)           returns a proxied Node
 //
-function proxy(node)
+function proxy(node, sandbox_name)
 {
 	var theProxy =
 	{
@@ -37,7 +37,7 @@ function proxy(node)
 								throw 'Sandboxed script attempted to load' +
 									' an image with an absolute URI';
 
-							else element.src = uri;
+							else element.src = '/static/' + sandbox_name + '/' + uri;
 						},
 
 						set alt(text) { element.alt = text; },

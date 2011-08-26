@@ -37,7 +37,7 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	status.log = function(t)
 	{
 		var update = document.createElement('p');
-		this.appendChild(update);
+		this.insertBefore(update, this.firstChild);
 
 		var dateStamp = document.createElement('div');
 		dateStamp.appendChild(document.createTextNode(new Date().toUTCString()));

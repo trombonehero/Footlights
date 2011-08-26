@@ -16,7 +16,9 @@
 package me.footlights.ui.web;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -62,11 +64,23 @@ class StaticContentServer implements WebServer
 					new FileNotFoundException("No such directory '" + request.prefix() + "'"));
 
 			String path = request.shift().path();
-			InputStream data = c.getResourceAsStream(path);
-			if (data == null)
+			URL resource = c.getResource(request.shift().path());
+			if (resource == null)
 				return Response.error(new FileNotFoundException(path));
 
-			response.setResponse(mimeType(path), data);
+			java.io.File file = new java.io.File(resource.getFile());
+			if (!file.isFile())
+				return Response.error(new FileNotFoundException(path));
+
+			try
+			{
+				InputStream data = resource.openStream();
+				if (data == null)
+					return Response.error(new FileNotFoundException(path));
+
+				response.setResponse(mimeType(path), data);
+			}
+			catch (IOException e) { return Response.error(new FileNotFoundException(path)); }
 		}
 
 		return response.build();

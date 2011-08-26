@@ -26,11 +26,11 @@ public class Request
 {
 	public static Request parse(String rawRequest) throws InvalidRequestException
 	{
-		if(!rawRequest.startsWith("GET "))
+		if (!rawRequest.startsWith("GET "))
 			throw new InvalidRequestException(rawRequest,
 					"does not begin with \"GET \"");
 
-		if(!rawRequest.matches(".* HTTP/1.[01]$"))
+		if (!rawRequest.matches(".* HTTP/1.[01]$"))
 			throw new InvalidRequestException(rawRequest,
 					"does not end with \" HTTP/1.[01]\"");
 

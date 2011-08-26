@@ -68,7 +68,7 @@ public class AjaxServer implements WebServer
 
 		try
 		{
-			if(Pattern.matches("/run_good.*", request.path()))
+			if (Pattern.matches("/run_good.*", request.path()))
 			{
 				type = "code";
 
@@ -78,7 +78,7 @@ public class AjaxServer implements WebServer
 
 				content.append("showAjaxResponse('plugin output', '" + output + "')");
 			}
-			else if(Pattern.matches("/run_evil.*", request.path()))
+			else if (Pattern.matches("/run_evil.*", request.path()))
 			{
 				type = "code";
 
@@ -88,7 +88,7 @@ public class AjaxServer implements WebServer
 
 				content.append("showAjaxResponse('plugin output', '" + output + "');");
 			}
-			else if(request.path().equals("/shutdown"))
+			else if (request.path().equals("/shutdown"))
 			{
 				log("shutdown");
 

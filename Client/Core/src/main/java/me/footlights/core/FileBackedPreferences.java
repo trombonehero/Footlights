@@ -102,7 +102,7 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 	{
 		String value = properties.getProperty(name);
 
-		if(value == null) throw new NoSuchElementException(name);
+		if (value == null) throw new NoSuchElementException(name);
 		return String.copyValueOf(value.toCharArray());
 	}
 
@@ -133,7 +133,7 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 	/** Save the config file */
 	protected synchronized void saveConfig() throws IOException
 	{
-		if(!dirty) return;
+		if (!dirty) return;
 
 		OutputStream out = new FileOutputStream(configFile);
 		String headerComment =

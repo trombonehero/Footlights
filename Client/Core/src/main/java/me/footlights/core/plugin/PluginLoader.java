@@ -60,7 +60,7 @@ public class PluginLoader extends ClassLoader
 	{
 		try
 		{
-			if(plugins.containsKey(uri)) return plugins.get(uri);
+			if (plugins.containsKey(uri)) return plugins.get(uri);
 
 			Class<?> c = loadClass(uri.toString());
 			Plugin plugin = (Plugin) c.newInstance();
@@ -84,20 +84,20 @@ public class PluginLoader extends ClassLoader
 		throws ClassNotFoundException
 	{
 		// is this a core class?
-		if(name.contains("me.footlights.core")) return coreLoader.loadClass(name);
-		if(name.contains("me.footlights.ui")) return coreLoader.loadClass(name);
+		if (name.contains("me.footlights.core")) return coreLoader.loadClass(name);
+		if (name.contains("me.footlights.ui")) return coreLoader.loadClass(name);
 
 
 		// have we already loaded this plugin?
-		if(pluginClasses.containsKey(name)) return pluginClasses.get(name);
+		if (pluginClasses.containsKey(name)) return pluginClasses.get(name);
 
 		String[] parts = name.split("\\.jar!/");
-		if(parts.length > 1 && pluginClasses.containsKey(parts[1]))
+		if (parts.length > 1 && pluginClasses.containsKey(parts[1]))
 			return pluginClasses.get(parts[1]);
 
 
 		// load it
-		if(parts.length == 2)
+		if (parts.length == 2)
 		{
 			try
 			{
@@ -108,7 +108,7 @@ public class PluginLoader extends ClassLoader
 			}
 			catch(MalformedURLException e) { throw new Error(e); }
 		}
-		else if(parts.length == 1)
+		else if (parts.length == 1)
 		{
 			int lastDot = name.lastIndexOf(".");
 			String packageName = name.substring(0, lastDot);
@@ -138,7 +138,7 @@ public class PluginLoader extends ClassLoader
 		// first, get the bytecode
 		Bytecode bytecode = readBytecodeFromJAR(url, className);
 		String sourceURL = bytecode.source.getLocation().toString();
-		if(sourceURL.startsWith("file:"))
+		if (sourceURL.startsWith("file:"))
 			sourceURL = sourceURL.replace("file:", "");
 
 		Permissions permissions = new Permissions();
@@ -189,8 +189,8 @@ public class PluginLoader extends ClassLoader
 			{
 				JarEntry entry = i.nextElement();
 
-				if(entry.isDirectory()) continue;
-				if(entry.getName().startsWith("META-INF/")) continue;
+				if (entry.isDirectory()) continue;
+				if (entry.getName().startsWith("META-INF/")) continue;
 	
 				// read the JAR entry (to make sure it's actually signed)
 	        	InputStream is = jar.getInputStream(entry);
@@ -199,10 +199,10 @@ public class PluginLoader extends ClassLoader
 	    		is.read(buffer);
 				is.close();
 
-	            if(entry.getName().equals(className.replace('.', '/') + ".class"))
+	            if (entry.getName().equals(className.replace('.', '/') + ".class"))
 	            {
 	
-	               if(entry.getCodeSigners() == null)
+	               if (entry.getCodeSigners() == null)
 	               	throw new Error(entry.toString() + " not signed");
 	
 	            	String jarName = url.toExternalForm();
@@ -239,17 +239,17 @@ public class PluginLoader extends ClassLoader
 
 		JarFile jar;
 
-		if(url.toString().startsWith("jar:file:") || url.toString().startsWith("file:"))
+		if (url.toString().startsWith("jar:file:") || url.toString().startsWith("file:"))
 		{
 			String fileURL = url.toString();
-			if(fileURL.startsWith("jar:file:"))
+			if (fileURL.startsWith("jar:file:"))
 				fileURL = fileURL.replaceFirst("jar:file:", "");
 
-			else if(fileURL.startsWith("file:"))
+			else if (fileURL.startsWith("file:"))
 				fileURL = fileURL.replaceFirst("file:", "");
 
 
-			if(fileURL.startsWith("///"))
+			if (fileURL.startsWith("///"))
 				fileURL = fileURL.replaceFirst("///", "/");
 
 			fileURL = fileURL.replaceFirst("!/$", "");

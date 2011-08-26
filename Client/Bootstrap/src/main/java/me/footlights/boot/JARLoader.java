@@ -30,17 +30,17 @@ public class JARLoader
 	{
 		this.url = url;
 
-		if(url.toString().startsWith("jar:file:") || url.toString().startsWith("file:"))
+		if (url.toString().startsWith("jar:file:") || url.toString().startsWith("file:"))
 		{
 			String fileURL = url.toString();
-			if(fileURL.startsWith("jar:file:"))
+			if (fileURL.startsWith("jar:file:"))
 				fileURL = fileURL.replaceFirst("jar:file:", "");
 
-			else if(fileURL.startsWith("file:"))
+			else if (fileURL.startsWith("file:"))
 				fileURL = fileURL.replaceFirst("file:", "");
 
 
-			if(fileURL.startsWith("///"))
+			if (fileURL.startsWith("///"))
 				fileURL = fileURL.replaceFirst("///", "/");
 
 			fileURL = fileURL.replaceFirst("!/$", "");
@@ -64,7 +64,7 @@ public class JARLoader
 		}
 
 
-		if(jar.getManifest() == null)
+		if (jar.getManifest() == null)
 			throw new SecurityException("The jar file is not signed");
 	}
 
@@ -80,8 +80,8 @@ public class JARLoader
 		{
 			JarEntry entry = i.nextElement();
 
-			if(entry.isDirectory()) continue;
-			if(entry.getName().startsWith("META-INF/")) continue;
+			if (entry.isDirectory()) continue;
+			if (entry.getName().startsWith("META-INF/")) continue;
 
 			// read the JAR entry (to make sure it's actually signed)
         	InputStream is = jar.getInputStream(entry);
@@ -90,10 +90,10 @@ public class JARLoader
     		is.read(buffer);
 			is.close();
 
-            if(entry.getName().equals(className.replace('.', '/') + ".class"))
+            if (entry.getName().equals(className.replace('.', '/') + ".class"))
             {
 
-               if(entry.getCodeSigners() == null)
+               if (entry.getCodeSigners() == null)
                	throw new Error(entry.toString() + " not signed");
 
             	String jarName = url.toExternalForm();

@@ -45,7 +45,7 @@ public class FootlightsActivity extends RoboActivity
 		eventsList.setAdapter(log.adapter());
 
 		Button[] buttons = { buttonA, buttonB, buttonC, buttonD };
-		for(final Button button : buttons)
+		for (final Button button : buttons)
 		{
 			button.setOnClickListener(new View.OnClickListener()
 			{

@@ -81,7 +81,7 @@ public class DiskStore extends LocalStore
 		String names[] = dir.list();
 		
 		AbstractCollection<String> l = new LinkedList<String>();
-		for(String name : names) l.add(name);
+		for (String name : names) l.add(name);
 
 		return l;
 	}

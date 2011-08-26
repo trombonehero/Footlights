@@ -205,7 +205,7 @@ public class File implements me.footlights.File
 	List<ByteBuffer> content() throws IOException
 	{
 		List<ByteBuffer> content = Lists.newLinkedList();
-		for(Block b : plaintext) content.add(b.content());
+		for (Block b : plaintext) content.add(b.content());
 
 		return content;
 	}

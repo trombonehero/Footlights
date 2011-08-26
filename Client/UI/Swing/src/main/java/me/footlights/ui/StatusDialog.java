@@ -33,7 +33,7 @@ public class StatusDialog
 
 	public static StatusDialog instance()
 	{
-		if(instance == null) instance =
+		if (instance == null) instance =
 			new StatusDialog("Footlights Status");
 
 		return instance;

@@ -52,7 +52,7 @@ public final class BlockStoreClient extends Store
 		URL fileUrl = new URL(downloadBase + "/" + URLEncoder.encode(name, "utf-8"));
 		HttpURLConnection connection = (HttpURLConnection) fileUrl.openConnection();
 
-		switch(connection.getResponseCode())
+		switch (connection.getResponseCode())
 		{
 			case 200: break;
 			case 410:
@@ -63,7 +63,7 @@ public final class BlockStoreClient extends Store
 		}
 
 		final String type = connection.getContentType();
-		if(!type.equals("application/octet-stream"))
+		if (!type.equals("application/octet-stream"))
 			throw new IOException("Unknown mime-type '" + type + "'");
 
 		final int len = connection.getContentLength();

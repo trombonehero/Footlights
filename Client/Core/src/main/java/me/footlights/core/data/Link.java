@@ -196,7 +196,7 @@ public class Link implements FootlightsPrimitive
 	{
 		Preconditions.notNull(algorithm, uri, key, iv);
 
-		if(uri.toString().length() == 0)
+		if (uri.toString().length() == 0)
 			throw new IllegalArgumentException("Link has no URI");
 
 		this.algorithms = algorithm;
@@ -245,13 +245,13 @@ public class Link implements FootlightsPrimitive
 	// FootlightsPrimitive implementation
 	public int bytes()
 	{
-		if(raw == null) raw = generateRawBytes();
+		if (raw == null) raw = generateRawBytes();
 		return raw.limit();
 	}
 
 	public ByteBuffer getBytes()
 	{
-		if(raw == null) raw = generateRawBytes();
+		if (raw == null) raw = generateRawBytes();
 
 		ByteBuffer result = raw.asReadOnlyBuffer();
 		result.position(0);
@@ -287,19 +287,19 @@ public class Link implements FootlightsPrimitive
 		try
 		{
 			Link other = (Link) o;
-			if((other.uri == null) ^ (uri == null)) return false;
-			if((uri != null) && !other.uri.equals(other.uri)) return false;
+			if ((other.uri == null) ^ (uri == null)) return false;
+			if ((uri != null) && !other.uri.equals(other.uri)) return false;
 			
-			if((other.algorithms == null) ^ (algorithms == null)) return false;
-			if((algorithms != null) && !algorithms.equals(other.algorithms))
+			if ((other.algorithms == null) ^ (algorithms == null)) return false;
+			if ((algorithms != null) && !algorithms.equals(other.algorithms))
 				return false;
 
-			if((other.key == null) ^ (key == null)) return false;
-			if((key != null) && (other.key.length != key.length)) return false;
+			if ((other.key == null) ^ (key == null)) return false;
+			if ((key != null) && (other.key.length != key.length)) return false;
 
 			int len = (key == null) ? 0 : key.length;
-			for(int i = 0; i < len; i++)
-				if(other.key[i] != key[i]) return false;
+			for (int i = 0; i < len; i++)
+				if (other.key[i] != key[i]) return false;
 			
 			return true;
 		}

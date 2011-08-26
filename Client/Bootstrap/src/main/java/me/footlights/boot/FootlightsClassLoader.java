@@ -39,7 +39,7 @@ public class FootlightsClassLoader extends URLClassLoader
 	@Override protected synchronized Class<?> findClass(String name)
 		throws ClassNotFoundException
 	{
-		if(!name.startsWith("me.footlights"))
+		if (!name.startsWith("me.footlights"))
 			throw new ClassNotFoundException();
 
 		Bytecode bytecode = readBytecode(name);
@@ -56,12 +56,12 @@ public class FootlightsClassLoader extends URLClassLoader
 
 	@Override public synchronized URL findResource(String name)
 	{
-		for(URL url : getURLs())
+		for (URL url : getURLs())
 		{
 			try
 			{
 				URL bigURL = new URL(url.toString() + "/" + name);
-				if(new File(bigURL.getFile()).exists()) return bigURL;
+				if (new File(bigURL.getFile()).exists()) return bigURL;
 			}
 			catch(MalformedURLException e) { throw new Error(e); }
 		}
@@ -74,10 +74,10 @@ public class FootlightsClassLoader extends URLClassLoader
 	private Bytecode readBytecode(String className)
 		throws ClassNotFoundException
 	{
-		for(URL url : getURLs())
+		for (URL url : getURLs())
 			try
 			{
-				if(url.toExternalForm().matches(".*\\.jar$"))
+				if (url.toExternalForm().matches(".*\\.jar$"))
 					return new JARLoader(url).readBytecode(className);
 
 				else
@@ -97,13 +97,13 @@ public class FootlightsClassLoader extends URLClassLoader
 	{
 		// construct the path of the class file
 		String path = url.toExternalForm();
-		if(!path.startsWith("file:"))
+		if (!path.startsWith("file:"))
 			throw new ClassNotFoundException("The class path URI " + path
 				+ " does not start with 'file:'");
 		path = path.replaceFirst("file:", "");
 		
 		String[] subdirs = className.split("\\.");
-		for(int i = 0; i < (subdirs.length - 1); i++)
+		for (int i = 0; i < (subdirs.length - 1); i++)
 			path = path + File.separatorChar + subdirs[i];
 
 
@@ -116,7 +116,7 @@ public class FootlightsClassLoader extends URLClassLoader
 			InputStream in = new FileInputStream(file);
 			byte[] raw = new byte[(int) file.length()];
 
-			for(int offset = 0; offset < raw.length; )
+			for (int offset = 0; offset < raw.length; )
 				offset += in.read(raw, offset, raw.length - offset);
 
 			in.close();

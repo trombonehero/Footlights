@@ -30,11 +30,11 @@ public class RestrictivePolicy extends Policy
 		// give system libraries all permissions
 		String url = codesource.getLocation().toString();
 
-		if(Pattern.matches("file:/System/Library/Frameworks/Java.*\\.jar", url))
+		if (Pattern.matches("file:/System/Library/Frameworks/Java.*\\.jar", url))
 			p.add(new AllPermission());
 
 		// TODO: temporary!
-		else if(Pattern.matches("file:/.*bootstrap/", url)
+		else if (Pattern.matches("file:/.*bootstrap/", url)
 		        || Pattern.matches("file:/.*bootstrap.jar", url))
 			p.add(new AllPermission());
 

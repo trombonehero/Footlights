@@ -80,13 +80,13 @@ public class Core implements Footlights
 	/** Load a plugin and wrap it up in a convenient wrapper */
 	public PluginWrapper loadPlugin(String name, URI uri) throws PluginLoadException
 	{
-		if(plugins.containsKey(uri)) return plugins.get(uri);
+		if (plugins.containsKey(uri)) return plugins.get(uri);
 
 		Logger log = Logger.getLogger(uri.toString());
 		PluginWrapper plugin = new PluginLoader().loadPlugin(name, uri, log);
 
 		plugins.put(uri, plugin);
-		for(UI ui : uis) ui.pluginLoaded(plugin);
+		for (UI ui : uis) ui.pluginLoaded(plugin);
 
 		return plugin;
 	}
@@ -96,16 +96,16 @@ public class Core implements Footlights
 	public void unloadPlugin(PluginWrapper plugin)
 	{
 		URI key = null;
-		for(Entry<URI,PluginWrapper> e : plugins.entrySet())
-			if(e.getValue().equals(plugin))
+		for (Entry<URI,PluginWrapper> e : plugins.entrySet())
+			if (e.getValue().equals(plugin))
 			{
 				key = e.getKey();
 				break;
 			}
 
-		if(key == null) return;
+		if (key == null) return;
 
-		for(UI ui : uis) ui.pluginUnloading(plugins.get(key));
+		for (UI ui : uis) ui.pluginUnloading(plugins.get(key));
 		plugins.remove(key);
 	}
 

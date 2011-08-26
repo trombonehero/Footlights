@@ -114,14 +114,14 @@ class Response
 
 		out.write(headers.toString().getBytes());
 	
-		if(content != null)
+		if (content != null)
 		{
 			byte[] data = new byte[10240];
-			while(true)
+			while (true)
 			{
 				int bytes = content.read(data);
 				
-				if(bytes <= 0) break;
+				if (bytes <= 0) break;
 				else out.write(data, 0, bytes);
 			}
 		}

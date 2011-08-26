@@ -166,7 +166,7 @@ public class Preferences
 		Provider.Service cipher = null;
 		List<String> modes = null;
 
-		for(String p : symPreferences)
+		for (String p : symPreferences)
 		{
 			cipher = provider.getService("Cipher", p);
 			if (cipher == null) continue;
@@ -182,10 +182,10 @@ public class Preferences
 			else modes = Arrays.asList(rawModes.split("\\|"));
 		}
 
-		if(cipher == null)
+		if (cipher == null)
 		{
 			String message = "None of the desired symmetric-key ciphers ([ ";
-			for(String s : symPreferences) message += s + " ";
+			for (String s : symPreferences) message += s + " ";
 			message += "]) are provided by " + provider;
 
 			throw new NoSuchAlgorithmException(message);
@@ -194,15 +194,15 @@ public class Preferences
 
 
 		String mode = null;
-		for(String p : modePreferences)
-			if(modes.contains(p)) { mode = p; break; }
+		for (String p : modePreferences)
+			if (modes.contains(p)) { mode = p; break; }
 
-		if(mode == null)
+		if (mode == null)
 		{
 			String message = "None of the desired symmetric-key modes ([ ";
-			for(String s : modePreferences) message += s + " ";
+			for (String s : modePreferences) message += s + " ";
 			message += "]) are provided by " + provider + "; it provides [ ";
-			for(String s : modes) message += s + " ";
+			for (String s : modes) message += s + " ";
 			message += "]";
 
 			throw new NoSuchAlgorithmException(message);
@@ -220,13 +220,13 @@ public class Preferences
 		String asymPreferences[] = { "RSA" /* TODO: more? */ };
 		cipher = null;
 
-		for(String p : asymPreferences)
-			if((cipher = provider.getService("Cipher", p)) != null) break;
+		for (String p : asymPreferences)
+			if ((cipher = provider.getService("Cipher", p)) != null) break;
 
-		if(cipher == null)
+		if (cipher == null)
 		{
 			String message = "None of the desired asymmetric-key ciphers ([ ";
-			for(String s : asymPreferences) message += s + " ";
+			for (String s : asymPreferences) message += s + " ";
 			message += "]) are provided by " + provider;
 
 			throw new NoSuchAlgorithmException(message);

@@ -31,7 +31,7 @@ class GlobalContext extends Context
 			@Override
 			public JavaScript service(Request request)
 			{
-				while(footlights.plugins().size() > 0)
+				while (footlights.plugins().size() > 0)
 					footlights.unloadPlugin(
 						footlights.plugins().iterator().next());
 

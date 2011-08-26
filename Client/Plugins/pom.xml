@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>BlockStore Client</module>
+		<module>BlockStoreClient</module>
 		<module>Good</module>
 		<module>Wicked</module>
 	</modules>

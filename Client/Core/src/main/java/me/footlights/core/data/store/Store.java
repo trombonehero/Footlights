@@ -71,8 +71,8 @@ public abstract class Store
 	{
 		ByteBuffer buffer = null;
 
-		if(cache != null) buffer = cache.get(name);
-		if(buffer == null) buffer = get(name);
+		if (cache != null) buffer = cache.get(name);
+		if (buffer == null) buffer = get(name);
 
 		return buffer.asReadOnlyBuffer();
 	}
@@ -84,7 +84,7 @@ public abstract class Store
 	 */
 	public void flush() throws IOException
 	{
-		while(true)
+		while (true)
 		{
 			// ensure that we are the only thread consuming the journal
 			// (it's fine for other threads to append concurrently)
@@ -119,7 +119,7 @@ public abstract class Store
 	{
 		if (name == null) throw new NullPointerException("Expected block name, not null");
 
-		if(cache == null) put(name, bytes);
+		if (cache == null) put(name, bytes);
 		else
 		{
 			cache.store(name, bytes);

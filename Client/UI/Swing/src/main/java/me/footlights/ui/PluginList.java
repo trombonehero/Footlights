@@ -54,7 +54,7 @@ public class PluginList extends JPanel implements PluginWatcher
 		this.plugins.removeAll();
 
 		Collection<PluginWrapper> plugins = footlights.plugins();
-		for(final PluginWrapper plugin : plugins)
+		for (final PluginWrapper plugin : plugins)
 		{
 			JPanel pluginPanel = new JPanel();
 			pluginPanel.setBorder(BorderFactory.createRaisedBevelBorder());

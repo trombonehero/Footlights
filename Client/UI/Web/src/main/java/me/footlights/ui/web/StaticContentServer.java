@@ -48,7 +48,7 @@ class StaticContentServer implements WebServer
 	@Override public Response handle(final Request request)
 		throws FileNotFoundException, IOException, SecurityException
 	{
-		if(request.path().contains(".."))
+		if (request.path().contains(".."))
 			throw new SecurityException("'..' present in " + request);
 
 		if (request.path().isEmpty())
@@ -80,22 +80,22 @@ class StaticContentServer implements WebServer
 	/** Guess the MIME type for static content. */
 	private String mimeType(String path)
 	{
-		if(Pattern.matches(".*\\.css", path))
+		if (Pattern.matches(".*\\.css", path))
 			return "text/css";
 
-		else if(Pattern.matches(".*\\.gif", path))
+		else if (Pattern.matches(".*\\.gif", path))
 			return "image/gif";
 
-		else if(Pattern.matches(".*\\.html", path))
+		else if (Pattern.matches(".*\\.html", path))
 			return "text/html";
 
-		else if(Pattern.matches(".*\\.jpe?g", path))
+		else if (Pattern.matches(".*\\.jpe?g", path))
 			return "image/jpeg";
 
-		else if(Pattern.matches(".*\\.js", path))
+		else if (Pattern.matches(".*\\.js", path))
 			return "text/javascript";
 
-		else if(Pattern.matches(".*\\.png", path))
+		else if (Pattern.matches(".*\\.png", path))
 			return "image/png";
 
 		return "text/xml";

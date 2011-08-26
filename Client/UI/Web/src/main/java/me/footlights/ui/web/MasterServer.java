@@ -53,7 +53,7 @@ public class MasterServer implements Runnable
 			ServerSocket serverSocket = new ServerSocket(port);
 
 			done = false;
-			while(!done)
+			while (!done)
 			{
 				log.fine("Waiting for connection...");
 				Socket socket = serverSocket.accept();
@@ -65,7 +65,7 @@ public class MasterServer implements Runnable
 							socket.getInputStream()));
 
 				String rawRequest = in.readLine();
-				if(rawRequest == null) continue;
+				if (rawRequest == null) continue;
 
 				Request request = Request.parse(rawRequest);
 				log.info("Request: " + request.toString());

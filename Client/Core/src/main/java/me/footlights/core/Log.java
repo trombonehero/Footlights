@@ -34,7 +34,7 @@ public class Log
 
 	public static Log instance()
 	{
-		if(instance == null) instance = new Log();
+		if (instance == null) instance = new Log();
 		return instance;
 	}
 

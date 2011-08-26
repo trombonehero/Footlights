@@ -36,11 +36,11 @@ public class Util
 
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
-		while(true)
+		while (true)
 		{
 			int length = input.read(buffer, 0, 1024);
 
-			if(length < 0) break;
+			if (length < 0) break;
 			else bytes.write(buffer, 0, length);
 		}
 

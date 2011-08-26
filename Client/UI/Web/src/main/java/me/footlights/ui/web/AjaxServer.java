@@ -42,6 +42,7 @@ public class AjaxServer implements WebServer
 		register(new GlobalContext(footlights));
 		register(new Context("foo").register("hello", new HelloWorldPlugin()));
 		register(new Context("echo").register("echo", new EchoPlugin()));
+		register(new Context("sandbox").register("foo", new TestHandler()));
 	}
 
 	@Override public String name() { return "Ajax"; }

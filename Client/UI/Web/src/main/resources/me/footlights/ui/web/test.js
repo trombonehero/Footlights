@@ -61,9 +61,14 @@ catch (e) { context.log('Failed to load remote image (good!)'); }
 
 var remoteImage = context.root.appendElement('img');
 remoteImage.src = 'www.google.com/images/logos/ps_logo2.png';
-remoteImage.alt = 'Should be blank';
+remoteImage.alt = 'Should be blank, but CLICK ME!';
 remoteImage.height = imageSize;
 remoteImage.width = imageSize;
+
+remoteImage.onclick = function()
+	{
+		context.ajax('foo');
+	};
 
 localImage.onclick = function()
 	{

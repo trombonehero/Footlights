@@ -59,7 +59,7 @@ class StaticContentServer implements WebServer
 			Class<?> c = paths.get(request.prefix());
 			if (c == null)
 				return Response.error(
-					new FileNotFoundException("No files under " + request.prefix()));
+					new FileNotFoundException("No such directory '" + request.prefix() + "'"));
 
 			String path = request.shift().path();
 			InputStream data = c.getResourceAsStream(path);

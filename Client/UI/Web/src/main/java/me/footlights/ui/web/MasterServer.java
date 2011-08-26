@@ -50,6 +50,7 @@ public class MasterServer implements Runnable, WebServer
 	{
 		try { return servers.get(request.prefix()).handle(request.shift()); }
 		catch(FileNotFoundException e) { return Response.error(e); }
+		catch(SecurityException e) { return Response.error(e); }
 		catch(Throwable t) { return Response.error(t); }
 	}
 

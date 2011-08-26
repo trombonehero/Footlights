@@ -25,5 +25,5 @@ public interface WebServer
 
 	/** Handle a user request. */
 	public Response handle(Request request)
-		throws FileNotFoundException, SecurityException;
+		throws FileNotFoundException, IOException, SecurityException;
 }

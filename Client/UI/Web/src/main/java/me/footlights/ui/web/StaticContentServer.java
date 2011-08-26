@@ -45,45 +45,36 @@ class StaticContentServer implements WebServer
 
 	@Override public String name() { return "static content server"; }
 
-	@Override public Response handle(final Request request) throws SecurityException
+	@Override public Response handle(final Request request)
+		throws FileNotFoundException, IOException, SecurityException
 	{
 		if(request.path().contains(".."))
-			return Response.error(new SecurityException("'..' present in " + request));
+			throw new SecurityException("'..' present in " + request);
 
-		Response.Builder response = Response.newBuilder();
 		if (request.path().isEmpty())
-			response.setResponse(
-				mimeType("index.html"),
-				this.getClass().getResourceAsStream("index.html"));
+			return Response.newBuilder()
+				.setResponse(
+						mimeType("index.html"),
+						this.getClass().getResourceAsStream("index.html"))
+				.build();
 
-		else
-		{
-			Class<?> c = paths.get(request.prefix());
-			if (c == null)
-				return Response.error(
-					new FileNotFoundException("No such directory '" + request.prefix() + "'"));
+		Class<?> c = paths.get(request.prefix());
+		if (c == null)
+			throw new FileNotFoundException("No such directory '" + request.prefix() + "'");
 
-			String path = request.shift().path();
-			URL resource = c.getResource(request.shift().path());
-			if (resource == null)
-				return Response.error(new FileNotFoundException(path));
+		String path = request.shift().path();
+		URL resource = c.getResource(request.shift().path());
+		if (resource == null) throw new FileNotFoundException(path);
 
-			java.io.File file = new java.io.File(resource.getFile());
-			if (!file.isFile())
-				return Response.error(new FileNotFoundException(path));
+		java.io.File file = new java.io.File(resource.getFile());
+		if (!file.isFile()) throw new FileNotFoundException(path);
 
-			try
-			{
-				InputStream data = resource.openStream();
-				if (data == null)
-					return Response.error(new FileNotFoundException(path));
+		InputStream data = resource.openStream();
+		if (data == null) throw new FileNotFoundException(path);
 
-				response.setResponse(mimeType(path), data);
-			}
-			catch (IOException e) { return Response.error(new FileNotFoundException(path)); }
-		}
-
-		return response.build();
+		return Response.newBuilder()
+			.setResponse(mimeType(path), data)
+			.build();
 	}
 
 	/** Guess the MIME type for static content. */

@@ -78,6 +78,8 @@ public class MasterServer implements Runnable
 
 				if (response.isError())
 					log.warning("Error handling " + request + ": " + response.statusMessage());
+				else
+					log.fine("Response: " + response);
 
 				try
 				{

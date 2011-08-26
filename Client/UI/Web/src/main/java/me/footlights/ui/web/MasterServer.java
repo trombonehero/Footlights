@@ -71,7 +71,14 @@ public class MasterServer implements Runnable
 				log.info("Request: " + request.toString());
 
 				Response response;
-				try { response = servers.get(request.prefix()).handle(request.shift()); }
+				try
+				{
+					WebServer server = servers.get(request.prefix());
+					if (server == null)
+						throw new FileNotFoundException(request.path());
+
+					else response = server.handle(request.shift());
+				}
 				catch(FileNotFoundException e) { response = Response.error(e); }
 				catch(SecurityException e) { response = Response.error(e); }
 				catch(Throwable t) { response = Response.error(t); }

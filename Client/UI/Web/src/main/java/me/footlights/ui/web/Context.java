@@ -15,11 +15,10 @@
  */
 package me.footlights.ui.web;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 
 import com.google.common.collect.Maps;
@@ -41,39 +40,17 @@ class Context
 	 */
 	Context() { this(null); }
 
-	final AjaxResponse.Builder service(WebRequest request)
+	final JavaScript service(WebRequest request) throws Throwable
 	{
-		AjaxResponse.Builder builder =
-			AjaxResponse.newBuilder()
-				.setType(AjaxResponse.Type.CODE);
+		String path = request.path().replaceFirst("^/.*/", "");
+		AjaxHandler handler = handlers.get(path.split("%20")[0]);
 
-		try
-		{
-			String path = request.path().replaceFirst("^/.*/", "");
-			AjaxHandler handler = handlers.get(path.split("%20")[0]);
+		if (handler == null) handler = defaultHandler;
+		if (handler == null)
+			throw new IllegalArgumentException(
+				"Cannot service request '" + path + "' in context " + this);
 
-			if (handler == null) handler = defaultHandler;
-			if (handler == null)
-				throw new IllegalArgumentException(
-					"Cannot service request '" + path + "' in context " + this);
-
-			builder.append(handler.service(request).exec());
-		}
-		catch (Throwable t)
-		{
-			builder
-				.setType(AjaxResponse.Type.ERROR)
-				.append("Java error:\n");
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintWriter writer = new PrintWriter(baos);
-			t.printStackTrace(writer);
-			writer.flush();
-
-			builder.append(baos.toString());
-		} 
-
-		return builder;
+		return handler.service(request);
 	}
 
 	synchronized

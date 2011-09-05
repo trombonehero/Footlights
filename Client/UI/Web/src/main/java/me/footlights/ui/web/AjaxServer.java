@@ -16,6 +16,8 @@
 package me.footlights.ui.web;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
@@ -24,6 +26,7 @@ import com.google.common.collect.Maps;
 
 import me.footlights.core.*;
 import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 
 
@@ -51,16 +54,33 @@ public class AjaxServer implements WebServer
 
 		log.fine("Routing request to " + context);
 
-		AjaxResponse response =
-			context.service(request.shift())
-				.setContext(request.prefix())
-				.build()
-			;
+		try
+		{
+			JavaScript response = context.service(request.shift());
 
-		return Response.newBuilder()
-			.setResponse("text/xml",
-				new ByteArrayInputStream(response.toXML().getBytes()))
-			.build();
+			return Response.newBuilder()
+				.setResponse("text/javascript",
+					new ByteArrayInputStream(response.exec().getBytes()))
+				.build();
+		}
+		catch (Throwable t)
+		{
+			AjaxResponse.Builder builder = AjaxResponse.newBuilder();
+			builder
+				.setType(AjaxResponse.Type.ERROR)
+				.append("Java error:\n");
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintWriter writer = new PrintWriter(baos);
+			t.printStackTrace(writer);
+			writer.flush();
+
+			builder.append(baos.toString());
+			AjaxResponse response = builder.build();
+			return Response.newBuilder()
+				.setResponse("text/xml", new ByteArrayInputStream(response.toXML().getBytes()))
+				.build();
+		}
 	}
 
 

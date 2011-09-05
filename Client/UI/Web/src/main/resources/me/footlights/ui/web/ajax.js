@@ -4,47 +4,53 @@ if(window.XMLHttpRequest) { xhr = new XMLHttpRequest(); }
 else if(window.ActiveXObject) { xhr = new ActiveXObject("Microsoft.XMLHTTP"); }
 
 
-function ajax(request, context) { ajaxWithCallback(request, context, ajaxCallback); }
-function ajaxWithCallback(request, context, callback)
+function ajax(request, context) { ajaxWithCallback(request, context, defaultCallback); }
+function ajaxWithCallback(url, context, callback)
 {
 	try
 	{
-		xhr.onreadystatechange = function() { callback(request, context); };
+		xhr.open('GET', url);
+		xhr.onreadystatechange = function() { handleAjax(xhr, url, context, callback); };
 
-		console.log('sending request ' + request + ' to context ' + context.name);
-		request = 'ajax/' + context.name + '/' + request;
-		console.log(request);
-
-		xhr.open('GET', 'http://localhost:4567/' + request, true);
+		xhr.open('GET', 'http://localhost:4567/' + url, true);
 		xhr.send(null);
 	}
 	catch(e) { updateStatus(e); }
 }
 
 
-function ajaxCallback(request, context)
+function handleAjax(xhr, request, context, callback)
 {
 	if(xhr.readyState == 4)
 	{
 		if(xhr.status != 200) return;
 
-		var xml = xhr.responseXML;
-		if(xml == null)
+		switch (xhr.getResponseHeader('Content-Type'))
 		{
-			console.log('NULL responseXML (request: "' + request + '"');
-			return;
-		}
+			case 'text/javascript':
+				context.exec(xhr.responseText);
+				return;
 
-		var xmldoc = xml.documentElement;
-		var type = xmldoc.getElementsByTagName('type')[0].childNodes[0].nodeValue;
-		var content = xmldoc.getElementsByTagName('content')[0].childNodes[0].nodeValue;
+			case 'text/xml':
+				var doc = xhr.responseXML.documentElement;
+				var type = doc.getElementsByTagName('type')[0].childNodes[0].nodeValue;
+				var content = doc.getElementsByTagName('content')[0].childNodes[0].nodeValue;
 
-		if(type == "error") showError(context, content);
-		else if(type == "code")
-		{
-			console.log('code for "' + context.name + '": ' + content);
-			context.exec(content);
+				if(type == "code") callback(context, content);
+				else if(type == "error") showError(context, content);
+				else showAjaxResponse(type, content);
+
+				return;
+
+			default:
+				context.log('unknown XHR response type: ' + xhr.getResponseHeader('Content-Type'));
+				return;
 		}
-		else showAjaxResponse(type, content);
 	}
+}
+
+function defaultCallback(context, content)
+{
+	context.log('got code for context "' + context.name + '"');
+	context.exec(content);
 }

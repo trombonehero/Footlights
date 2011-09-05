@@ -31,29 +31,9 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 
 	var sandbox =
 		{
-			ajax: function(request) { ajax(request, this); },
+			ajax: function(request) { ajax('/ajax/' + name + '/' + request, this); },
 			exec: function(request) { cajaVM.compileModule(request)({ 'context': this }); },
-			load: function(filename)
-				{
-					var req = new XMLHttpRequest();
-					req.open('GET', 'static/' + this.name + '/' + filename);
-					req.onreadystatechange = function statechange()
-					{
-						switch (this.readyState)
-						{
-							case XMLHttpRequest.DONE:
-							case 4:  // Firefox 4 doesn't know that DONE==4!?
-								try { sandbox.exec(this.responseText); }
-								catch(e)
-								{
-									log('Error compiling ' + filename + ': ' + e);
-									log(e.stack);
-								}
-								break;
-						}
-					};
-					req.send(null);
-				},
+			load: function(filename) { ajax('static/' + this.name + '/' + filename, this); },
 			log: log,
 			name: name,
 			root: proxy(content, name),

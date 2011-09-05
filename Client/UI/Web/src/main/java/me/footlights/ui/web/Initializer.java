@@ -32,19 +32,19 @@ class Initializer implements AjaxHandler
 		script.append("var buttons = document.getElementById('buttons');");
 		script.append("buttons.innerHTML='';");
 
-		script.append("var echo = sandboxes.create('echo', rootContext, 0, 0, 200, 200);");
-		script.append("var foo = sandboxes.create('foo', rootContext, 0, 0, 200, 200);");
+		script.append("var echo = sandboxes.create('echo', rootContext, rootContext.log, 0, 0, 200, 200);");
+		script.append("var foo = sandboxes.create('foo', rootContext, rootContext.log, 0, 0, 200, 200);");
 		script.append("foo.ajax('hello');");
 
 		script.append(button("Echo", ajax("echo stuff", "echo")));
 		script.append(button("Foo", ajax("hello", "foo")));
-		script.append(button("Cajole", ajax("cajole")));
+		script.append(button("Cajole", ajax("ajax/global/cajole")));
 		script.append(button("Good Plugin",
 				ajax("load_plugin /good.jar!/me.footlights.demo.plugins.good.GoodPlugin")));
 		script.append(button("Wicked Plugin",
 				ajax("load_plugin /wicked.jar!/me.footlights.demo.plugins.wicked.WickedPlugin")));
 
-		script.append(button("Reset", ajax("reset")));
+		script.append(button("Reset", ajax("ajax/global/reset")));
 
 		script.append("console.log('UI Initialized');");
 

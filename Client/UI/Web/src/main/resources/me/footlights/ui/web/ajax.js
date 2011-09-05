@@ -15,7 +15,7 @@ function ajaxWithCallback(url, context, callback)
 		xhr.open('GET', 'http://localhost:4567/' + url, true);
 		xhr.send(null);
 	}
-	catch(e) { updateStatus(e); }
+	catch(e) { context.log('Error performing Ajax call: "' + e + '"'); }
 }
 
 

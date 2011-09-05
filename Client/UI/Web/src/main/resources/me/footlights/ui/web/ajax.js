@@ -22,7 +22,11 @@ function handleAjax(xhr, request, context)
 {
 	if(xhr.readyState == 4)
 	{
-		if(xhr.status != 200) return;
+		if(xhr.status != 200)
+		{
+			context.log('Error serving Ajax request "' + request + '": HTTP status ' + xhr.status);
+			return;
+		}
 
 		switch (xhr.getResponseHeader('Content-Type'))
 		{

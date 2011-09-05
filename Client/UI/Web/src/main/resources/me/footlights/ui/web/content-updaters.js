@@ -1,19 +1,3 @@
-function updateStatus(date, stat)
-{
-	var update = document.createElement('p');
-
-	var dateStamp = document.createElement('div');
-	dateStamp.appendChild(document.createTextNode(date));
-	dateStamp.className = 'timestamp';
-
-	update.appendChild(dateStamp);
-	update.appendChild(document.createTextNode(stat));
-
-	var statusRoot = document.getElementById('status');
-	statusRoot.insertBefore(update, statusRoot.childNodes[0]);
-}
-
-
 function insertContent(content)
 {
 	var contentDiv = document.createElement('div');

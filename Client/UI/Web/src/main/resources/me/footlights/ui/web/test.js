@@ -17,6 +17,9 @@ catch (e) { context.log('alert() not allowed (good!)'); }
 if (context.root.parentNode)
 	context.log('security error: context.root.parentNode != null');
 
+try { context.name = 'HACKED ' + context.name; }
+catch (e) { context.log('modifying context.name not allowed (good!)'); }
+
 var text = context.name + ' - brought to you by sandboxed JavaScript code';
 var p = context.root.appendElement('p');
 var t = p.appendText(text);

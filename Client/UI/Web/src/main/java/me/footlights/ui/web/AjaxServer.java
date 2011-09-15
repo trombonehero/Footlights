@@ -16,8 +16,6 @@
 package me.footlights.ui.web;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
@@ -46,41 +44,20 @@ public class AjaxServer implements WebServer
 	}
 
 	@Override public String name() { return "Ajax"; }
-	@Override public Response handle(WebRequest request)
+	@Override public Response handle(WebRequest request) throws Throwable
 	{
-		Context context = contexts.get(request.prefix());
+		String contextName = request.prefix();
+		Context context = contexts.get(contextName);
 		if (context == null)
 			throw new IllegalArgumentException("No such context '" + context + "'");
 
 		log.fine("Routing request to " + context);
+		JavaScript response = context.service(request.shift());
 
-		try
-		{
-			JavaScript response = context.service(request.shift());
-
-			return Response.newBuilder()
-				.setResponse("text/javascript",
-					new ByteArrayInputStream(response.exec().getBytes()))
-				.build();
-		}
-		catch (Throwable t)
-		{
-			AjaxResponse.Builder builder = AjaxResponse.newBuilder();
-			builder
-				.setType(AjaxResponse.Type.ERROR)
-				.append("Java error:\n");
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintWriter writer = new PrintWriter(baos);
-			t.printStackTrace(writer);
-			writer.flush();
-
-			builder.append(baos.toString());
-			AjaxResponse response = builder.build();
-			return Response.newBuilder()
-				.setResponse("text/xml", new ByteArrayInputStream(response.toXML().getBytes()))
-				.build();
-		}
+		return Response.newBuilder()
+			.setResponse("text/javascript",
+				new ByteArrayInputStream(response.exec().getBytes()))
+			.build();
 	}
 
 

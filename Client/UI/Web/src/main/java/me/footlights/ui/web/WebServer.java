@@ -15,8 +15,6 @@
  */
 package me.footlights.ui.web;
 
-import java.io.*;
-
 import me.footlights.plugin.WebRequest;
 
 
@@ -26,6 +24,5 @@ public interface WebServer
 	public String name();
 
 	/** Handle a user request. */
-	public Response handle(WebRequest request)
-		throws FileNotFoundException, IOException, SecurityException;
+	public Response handle(WebRequest request) throws Throwable;
 }

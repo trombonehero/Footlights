@@ -71,7 +71,7 @@ public class Request implements WebRequest
 	{
 		int slash = path.indexOf("/");
 
-		if (slash == -1) return "";
+		if (slash == -1) return path;
 		else return path.substring(0, slash);
 	}
 

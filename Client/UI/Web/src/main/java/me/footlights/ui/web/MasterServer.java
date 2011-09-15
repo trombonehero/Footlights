@@ -70,29 +70,7 @@ public class MasterServer implements Runnable
 				Request request = Request.parse(rawRequest);
 				log.info("Request: " + request.toString());
 
-				Response response;
-				WebServer server = servers.get(request.prefix());
-				log.fine(request + " being handler by: " + server);
-
-				if (server == null)
-					response = Response.error(new FileNotFoundException(request.path()));
-
-				else
-					try { response = server.handle(request.shift()); }
-					catch(SecurityException e)
-					{
-						response = Response.error(e);
-						log.log(Level.WARNING,
-								"Error handling " + request + ":" + response,
-								response.errorCause());
-					}
-					catch(Throwable t)
-					{
-						response = Response.error(t);
-						log.log(Level.SEVERE,
-								"Error handling " + request + ":" + response,
-								response.errorCause());
-					}
+				Response response = service(request);
 				log.fine("Response: " + response);
 
 				try
@@ -114,6 +92,36 @@ public class MasterServer implements Runnable
 		}
 	}
 
+
+	/** Service a {@link Request}, handling all errors that might result. */
+	private Response service(Request request)
+	{
+		WebServer server = servers.get(request.prefix());
+		log.fine(request + " being handler by: " + server);
+
+		try
+		{
+			if (server == null)
+				throw new FileNotFoundException(request.path());
+
+			return server.handle(request.shift());
+		}
+		catch(FileNotFoundException e)
+		{
+			log.log(Level.FINE, "404 request: " + request, e);
+			return Response.error(e);
+		}
+		catch(SecurityException e)
+		{
+			log.log(Level.WARNING, "Error handling " + request, e);
+			return Response.error(e);
+		}
+		catch(Throwable t)
+		{
+			log.log(Level.SEVERE, "Error handling " + request, t);
+			return Response.error(t);
+		}
+	}
 
 	private static final Logger log = Logger.getLogger(MasterServer.class.getName());
 

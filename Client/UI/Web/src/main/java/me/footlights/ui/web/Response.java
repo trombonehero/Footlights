@@ -48,6 +48,7 @@ class Response
 		public Builder setResponse(String mimeType, String content)
 		{
 			this.http = OK;
+			this.error = null;
 			this.mimeType = mimeType;
 			this.content = new ByteArrayInputStream(content.getBytes());
 			return this;
@@ -57,6 +58,7 @@ class Response
 		public Builder setResponse(String mimeType, InputStream content)
 		{
 			this.http = OK;
+			this.error = null;
 			this.mimeType = mimeType;
 			this.content = content;
 			return this;
@@ -69,6 +71,7 @@ class Response
 		private Builder setError(HttpResponseCode http, Throwable t)
 		{
 			this.http = http;
+			this.error = t;
 			this.mimeType = "text/html";
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -98,16 +101,18 @@ class Response
 
 		public Response build()
 		{
-			return new Response(http, mimeType, content);
+			return new Response(http, mimeType, content, error);
 		}
 
 		private HttpResponseCode http = OK;
+		private Throwable error;
 		private String mimeType = "text/xml";
 		private InputStream content;
 	}
 
-	public boolean isError() { return (http != OK); }
+	public boolean isError() { return (errorCause != null); }
 	public String statusMessage() { return http.toString(); }
+	public Throwable errorCause() { return errorCause; }
 
 	public void write(OutputStream out) throws IOException
 	{
@@ -138,14 +143,17 @@ class Response
 		out.flush();
 	}
 
-	private Response(HttpResponseCode httpResponse, String mimeType, InputStream content)
+	private Response(HttpResponseCode httpResponse, String mimeType, InputStream content,
+		Throwable errorCause)
 	{
 		this.http = httpResponse;
 		this.mimeType = mimeType;
 		this.content = content;
+		this.errorCause = errorCause;
 	}
 
 	private final HttpResponseCode http;
 	private final String mimeType;
 	private final InputStream content;
+	private final Throwable errorCause;
 }

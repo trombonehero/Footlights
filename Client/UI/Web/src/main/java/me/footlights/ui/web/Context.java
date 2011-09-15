@@ -42,15 +42,14 @@ class Context
 
 	final JavaScript service(WebRequest request) throws Throwable
 	{
-		String path = request.path().replaceFirst("^/.*/", "");
-		AjaxHandler handler = handlers.get(path.split("%20")[0]);
+		AjaxHandler handler = handlers.get(request.prefix());
 
 		if (handler == null) handler = defaultHandler;
 		if (handler == null)
 			throw new IllegalArgumentException(
-				"Cannot service request '" + path + "' in context " + this);
+				"Cannot service request '" + request.prefix() + "' in context " + this);
 
-		return handler.service(request);
+		return handler.service(request.shift());
 	}
 
 	synchronized

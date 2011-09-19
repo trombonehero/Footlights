@@ -39,8 +39,10 @@ import me.footlights.plugin.Plugin;
 
 public class Core implements Footlights
 {
-	public Core()
+	public Core(ClassLoader pluginLoader)
 	{
+		this.pluginLoader = pluginLoader;
+
 		try { prefs = Preferences.loadFromDefaultLocation(); }
 		catch (IOException e)
 		{
@@ -85,7 +87,7 @@ public class Core implements Footlights
 		PluginWrapper plugin;
 		try
 		{
-			Class<?> c = this.getClass().getClassLoader().loadClass(uri.toString());
+			Class<?> c = pluginLoader.loadClass(uri.toString());
 			Plugin p = (Plugin) c.newInstance();
 			plugin = new PluginWrapper(name, uri, p, Logger.getLogger(uri.toString()));
 		}
@@ -152,6 +154,9 @@ public class Core implements Footlights
 
 	/** Our keychain */
 	private Keychain keychain;
+
+	/** {@link ClassLoader} used to load {@link Plugin}s. */
+	private final ClassLoader pluginLoader;
 
 	/** Loaded plugins */
 	private Map<URI,PluginWrapper> plugins;

@@ -81,8 +81,8 @@ public class Bootstrapper
 		Class<?> footlightsClass =
 			classLoader.loadClass("me.footlights.core.Core");
 
-		Object footlights = footlightsClass.newInstance();
-
+		Object footlights =
+			footlightsClass.getConstructor(ClassLoader.class).newInstance(pluginLoader);
 
 		// Load the UI(s).
 		List<Thread> uiThreads = new ArrayList<Thread>();

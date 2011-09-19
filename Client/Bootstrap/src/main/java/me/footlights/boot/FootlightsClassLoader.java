@@ -25,12 +25,15 @@ import java.util.LinkedHashSet;
 public class FootlightsClassLoader extends URLClassLoader
 {
 	/** Constructor */
-	public FootlightsClassLoader(LinkedHashSet<URL> classpath) throws MalformedURLException
+	public FootlightsClassLoader(LinkedHashSet<URL> classpath, PluginClassLoader pluginLoader)
+		throws MalformedURLException
 	{
 		super(classpath.toArray(new URL[0]));
 
 		corePermissions = new Permissions();
 		corePermissions.add(new AllPermission());
+
+		this.pluginLoader = pluginLoader;
 	}
 
 
@@ -39,8 +42,9 @@ public class FootlightsClassLoader extends URLClassLoader
 	@Override protected synchronized Class<?> findClass(String name)
 		throws ClassNotFoundException
 	{
-		if (!name.startsWith("me.footlights"))
-			throw new ClassNotFoundException();
+		// If we're not loading from the 'me.footlights' package, treat as a plugin:
+		// load from anywhere we're asked to, but apply security restrictions.
+		if (!name.startsWith("me.footlights")) return pluginLoader.findClass(name);
 
 		Bytecode bytecode = readBytecode(name);
 
@@ -135,4 +139,7 @@ public class FootlightsClassLoader extends URLClassLoader
 
 	/** Cached permissions given to core classes */
 	private Permissions corePermissions;
+
+	/** {@link ClassLoader} for plugins. */
+	private final PluginClassLoader pluginLoader;
 }

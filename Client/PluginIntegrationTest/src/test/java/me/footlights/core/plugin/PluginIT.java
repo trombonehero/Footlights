@@ -36,7 +36,7 @@ public class PluginIT
 		mockKernel = Mockito.mock(KernelInterface.class);
 		mockLog = Mockito.mock(Logger.class);
 
-		loader = new PluginLoader();
+		loader = new PluginLoader(null);
 	}
 
 	

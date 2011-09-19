@@ -37,8 +37,6 @@ public class PluginLoader implements AjaxHandler
 		String url = request.path().replaceFirst("^/?load_plugin%20", "");
 		String name = url;
 
-		if (url.startsWith("/")) url = PLUGIN_BASE + url;
-
 		PluginWrapper plugin = footlights.loadPlugin(name, new URI(url));
 		plugin.run(footlights);
 
@@ -50,10 +48,6 @@ public class PluginLoader implements AjaxHandler
 		return response;
 	}
 
-
-
-	/** Plugin URIs */
-	private static final String PLUGIN_BASE = "jar:" + Constants.PLUGIN_URL;
 
 	private final Footlights footlights;
 }

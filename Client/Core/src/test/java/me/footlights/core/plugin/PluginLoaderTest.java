@@ -18,7 +18,6 @@ package me.footlights.core.plugin;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import me.footlights.core.plugin.PluginLoader;
 import me.footlights.core.plugin.PluginWrapper;
 import me.footlights.plugin.KernelInterface;
 
@@ -34,7 +33,7 @@ public class PluginLoaderTest
 	@Before public void setUp()
 	{
 		mockLog = Mockito.mock(Logger.class);
-		loader = new PluginLoader();
+		loader = new PluginLoader(null);
 	}
 
 

@@ -33,8 +33,8 @@ import me.footlights.core.data.File;
 import me.footlights.core.data.store.DiskStore;
 import me.footlights.core.data.store.Store;
 import me.footlights.core.plugin.PluginLoadException;
-import me.footlights.core.plugin.PluginLoader;
 import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.Plugin;
 
 
 public class Core implements Footlights
@@ -82,8 +82,17 @@ public class Core implements Footlights
 	{
 		if (plugins.containsKey(uri)) return plugins.get(uri);
 
-		Logger log = Logger.getLogger(uri.toString());
-		PluginWrapper plugin = new PluginLoader().loadPlugin(name, uri, log);
+		PluginWrapper plugin;
+		try
+		{
+			Class<?> c = this.getClass().getClassLoader().loadClass(uri.toString());
+			Plugin p = (Plugin) c.newInstance();
+			plugin = new PluginWrapper(name, uri, p, Logger.getLogger(uri.toString()));
+		}
+		catch (ClassNotFoundException e) { throw new PluginLoadException(uri, e); }
+		catch (IllegalAccessException e) { throw new PluginLoadException(uri, e); }
+		catch (InstantiationException e) { throw new PluginLoadException(uri, e); }
+
 
 		plugins.put(uri, plugin);
 		for (UI ui : uis) ui.pluginLoaded(plugin);

@@ -30,6 +30,9 @@ public class PluginLoader
 {
 	public PluginLoader(ClassLoader pluginClassLoader)
 	{
+		if (pluginClassLoader == null)
+			throw new NullPointerException("Plugin ClassLoader may not be null");
+
 		classLoader      = pluginClassLoader;
 		plugins          = Maps.newHashMap();
 	}

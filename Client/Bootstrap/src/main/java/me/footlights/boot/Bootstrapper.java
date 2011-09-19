@@ -73,10 +73,8 @@ public class Bootstrapper
 			expandCorePath(System.getProperty("java.class.path"),
 					bootPath, corePaths);
 
-		PluginClassLoader pluginLoader = new PluginClassLoader();
-
-		FootlightsClassLoader classLoader =
-			new FootlightsClassLoader(coreClasspaths, pluginLoader);
+		FootlightsClassLoader classLoader = new FootlightsClassLoader(coreClasspaths);
+		PluginClassLoader pluginLoader = new PluginClassLoader(classLoader);
 
 
 		// Load the Footlights class.

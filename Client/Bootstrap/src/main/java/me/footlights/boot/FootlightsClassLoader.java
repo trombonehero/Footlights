@@ -18,22 +18,21 @@ package me.footlights.boot;
 import java.io.*;
 import java.net.*;
 import java.security.*;
-import java.util.LinkedHashSet;
+
+import com.google.common.collect.Iterables;
 
 
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
-public class FootlightsClassLoader extends URLClassLoader
+public class FootlightsClassLoader extends ClassLoader
 {
 	/** Constructor */
-	public FootlightsClassLoader(LinkedHashSet<URL> classpath, PluginClassLoader pluginLoader)
+	public FootlightsClassLoader(Iterable<URL> classpaths)
 		throws MalformedURLException
 	{
-		super(classpath.toArray(new URL[0]));
+		this.classpaths = Iterables.unmodifiableIterable(classpaths);
 
 		corePermissions = new Permissions();
 		corePermissions.add(new AllPermission());
-
-		this.pluginLoader = pluginLoader;
 	}
 
 
@@ -44,7 +43,9 @@ public class FootlightsClassLoader extends URLClassLoader
 	{
 		// If we're not loading from the 'me.footlights' package, treat as a plugin:
 		// load from anywhere we're asked to, but apply security restrictions.
-		if (!name.startsWith("me.footlights")) return pluginLoader.findClass(name);
+		if (!name.startsWith("me.footlights"))
+			throw new SecurityException(
+				getClass().getCanonicalName() + " can only load core Footlights classes");
 
 		Bytecode bytecode = readBytecode(name);
 
@@ -60,7 +61,7 @@ public class FootlightsClassLoader extends URLClassLoader
 
 	@Override public synchronized URL findResource(String name)
 	{
-		for (URL url : getURLs())
+		for (URL url : classpaths)
 		{
 			try
 			{
@@ -78,7 +79,7 @@ public class FootlightsClassLoader extends URLClassLoader
 	private Bytecode readBytecode(String className)
 		throws ClassNotFoundException
 	{
-		for (URL url : getURLs())
+		for (URL url : classpaths)
 			try
 			{
 				if (url.toExternalForm().matches(".*\\.jar$"))
@@ -90,7 +91,8 @@ public class FootlightsClassLoader extends URLClassLoader
 			catch(ClassNotFoundException e) {}
 			catch(IOException e) {}
 
-		throw new ClassNotFoundException();
+		throw new ClassNotFoundException("No " + className + " in " +
+				classpaths);
 	}
 
 
@@ -140,6 +142,5 @@ public class FootlightsClassLoader extends URLClassLoader
 	/** Cached permissions given to core classes */
 	private Permissions corePermissions;
 
-	/** {@link ClassLoader} for plugins. */
-	private final PluginClassLoader pluginLoader;
+	private final Iterable<URL> classpaths;
 }

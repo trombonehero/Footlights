@@ -44,8 +44,9 @@ import me.footlights.core.Preconditions;
 
 public class PluginClassLoader extends ClassLoader
 {
-	public PluginClassLoader()
+	public PluginClassLoader(FootlightsClassLoader coreLoader)
 	{
+		this.coreLoader  = coreLoader;
 		pluginClasses    = Maps.newHashMap();
 		packageURLs      = Maps.newHashMap();
 	}
@@ -61,9 +62,7 @@ public class PluginClassLoader extends ClassLoader
 	@Override protected synchronized Class<?> findClass(String name)
 		throws ClassNotFoundException
 	{
-		if (name.startsWith("me.footlights"))
-			throw new ClassNotFoundException(
-				this.getClass().getSimpleName() + " cannot load core Footlights classes");
+		if (name.startsWith("me.footlights")) return coreLoader.findClass(name);
 
 		// have we already loaded this plugin?
 		if (pluginClasses.containsKey(name)) return pluginClasses.get(name);
@@ -251,6 +250,9 @@ public class PluginClassLoader extends ClassLoader
 		return jar;
 	}
 
+
+	/** {@link ClassLoader} for core Footlights classes. */
+	private final FootlightsClassLoader coreLoader;
 
 	/** Plugins we've already loaded */
 	private Map<String,Class<?>> pluginClasses;

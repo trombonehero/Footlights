@@ -6,3 +6,5 @@ target
 .classpath
 .settings
 .DS_Store
+META-INF
+bin

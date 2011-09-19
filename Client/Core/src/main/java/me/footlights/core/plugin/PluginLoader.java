@@ -40,6 +40,7 @@ public class PluginLoader
 		try
 		{
 			if (plugins.containsKey(uri)) return plugins.get(uri);
+			PluginLoader.log.info("Loading plugin '" + name + "' from " + uri);
 
 			Class<?> c = classLoader.loadClass(uri.toString());
 			Plugin plugin = (Plugin) c.newInstance();
@@ -55,4 +56,6 @@ public class PluginLoader
 
 	/** Plugins we've already loaded */
 	private final Map<URI,PluginWrapper> plugins;
+
+	private static final Logger log = Logger.getLogger(PluginLoader.class.getCanonicalName());
 }

@@ -34,10 +34,9 @@ public class PluginLoader implements AjaxHandler
 	@Override
 	public JavaScript service(WebRequest request) throws Throwable
 	{
-		String url = request.path().replaceFirst("^/?load_plugin%20", "");
-		String name = url;
+		String name = request.path();
 
-		PluginWrapper plugin = footlights.loadPlugin(name, new URI(url));
+		PluginWrapper plugin = footlights.loadPlugin(name, new URI(request.path()));
 		plugin.run(footlights);
 
 		JavaScript response = new JavaScript();

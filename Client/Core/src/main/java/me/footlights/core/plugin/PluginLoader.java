@@ -54,5 +54,5 @@ public class PluginLoader
 	private final ClassLoader classLoader;
 
 	/** Plugins we've already loaded */
-	private Map<URI,PluginWrapper> plugins;
+	private final Map<URI,PluginWrapper> plugins;
 }

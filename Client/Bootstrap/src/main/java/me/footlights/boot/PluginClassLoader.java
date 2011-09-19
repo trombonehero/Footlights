@@ -41,7 +41,6 @@ import com.google.common.collect.Maps;
 import me.footlights.core.Preconditions;
 
 
-
 public class PluginClassLoader extends ClassLoader
 {
 	public PluginClassLoader(FootlightsClassLoader coreLoader)
@@ -230,7 +229,16 @@ public class PluginClassLoader extends ClassLoader
 
 			fileURL = fileURL.replaceFirst("!/$", "");
 
-			jar = new JarFile(fileURL);
+			final String finalFileURL = fileURL;
+			jar =
+				AccessController.doPrivileged(new PrivilegedAction<JarFile>()
+					{
+						public JarFile run()
+						{
+							try { return new JarFile(finalFileURL); }
+							catch (IOException e) { throw new Error(e); }
+						}
+					});
 		}
 		else
 		{

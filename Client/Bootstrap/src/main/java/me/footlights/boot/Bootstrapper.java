@@ -40,8 +40,7 @@ public class Bootstrapper
 {
 	private static class UI
 	{
-		public UI(String name, String sourceDirectory,
-		          String packageName, String className)
+		public UI(String name, String sourceDirectory, String packageName, String className)
 		{
 			this.name = name;
 			this.sourceDirectory = sourceDirectory;

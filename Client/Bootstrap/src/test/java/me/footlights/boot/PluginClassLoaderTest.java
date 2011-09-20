@@ -52,7 +52,7 @@ public class PluginClassLoaderTest
 		sb.append("jar:file://");
 		sb.append(
 			System.getProperty("java.class.path")
-	    	   .replaceFirst("Client/Bootstrap/.*", "Client/Plugins/"));
+				.replaceFirst("Client/Bootstrap/.*", "Client/Plugins/"));
 		sb.append(projectDir);
 		sb.append("/target/");
 		sb.append(projectName);

@@ -93,23 +93,23 @@ public class JARLoader
 			if (entry.getName().startsWith("META-INF/")) continue;
 
 			// read the JAR entry (to make sure it's actually signed)
-        	InputStream is = jar.getInputStream(entry);
-        	int avail = is.available();
-    		byte[] buffer = new byte[avail];
-    		is.read(buffer);
+			InputStream is = jar.getInputStream(entry);
+			int avail = is.available();
+			byte[] buffer = new byte[avail];
+			is.read(buffer);
 			is.close();
 
-            if (entry.getName().equals(className.replace('.', '/') + ".class"))
-            {
-               if (entry.getCodeSigners() == null)
-               	throw new Error(entry.toString() + " not signed");
+			if (entry.getName().equals(className.replace('.', '/') + ".class"))
+			{
+				if (entry.getCodeSigners() == null)
+					throw new Error(entry.toString() + " not signed");
 
-            	Bytecode bytecode = new Bytecode();
-            	bytecode.raw = buffer;
+				Bytecode bytecode = new Bytecode();
+				bytecode.raw = buffer;
 				bytecode.source = new CodeSource(url, entry.getCodeSigners());
 
-            	return bytecode;
-            }
+				return bytecode;
+			}
 		}
 
 		throw new ClassNotFoundException();

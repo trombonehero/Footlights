@@ -127,9 +127,7 @@ public class PluginClassLoader extends ClassLoader
 		String packageName = className.substring(0, lastDot);
 		packageURLs.put(packageName, url);
 
-		Class<?> c = defineClass(className, bytecode.raw,
-		                         0, bytecode.raw.length, domain);
-
+		Class<?> c = defineClass(className, bytecode.raw, 0, bytecode.raw.length, domain);
 		pluginClasses.put(className, c);
 
 		return c;
@@ -169,29 +167,27 @@ public class PluginClassLoader extends ClassLoader
 				if (entry.getName().startsWith("META-INF/")) continue;
 	
 				// read the JAR entry (to make sure it's actually signed)
-	        	InputStream is = jar.getInputStream(entry);
-	        	int avail = is.available();
-	    		byte[] buffer = new byte[avail];
-	    		is.read(buffer);
+				InputStream is = jar.getInputStream(entry);
+				int avail = is.available();
+				byte[] buffer = new byte[avail];
+				is.read(buffer);
 				is.close();
 
-	            if (entry.getName().equals(className.replace('.', '/') + ".class"))
-	            {
+				if (entry.getName().equals(className.replace('.', '/') + ".class"))
+				{
+					if (entry.getCodeSigners() == null)
+						throw new Error(entry.toString() + " not signed");
 	
-	               if (entry.getCodeSigners() == null)
-	               	throw new Error(entry.toString() + " not signed");
+					String jarName = url.toExternalForm();
+					jarName = jarName.replaceFirst("jar:", "");
+					jarName = jarName.replace("!/", "");
 	
-	            	String jarName = url.toExternalForm();
-	            	jarName = jarName.replaceFirst("jar:", "");
-	            	jarName = jarName.replace("!/", "");
+					Bytecode bytecode = new Bytecode();
+					bytecode.raw = buffer;
+					bytecode.source = new CodeSource(new URL(jarName), entry.getCodeSigners());
 	
-	            	Bytecode bytecode = new Bytecode();
-	            	bytecode.raw = buffer;
-	            	bytecode.source = new CodeSource(
-	            		new URL(jarName), entry.getCodeSigners());
-	
-	            	return bytecode;
-	            }
+					return bytecode;
+				}
 			}
 
 			throw new ClassNotFoundException(

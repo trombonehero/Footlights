@@ -67,14 +67,9 @@ public class FootlightsClassLoader extends ClassLoader
 				getClass().getCanonicalName() + " can only load core Footlights classes");
 
 		Bytecode bytecode = readBytecode(name);
+		ProtectionDomain domain = new ProtectionDomain(bytecode.source, corePermissions);
 
-		ProtectionDomain domain
-			= new ProtectionDomain(bytecode.source, corePermissions);
-
-		Class<?> c = defineClass(name, bytecode.raw,
-		                         0, bytecode.raw.length, domain);
-
-		return c;
+		return defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
 	}
 
 

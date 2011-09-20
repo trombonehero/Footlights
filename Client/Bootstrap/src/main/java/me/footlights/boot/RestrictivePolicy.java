@@ -39,7 +39,7 @@ public class RestrictivePolicy extends Policy
 
 		// TODO: temporary!
 		else if (Pattern.matches("file:/.*bootstrap/", url)
-		        || Pattern.matches("file:/.*bootstrap.jar", url))
+			|| Pattern.matches("file:/.*bootstrap.jar", url))
 			p.add(new AllPermission());
 
 		else

@@ -2,6 +2,8 @@ package me.footlights.boot;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AllPermission;
+import java.security.PermissionCollection;
 import java.util.LinkedHashSet;
 
 import org.junit.Before;
@@ -11,6 +13,7 @@ import com.google.common.collect.Sets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /** Tests {@link FootlightsClassLoader}. */
@@ -36,6 +39,9 @@ public class FootlightsClassLoaderTest
 		Class<?> c = loader.loadClass("me.footlights.core.Core");
 		assertNotNull(c);
 		assertEquals("me.footlights.core.Core", c.getCanonicalName());
+
+		PermissionCollection permissions = c.getProtectionDomain().getPermissions();
+		assertTrue(permissions.implies(new AllPermission()));
 	}
 
 

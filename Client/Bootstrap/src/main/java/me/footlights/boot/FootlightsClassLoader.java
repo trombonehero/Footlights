@@ -36,6 +36,18 @@ public class FootlightsClassLoader extends ClassLoader
 	}
 
 
+	@Override protected synchronized Class<?> loadClass(String name, boolean resolve)
+		throws ClassNotFoundException
+	{
+		if (!name.startsWith("me.footlights"))
+			return super.loadClass(name, resolve);
+
+		Class<?> c = findClass(name);
+		if (resolve) resolveClass(c);
+
+		return c;
+	}
+
 
 	/** Find a core Footlights class */
 	@Override protected synchronized Class<?> findClass(String name)

@@ -1,10 +1,15 @@
 package me.footlights.boot;
 
+import java.io.FilePermission;
+import java.security.AllPermission;
+import java.security.PermissionCollection;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import static org.mockito.Mockito.when;
@@ -42,6 +47,12 @@ public class PluginClassLoaderTest
 
 		assertNotNull(c);
 		assertEquals(className, c.getCanonicalName());
+
+		PermissionCollection permissions = c.getProtectionDomain().getPermissions();
+		assertFalse(permissions.implies(new AllPermission()));
+		assertFalse(permissions.implies(new RuntimePermission("exitVM")));
+		for (String path : coreClasspaths)
+			assertFalse(permissions.implies(new FilePermission(path, "read")));
 	}
 
 
@@ -64,4 +75,6 @@ public class PluginClassLoaderTest
 
 	private FootlightsClassLoader coreLoader;
 	private PluginClassLoader loader;
+
+	private final String[] coreClasspaths = System.getProperty("java.class.path").split(":");
 }

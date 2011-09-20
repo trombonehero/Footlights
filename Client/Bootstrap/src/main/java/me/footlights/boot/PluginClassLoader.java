@@ -62,7 +62,7 @@ class PluginClassLoader extends ClassLoader
 		String[] parts = name.split("\\.jar!/");
 		if (parts.length == 2)
 		{
-			// Both the JAR file and class name have been given explicitly.
+			// Both the JAR file and class name have been given explicitly; open the JAR file.
 			try { jar = JARLoader.open(new URL(parts[0] + ".jar!/")); }
 			catch (IOException e) { throw new ClassNotFoundException("Error reading JAR", e); }
 
@@ -70,7 +70,7 @@ class PluginClassLoader extends ClassLoader
 		}
 		else if (parts.length == 1)
 		{
-			// Only the class name is explicit; the JAR file must be implicit.
+			// Only the class name is explicit; the JAR file must be implicit (and already open).
 			className = parts[0];
 
 			int lastDot = name.lastIndexOf(".");

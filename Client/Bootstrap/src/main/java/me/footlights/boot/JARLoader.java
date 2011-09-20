@@ -33,7 +33,11 @@ public class JARLoader
 {
 	public JARLoader(URL url) throws IOException
 	{
-		this.url = url;
+		String jarName = url.toExternalForm();
+		jarName = jarName.replaceFirst("jar:", "");
+		jarName = jarName.replace("!/", "");
+
+		this.url = new URL(jarName);
 
 		if (url.toString().startsWith("jar:file:") || url.toString().startsWith("file:"))
 		{
@@ -97,17 +101,12 @@ public class JARLoader
 
             if (entry.getName().equals(className.replace('.', '/') + ".class"))
             {
-
                if (entry.getCodeSigners() == null)
                	throw new Error(entry.toString() + " not signed");
 
-            	String jarName = url.toExternalForm();
-            	jarName = jarName.replaceFirst("jar:", "");
-            	jarName = jarName.replace("!/", "");
-
             	Bytecode bytecode = new Bytecode();
             	bytecode.raw = buffer;
-				bytecode.source = new CodeSource(new URL(jarName), entry.getCodeSigners());
+				bytecode.source = new CodeSource(url, entry.getCodeSigners());
 
             	return bytecode;
             }

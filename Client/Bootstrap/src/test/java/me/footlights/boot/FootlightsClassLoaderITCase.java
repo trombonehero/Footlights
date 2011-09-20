@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 
 /** Tests {@link FootlightsClassLoader}. */
-public class FootlightsClassLoaderTest
+public class FootlightsClassLoaderITCase
 {
 	@Before public void setUp() throws MalformedURLException
 	{
@@ -26,7 +26,7 @@ public class FootlightsClassLoaderTest
 		{
 			path = path.replace("Client/Bootstrap", "Client/Core");
 
-			if (path.startsWith("/")) path = "file://" + path;
+			if (path.startsWith("/")) path = "file:" + path;
 			classpaths.add(new URL(path));
 		}
 

@@ -25,5 +25,23 @@
 			<version>HEAD</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>good-plugin</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>wicked-plugin</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>plugin-api</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

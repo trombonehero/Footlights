@@ -3,10 +3,13 @@ package me.footlights.boot;
 import java.io.FilePermission;
 import java.security.AllPermission;
 import java.security.PermissionCollection;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,8 +19,16 @@ import static org.mockito.Mockito.when;
 
 
 /** Tests {@link PluginClassLoader}. */
-public class PluginClassLoaderTest
+public class PluginClassLoaderITCase
 {
+	public PluginClassLoaderITCase()
+	{
+		coreClasspaths = Lists.newArrayList();
+		for (String path : System.getProperty("java.class.path").split(":"))
+			if (path.contains("Bootstrap") || path.contains("Core"))
+				coreClasspaths.add(path);
+	}
+
 	@Before public void setUp()
 	{
 		coreLoader = Mockito.mock(FootlightsClassLoader.class);
@@ -52,7 +63,8 @@ public class PluginClassLoaderTest
 		assertFalse(permissions.implies(new AllPermission()));
 		assertFalse(permissions.implies(new RuntimePermission("exitVM")));
 		for (String path : coreClasspaths)
-			assertFalse(permissions.implies(new FilePermission(path, "read")));
+			assertFalse(className + " should not be able to read " + path,
+				permissions.implies(new FilePermission(path, "read")));
 	}
 
 
@@ -70,11 +82,11 @@ public class PluginClassLoaderTest
 		sb.append("-HEAD.jar!/");
 		sb.append(pluginClassName);
 
-		return sb.toString();		
+		return sb.toString();
 	}
 
 	private FootlightsClassLoader coreLoader;
 	private PluginClassLoader loader;
 
-	private final String[] coreClasspaths = System.getProperty("java.class.path").split(":");
+	private final List<String> coreClasspaths;
 }

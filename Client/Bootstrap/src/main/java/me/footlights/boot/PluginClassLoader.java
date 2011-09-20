@@ -42,7 +42,7 @@ import me.footlights.core.Preconditions;
 
 
 /** Loads unprivileged plugin code. */
-public class PluginClassLoader extends ClassLoader
+class PluginClassLoader extends ClassLoader
 {
 	public PluginClassLoader(FootlightsClassLoader coreLoader)
 	{

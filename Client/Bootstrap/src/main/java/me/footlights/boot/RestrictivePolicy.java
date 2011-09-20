@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 
 /** A very restrictive Java security policy. */
-public class RestrictivePolicy extends Policy
+class RestrictivePolicy extends Policy
 {
 	@Override public PermissionCollection getPermissions(CodeSource codesource)
 	{

@@ -30,7 +30,7 @@ import com.google.common.collect.Iterables;
 
 
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
-public class FootlightsClassLoader extends ClassLoader
+class FootlightsClassLoader extends ClassLoader
 {
 	/** Constructor */
 	public FootlightsClassLoader(Iterable<URL> classpaths)

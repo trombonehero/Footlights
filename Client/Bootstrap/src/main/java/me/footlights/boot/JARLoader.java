@@ -29,7 +29,7 @@ import java.util.jar.JarFile;
 
 
 /** Loads classes from a single JAR file. */
-public class JARLoader
+class JARLoader
 {
 	public JARLoader(URL url) throws IOException
 	{

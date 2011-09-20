@@ -36,7 +36,7 @@ import com.google.common.collect.Sets;
  * our own ClassLoader with full privilege and guarantee that no other classes
  * will be linked with such privilege.
  */
-public class Bootstrapper
+class Bootstrapper
 {
 	private static class UI
 	{

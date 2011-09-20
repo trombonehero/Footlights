@@ -15,12 +15,16 @@
  */
 package me.footlights.boot;
 
-import java.security.*;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.security.Policy;
+import java.security.ProtectionDomain;
 import java.util.regex.Pattern;
 
 
-
-/** A very restrictive Java security policy */
+/** A very restrictive Java security policy. */
 public class RestrictivePolicy extends Policy
 {
 	@Override public PermissionCollection getPermissions(CodeSource codesource)

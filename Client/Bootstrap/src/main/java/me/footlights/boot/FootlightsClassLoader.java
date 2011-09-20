@@ -15,9 +15,16 @@
  */
 package me.footlights.boot;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.AllPermission;
+import java.security.CodeSigner;
+import java.security.CodeSource;
+import java.security.Permissions;
+import java.security.ProtectionDomain;
 
 import com.google.common.collect.Iterables;
 
@@ -131,7 +138,7 @@ public class FootlightsClassLoader extends ClassLoader
 
 		try
 		{
-			InputStream in = new FileInputStream(file);
+			FileInputStream in = new FileInputStream(file);
 			byte[] raw = new byte[(int) file.length()];
 
 			for (int offset = 0; offset < raw.length; )
@@ -151,8 +158,9 @@ public class FootlightsClassLoader extends ClassLoader
 	}
 
 
-	/** Cached permissions given to core classes */
-	private Permissions corePermissions;
+	/** Cached permissions given to core classes. */
+	private final Permissions corePermissions;
 
+	/** Where we can find core classes. */
 	private final Iterable<URL> classpaths;
 }

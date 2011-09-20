@@ -17,13 +17,18 @@ package me.footlights.boot;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
-import java.security.*;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.AccessController;
+import java.security.CodeSource;
+import java.security.PrivilegedAction;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 
+/** Loads classes from a single JAR file. */
 public class JARLoader
 {
 	public JARLoader(URL url) throws IOException
@@ -102,8 +107,7 @@ public class JARLoader
 
             	Bytecode bytecode = new Bytecode();
             	bytecode.raw = buffer;
-            	bytecode.source = new CodeSource(
-            		new URL(jarName), entry.getCodeSigners());
+				bytecode.source = new CodeSource(new URL(jarName), entry.getCodeSigners());
 
             	return bytecode;
             }
@@ -113,6 +117,9 @@ public class JARLoader
 	}
 
 
-	private URL url;
-	private JarFile jar;
+	/** The {@link JarFile} that we are loading classes from. */
+	private final JarFile jar;
+
+	/** Where {@link #jar} came from. */
+	private final URL url;
 }

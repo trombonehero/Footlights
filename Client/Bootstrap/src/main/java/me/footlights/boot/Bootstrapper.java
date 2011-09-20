@@ -17,10 +17,10 @@ package me.footlights.boot;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.*;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

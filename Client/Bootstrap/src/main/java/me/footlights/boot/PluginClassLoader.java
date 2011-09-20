@@ -41,6 +41,7 @@ import com.google.common.collect.Maps;
 import me.footlights.core.Preconditions;
 
 
+/** Loads unprivileged plugin code. */
 public class PluginClassLoader extends ClassLoader
 {
 	public PluginClassLoader(FootlightsClassLoader coreLoader)
@@ -263,6 +264,6 @@ public class PluginClassLoader extends ClassLoader
 	private final FootlightsClassLoader coreLoader;
 
 	/** Plugins we've already loaded */
-	private Map<String,Class<?>> pluginClasses;
-	private Map<String,URL> packageURLs;
+	private final Map<String,Class<?>> pluginClasses;
+	private final Map<String,URL> packageURLs;
 }

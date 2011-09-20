@@ -97,7 +97,7 @@ class FootlightsClassLoader extends ClassLoader
 			try
 			{
 				if (url.toExternalForm().matches(".*\\.jar$"))
-					return new JARLoader(url).readBytecode(className);
+					return JARLoader.open(url).readBytecode(className);
 
 				else
 					return readClassFile(url, className);

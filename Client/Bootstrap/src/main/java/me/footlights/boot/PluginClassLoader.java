@@ -63,7 +63,7 @@ class PluginClassLoader extends ClassLoader
 		if (parts.length == 2)
 		{
 			// Both the JAR file and class name have been given explicitly.
-			try { jar = new JARLoader(new URL(parts[0] + ".jar!/")); }
+			try { jar = JARLoader.open(new URL(parts[0] + ".jar!/")); }
 			catch (IOException e) { throw new ClassNotFoundException("Error reading JAR", e); }
 
 			className = parts[1];

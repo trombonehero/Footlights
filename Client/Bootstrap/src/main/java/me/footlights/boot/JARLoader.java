@@ -18,8 +18,8 @@ package me.footlights.boot;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.PrivilegedAction;
@@ -31,50 +31,29 @@ import java.util.jar.JarFile;
 /** Loads classes from a single JAR file. */
 class JARLoader
 {
-	public JARLoader(URL url) throws IOException
+	/**
+	 * Open a JAR file, from which we will load classes later.
+	 *
+	 * @param url      a URL, no "jar:" prefix (e.g. "file:///home/...", "http://foo.com/...")
+	 */
+	public static JARLoader open(URL url) throws IOException
 	{
-		String jarName = url.toExternalForm();
-		jarName = jarName.replaceFirst("jar:", "");
-		jarName = jarName.replace("!/", "");
+		final URL jarUrl = new URL("jar:" + url);
 
-		this.url = new URL(jarName);
-
-		if (url.toString().startsWith("jar:file:") || url.toString().startsWith("file:"))
-		{
-			String fileURL = url.toString();
-			if (fileURL.startsWith("jar:file:"))
-				fileURL = fileURL.replaceFirst("jar:file:", "");
-
-			else if (fileURL.startsWith("file:"))
-				fileURL = fileURL.replaceFirst("file:", "");
-
-
-			if (fileURL.startsWith("///"))
-				fileURL = fileURL.replaceFirst("///", "/");
-
-			fileURL = fileURL.replaceFirst("!/$", "");
-
-			jar = new JarFile(fileURL);
-		}
-		else
-		{
-			final URLConnection connection = url.openConnection();
-			connection.setUseCaches(false);
-
-			jar = 
-				AccessController.doPrivileged(new PrivilegedAction<JarFile>()
+		JarFile jar =
+			AccessController.doPrivileged(new PrivilegedAction<JarFile>()
+			{
+				public JarFile run()
 				{
-					public JarFile run()
-					{
-						try { return ((JarURLConnection) connection).getJarFile(); }
-						catch(IOException e) { throw new Error(e); }
-					}
-				});
-		}
-
+					try { return ((JarURLConnection) jarUrl.openConnection()).getJarFile(); }
+					catch(IOException e) { throw new Error("Unable to load JAR file", e); }
+				}
+			});
 
 		if (jar.getManifest() == null)
 			throw new SecurityException("The jar file is not signed");
+
+		return new JARLoader(jar, url);
 	}
 
 
@@ -113,6 +92,14 @@ class JARLoader
 		}
 
 		throw new ClassNotFoundException();
+	}
+
+
+	/** Private constructor. */
+	private JARLoader(JarFile jar, URL url) throws MalformedURLException
+	{
+		this.jar = jar;
+		this.url = url;
 	}
 
 

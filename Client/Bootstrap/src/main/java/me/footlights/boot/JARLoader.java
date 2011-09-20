@@ -38,7 +38,7 @@ class JARLoader
 	 */
 	public static JARLoader open(URL url) throws IOException
 	{
-		final URL jarUrl = new URL("jar:" + url);
+		final URL jarUrl = new URL("jar:" + url + "!/");
 
 		JarFile jar =
 			AccessController.doPrivileged(new PrivilegedAction<JarFile>()

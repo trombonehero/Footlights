@@ -54,7 +54,7 @@ public class JavaScript
 	}
 
 	/** Make a string safe to put within single quotes. */
-	static String sanitizeText(String input)
+	public static String sanitizeText(String input)
 	{
 		return input.replace("'", "\\'").replace("\n", "\\n");
 	}

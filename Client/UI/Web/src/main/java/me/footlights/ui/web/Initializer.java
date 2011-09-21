@@ -39,10 +39,8 @@ class Initializer implements AjaxHandler
 		script.append(button("Echo", ajax("echo/stuff", "echo")));
 		script.append(button("Foo", ajax("hello", "foo")));
 		script.append(button("Cajole", ajax("cajole")));
-		script.append(button("Good Plugin",
-				ajax("load_plugin/good.jar!/me.footlights.demo.plugins.good.GoodPlugin")));
-		script.append(button("Wicked Plugin",
-				ajax("load_plugin/wicked.jar!/me.footlights.demo.plugins.wicked.WickedPlugin")));
+		script.append(button("Good Plugin", ajax("load_plugin/" + GOOD_PLUGIN)));
+		script.append(button("Wicked Plugin", ajax("load_plugin/" + WICKED_PLUGIN)));
 
 		script.append(button("Reset", ajax("reset")));
 
@@ -71,4 +69,16 @@ class Initializer implements AjaxHandler
 
 		return script;
 	}
+
+	// Hardcode plugin paths for now, just to demonstrate that they work.
+	private static final String CORE_PATH = System.getProperty("java.class.path").split(":")[0];
+	private static final String PLUGIN_PATH = CORE_PATH.replaceFirst("Bootstrap/.*", "Plugins/");
+
+	private static final String GOOD_PLUGIN =
+		"jar:file:" + PLUGIN_PATH
+		+ "Good/target/good-plugin-HEAD.jar!/me.footlights.demo.plugins.good.GoodPlugin";
+
+	private static final String WICKED_PLUGIN =
+		"jar:file:" + PLUGIN_PATH
+		+ "Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.good.GoodPlugin";
 }

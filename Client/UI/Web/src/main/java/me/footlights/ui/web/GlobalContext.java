@@ -27,7 +27,7 @@ class GlobalContext extends Context
 	GlobalContext(final Footlights footlights, final AjaxServer server)
 	{
 		register("initialize", new Initializer());
-		register("load_plugin", new PluginLoader(footlights));
+		register("load_plugin", new PluginLoader(footlights, server));
 		register("reset", new AjaxHandler() {
 			@Override
 			public JavaScript service(WebRequest request)

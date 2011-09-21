@@ -26,27 +26,46 @@ import me.footlights.plugin.WebRequest;
 
 public class PluginLoader implements AjaxHandler
 {
-	PluginLoader(Footlights footlights)
+	PluginLoader(Footlights footlights, AjaxServer ajaxServer)
 	{
 		this.footlights = footlights;
+		this.ajaxServer = ajaxServer;
 	}
 
 	@Override
 	public JavaScript service(WebRequest request) throws Throwable
 	{
-		String name = request.path();
-
-		PluginWrapper plugin = footlights.loadPlugin(name, new URI(request.path()));
-		plugin.run(footlights);
+		String name = request.path().substring(request.path().lastIndexOf('/') + 1);
 
 		JavaScript response = new JavaScript();
+
+		PluginWrapper plugin = footlights.loadPlugin(name, new URI(request.path()));
 		response.append("console.log('\"");
+		response.append(JavaScript.sanitizeText(plugin.getPluginName()));
+		response.append("\" loaded as \"");
+		response.append(name);
+		response.append(")');");
+
+		ajaxServer.register(name, new Context() // plugin.getAjaxContext());
+			{
+				{
+					super.register("hello", new EchoPlugin());
+				}
+			});
+
+		response.append("var sb = sandboxes.create('");
 		response.append(plugin.getPluginName());
-		response.append("\" loaded');");
+		response.append("', rootContext, rootContext.log, 0, 0, 200, 200);");
+
+		response.append("sb.ajax('hello');");
+
+		plugin.run(footlights);
+
 
 		return response;
 	}
 
 
 	private final Footlights footlights;
+	private final AjaxServer ajaxServer;
 }

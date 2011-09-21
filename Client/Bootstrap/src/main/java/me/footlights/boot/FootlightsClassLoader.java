@@ -62,12 +62,27 @@ class FootlightsClassLoader extends ClassLoader
 	{
 		// If we're not loading from the 'me.footlights' package, treat as a plugin:
 		// load from anywhere we're asked to, but apply security restrictions.
-		if (!name.startsWith("me.footlights"))
-			throw new SecurityException(
-				getClass().getCanonicalName() + " can only load core Footlights classes");
+		boolean privileged =
+			(name.startsWith("me.footlights.core") || name.startsWith("me.footlights.ui"));
+
+		// If the "class name" is very specially encoded, we actually want to load a plugin.
+		if (name.contains("!/"))
+		{
+			privileged = false;
+
+			String[] tokens = name.split("!/");
+			if (tokens.length != 2)
+				throw new ClassNotFoundException("Invalid class name: '" + name + "'");
+
+			try { return findClass(new URL(tokens[0] + "!/"), tokens[1], privileged); }
+			catch (IOException e)
+			{
+				throw new ClassNotFoundException("Unable to load '" + name + "'", e);
+			}
+		}
 
 		for (URL url : classpaths)
-			try { return findClass(url, name, true); }
+			try { return findClass(url, name, privileged); }
 			catch(ClassNotFoundException e) {}
 			catch(IOException e) {}
 
@@ -97,7 +112,7 @@ class FootlightsClassLoader extends ClassLoader
 			perms.add(new FilePermission(classpath.toExternalForm(), "read"));
 		}
 
-		ProtectionDomain domain = new ProtectionDomain(bytecode.source, corePermissions);
+		ProtectionDomain domain = new ProtectionDomain(bytecode.source, perms);
 
 		return defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
 	}

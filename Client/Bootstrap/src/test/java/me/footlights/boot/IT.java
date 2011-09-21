@@ -20,10 +20,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
-/** Tests {@link FootlightsClassLoader}. */
-public class FootlightsClassLoaderITCase
+/** Integration tests for bootstrap class loading. */
+public class IT
 {
-	public FootlightsClassLoaderITCase()
+	public IT()
 	{
 		coreClasspaths = Lists.newArrayList();
 		for (String path : System.getProperty("java.class.path").split(":"))

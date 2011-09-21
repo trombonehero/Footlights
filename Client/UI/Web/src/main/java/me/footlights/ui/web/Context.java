@@ -48,7 +48,7 @@ class Context implements AjaxHandler
 		if (handler == null) handler = defaultHandler;
 		if (handler == null)
 			throw new IllegalArgumentException(
-				"Cannot service request '" + request.prefix() + "' in context " + this);
+				"No handler for request '" + request.prefix() + "' in context " + this);
 
 		return handler.service(request.shift());
 	}

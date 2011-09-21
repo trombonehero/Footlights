@@ -16,10 +16,12 @@
 package me.footlights.boot;
 
 import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AllPermission;
+import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
 
@@ -37,6 +39,7 @@ class FootlightsClassLoader extends ClassLoader
 
 		corePermissions = new Permissions();
 		corePermissions.add(new AllPermission());
+		corePermissions.setReadOnly();
 	}
 
 
@@ -63,24 +66,41 @@ class FootlightsClassLoader extends ClassLoader
 			throw new SecurityException(
 				getClass().getCanonicalName() + " can only load core Footlights classes");
 
-		Bytecode bytecode = null;
 		for (URL url : classpaths)
-			try
-			{
-				bytecode = Bytecode.read(url, name);
-				break;
-			}
+			try { return findClass(url, name, true); }
 			catch(ClassNotFoundException e) {}
 			catch(IOException e) {}
 
-		if (bytecode == null)
-			throw new ClassNotFoundException("No " + name + " in " + classpaths);
+		throw new ClassNotFoundException("No " + name + " in " + classpaths);
+	}
+
+
+	/**
+	 * Find a class, which may or may not be privileged.
+	 *
+	 * @param  privileged     If true, the class will be granted the {@link AllPermission},
+	 *                        allowing it to access arbitrary files, open sockets, etc.
+	 *                        If false, the class will be granted permission to read its own
+	 *                        classpath (and thus open its own resources).
+	 *                        Obviously, this should only be set true for core Footlights code.
+	 */
+	private Class<?> findClass(URL classpath, String name, boolean privileged)
+		throws ClassNotFoundException, IOException
+	{
+		Bytecode bytecode = Bytecode.read(classpath, name);
+
+		PermissionCollection perms;
+		if (privileged) perms = corePermissions;
+		else
+		{
+			perms = new Permissions();
+			perms.add(new FilePermission(classpath.toExternalForm(), "read"));
+		}
 
 		ProtectionDomain domain = new ProtectionDomain(bytecode.source, corePermissions);
 
 		return defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
 	}
-
 
 	@Override public synchronized URL findResource(String name)
 	{

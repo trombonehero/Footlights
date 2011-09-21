@@ -16,13 +16,10 @@
 package me.footlights.boot;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AllPermission;
-import java.security.CodeSigner;
-import java.security.CodeSource;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
 
@@ -100,56 +97,13 @@ class FootlightsClassLoader extends ClassLoader
 					return JARLoader.open(url).readBytecode(className);
 
 				else
-					return readClassFile(url, className);
+					return Bytecode.readFile(url, className);
 			}
 			catch(ClassNotFoundException e) {}
 			catch(IOException e) {}
 
 		throw new ClassNotFoundException("No " + className + " in " +
 				classpaths);
-	}
-
-
-
-	/** Read bytecode from a class file using a classpath and class name. */
-	private Bytecode readClassFile(URL url, String className)
-			throws ClassNotFoundException
-	{
-		// construct the path of the class file
-		String path = url.toExternalForm();
-		if (!path.startsWith("file:"))
-			throw new ClassNotFoundException("The class path URI " + path
-				+ " does not start with 'file:'");
-		path = path.replaceFirst("file:", "");
-		
-		String[] subdirs = className.split("\\.");
-		for (int i = 0; i < (subdirs.length - 1); i++)
-			path = path + File.separatorChar + subdirs[i];
-
-
-		// open the file and read it
-		String classFileName = subdirs[subdirs.length - 1] + ".class";
-		File file = new File(path + File.separatorChar + classFileName);
-
-		try
-		{
-			FileInputStream in = new FileInputStream(file);
-			byte[] raw = new byte[(int) file.length()];
-
-			for (int offset = 0; offset < raw.length; )
-				offset += in.read(raw, offset, raw.length - offset);
-
-			in.close();
-
-			Bytecode bytecode = new Bytecode();
-			bytecode.raw = raw;
-			bytecode.source = new CodeSource(url, new CodeSigner[0]);
-			return bytecode;
-		}
-		catch(IOException e)
-		{
-			throw new ClassNotFoundException(e.getLocalizedMessage());
-		}
 	}
 
 

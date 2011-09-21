@@ -91,14 +91,7 @@ class FootlightsClassLoader extends ClassLoader
 		throws ClassNotFoundException
 	{
 		for (URL url : classpaths)
-			try
-			{
-				if (url.toExternalForm().matches(".*\\.jar$"))
-					return JARLoader.open(url).readBytecode(className);
-
-				else
-					return Bytecode.readFile(url, className);
-			}
+			try { return Bytecode.read(url, className); }
 			catch(ClassNotFoundException e) {}
 			catch(IOException e) {}
 

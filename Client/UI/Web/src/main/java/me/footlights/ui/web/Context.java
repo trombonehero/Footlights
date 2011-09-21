@@ -26,7 +26,7 @@ import com.google.common.collect.Maps;
 
 
 /** Handle to a client-side context (ECMAScript sandbox or 'window'). */ 
-class Context
+class Context implements AjaxHandler
 {
 	/** Construct a {@link Context} with an Ajax handler of last resort. */
 	Context(AjaxHandler defaultHandler)
@@ -40,7 +40,8 @@ class Context
 	 */
 	Context() { this(null); }
 
-	final JavaScript service(WebRequest request) throws Throwable
+	@Override
+	public final JavaScript service(WebRequest request) throws Throwable
 	{
 		AjaxHandler handler = handlers.get(request.prefix());
 

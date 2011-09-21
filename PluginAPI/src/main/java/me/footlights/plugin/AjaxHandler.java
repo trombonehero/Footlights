@@ -23,6 +23,15 @@ import me.footlights.plugin.WebRequest;
 /** An object which can process Ajax requests. */
 public interface AjaxHandler
 {
-	/** Service a request. */
-	JavaScript service(WebRequest request) throws Throwable;
+	/**
+	 * Handle an Ajax {@link WebRequest}.
+	 * 
+	 * @return {@link JavaScript} code to be returned to the sandbox
+	 *
+	 * @throws java.io.FileNotFoundException if the request's "path" can never be handled
+	 * @throws SecurityException if TODO
+	 * @throws Throwable as a last resort; this method may throw anything it likes
+	 */
+	public JavaScript service(WebRequest request)
+		throws java.io.FileNotFoundException, SecurityException, Throwable;
 }

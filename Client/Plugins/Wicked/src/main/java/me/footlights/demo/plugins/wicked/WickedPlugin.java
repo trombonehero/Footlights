@@ -23,7 +23,7 @@ import java.security.AccessControlException;
 import java.security.AccessController;
 import java.util.logging.Logger;
 
-import me.footlights.plugin.AjaxContext;
+import me.footlights.plugin.AjaxHandler;
 import me.footlights.plugin.KernelInterface;
 
 
@@ -120,5 +120,5 @@ public class WickedPlugin implements me.footlights.plugin.Plugin
 		log.info("Failed to do anything wicked (hooray!).");
 	}
 
-	@Override public AjaxContext ajaxContext() { return null; }
+	@Override public AjaxHandler ajaxHandler() { return null; }
 }

@@ -30,5 +30,5 @@ public interface Plugin
 	 *
 	 * @return null if there is no such handler
 	 */
-	public AjaxContext ajaxContext();
+	public AjaxHandler ajaxHandler();
 }

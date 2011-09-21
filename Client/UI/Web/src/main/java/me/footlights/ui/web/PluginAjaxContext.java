@@ -18,7 +18,6 @@ package me.footlights.ui.web;
 import java.io.FileNotFoundException;
 
 import me.footlights.core.plugin.PluginWrapper;
-import me.footlights.plugin.AjaxContext;
 import me.footlights.plugin.AjaxHandler;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
@@ -32,7 +31,7 @@ class PluginAjaxContext implements AjaxHandler
 
 	@Override public JavaScript service(WebRequest request) throws Throwable
 	{
-		AjaxContext context = plugin.getWrappedPlugin().ajaxContext();
+		AjaxHandler context = plugin.getWrappedPlugin().ajaxHandler();
 		if (context == null) throw new FileNotFoundException(request.path());
 
 		else return context.service(request);

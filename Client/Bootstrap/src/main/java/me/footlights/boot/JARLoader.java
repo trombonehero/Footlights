@@ -41,16 +41,7 @@ class JARLoader
 		if (!url.getProtocol().equals("jar"))
 			throw new MalformedURLException("JAR URL does not start with 'jar:' '" + url + "'");
 
-		JarFile jar =
-			AccessController.doPrivileged(new PrivilegedAction<JarFile>()
-			{
-				public JarFile run()
-				{
-					try { return ((JarURLConnection) url.openConnection()).getJarFile(); }
-					catch(IOException e) { throw new Error("Unable to load JAR file", e); }
-				}
-			});
-
+		JarFile jar = new JAROpener().open(url);
 		if (jar.getManifest() == null)
 			throw new SecurityException("The jar file is not signed");
 
@@ -102,6 +93,35 @@ class JARLoader
 		this.jar = jar;
 		this.url = url;
 	}
+
+
+	/** Opens a {@link JarFile}, or on failure, provides a means to return an {@link Exception}. */
+	private static class JAROpener implements PrivilegedAction<JarFile>
+	{
+		synchronized JarFile open(URL url) throws IOException
+		{
+			if (url.toExternalForm().startsWith("jar:")) this.url = url;
+			else this.url = new URL("jar:" + url + "!/");
+
+			JarFile jar = AccessController.doPrivileged(this);
+
+			if (jar == null) throw error;
+			else return jar;
+		}
+
+		@Override public synchronized JarFile run()
+		{
+			try { return ((JarURLConnection) url.openConnection()).getJarFile(); }
+			catch(IOException e)
+			{
+				error = e;
+				return null;
+			}
+		}
+
+		private URL url;
+		private IOException error;
+	};
 
 
 	/** The {@link JarFile} that we are loading classes from. */

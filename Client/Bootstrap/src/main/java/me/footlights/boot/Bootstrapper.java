@@ -73,7 +73,6 @@ class Bootstrapper
 					bootPath, corePaths);
 
 		FootlightsClassLoader classLoader = new FootlightsClassLoader(coreClasspaths);
-		PluginClassLoader pluginLoader = new PluginClassLoader(classLoader);
 
 
 		// Load the Footlights class.
@@ -81,7 +80,7 @@ class Bootstrapper
 			classLoader.loadClass("me.footlights.core.Core");
 
 		Object footlights =
-			footlightsClass.getConstructor(ClassLoader.class).newInstance(pluginLoader);
+			footlightsClass.getConstructor(ClassLoader.class).newInstance(classLoader);
 
 		// Load the UI(s).
 		List<Thread> uiThreads = new ArrayList<Thread>();

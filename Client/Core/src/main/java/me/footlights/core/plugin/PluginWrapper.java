@@ -27,29 +27,24 @@ import me.footlights.plugin.Plugin;
 public final class PluginWrapper
 {
 	/** Constructor */
-	public PluginWrapper(String name, URI url, Plugin plugin, Logger log)
+	public PluginWrapper(String name, URI url, Plugin plugin, KernelInterface kernel, Logger log)
+		throws PluginException
 	{
 		this.name = name;
 		this.url = url;
 		this.plugin = plugin;
-		this.log = log;
+
+		try { plugin.init(kernel, log); }
+		catch(Throwable t)
+		{
+			throw new PluginException("Error running '" + name + "' (" + url + ")", t);
+		}
 	}
 
 
 	public final String getPluginName() { return name; }
 	URI getOrigin() { return url; }
 	public Plugin getWrappedPlugin() { return plugin; }
-
-
-	/** Run the plugin, trapping exceptions if necessary */
-	public void run(KernelInterface kernel) throws PluginException
-	{
-		try { plugin.run(kernel, log); }
-		catch(Throwable t)
-		{
-			throw new PluginException("Error running '" + name + "' (" + url + ")", t);
-		}
-	}
 
 
 	/** The actual plugin. */
@@ -60,7 +55,4 @@ public final class PluginWrapper
 
 	/** Where the plugin came from. */
 	private final URI url;
-
-	/** Plugin-specific log. */
-	private final Logger log;
 }

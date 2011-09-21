@@ -29,7 +29,7 @@ import me.footlights.plugin.KernelInterface;
 
 public class WickedPlugin implements me.footlights.plugin.Plugin
 {
-	@Override public void run(KernelInterface kernel, Logger log) throws SecurityException
+	@Override public void init(KernelInterface kernel, Logger log) throws SecurityException
 	{
 		log.info("Attempting to load a fake 'core' class via URL... ");
 		try

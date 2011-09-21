@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 public interface Plugin
 {
 	/** Start running. */
-	public void run(KernelInterface kernel, Logger log) throws Exception;
+	public void init(KernelInterface kernel, Logger log) throws Exception;
 
 	/**
 	 * A handler for Ajax requests from the Web UI.

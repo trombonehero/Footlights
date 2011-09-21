@@ -54,9 +54,6 @@ public class PluginLoader implements AjaxHandler
 
 		response.append("sb.ajax('hello');");
 
-		plugin.run(footlights);
-
-
 		return response;
 	}
 

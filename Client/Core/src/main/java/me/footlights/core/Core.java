@@ -89,7 +89,7 @@ public class Core implements Footlights
 		{
 			Class<?> c = pluginLoader.loadClass(uri.toString());
 			Plugin p = (Plugin) c.newInstance();
-			plugin = new PluginWrapper(name, uri, p, Logger.getLogger(uri.toString()));
+			plugin = new PluginWrapper(name, uri, p, this, Logger.getLogger(uri.toString()));
 		}
 		catch (ClassNotFoundException e) { throw new PluginLoadException(uri, e); }
 		catch (IllegalAccessException e) { throw new PluginLoadException(uri, e); }

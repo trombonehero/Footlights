@@ -30,7 +30,7 @@ import me.footlights.plugin.WebRequest;
  */
 public class GoodPlugin implements me.footlights.plugin.Plugin
 {
-	@Override public void run(KernelInterface kernel, Logger log) throws Exception
+	@Override public void init(KernelInterface kernel, Logger log) throws Exception
 	{
 		log.info("I am a well-behaved plugin.");
 		log.info("The time is " + new Date());

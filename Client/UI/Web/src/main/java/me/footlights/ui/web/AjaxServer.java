@@ -49,7 +49,7 @@ public class AjaxServer implements WebServer
 		String contextName = request.prefix();
 		Context context = contexts.get(contextName);
 		if (context == null)
-			throw new IllegalArgumentException("No such context '" + context + "'");
+			throw new IllegalArgumentException("No such context '" + contextName + "'");
 
 		log.fine("Routing request to " + context);
 		JavaScript response = context.service(request.shift());

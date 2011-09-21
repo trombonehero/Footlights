@@ -46,12 +46,7 @@ public class PluginLoader implements AjaxHandler
 		response.append(name);
 		response.append(")');");
 
-		ajaxContext.register(name, new Context() // plugin.getAjaxContext());
-			{
-				{
-					super.register("hello", new EchoPlugin());
-				}
-			});
+		ajaxContext.register(name, plugin.getWrappedPlugin().ajaxHandler());
 
 		response.append("var sb = sandboxes.create('plugin/");
 		response.append(plugin.getPluginName());

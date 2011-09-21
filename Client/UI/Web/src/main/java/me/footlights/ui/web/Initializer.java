@@ -80,5 +80,5 @@ class Initializer implements AjaxHandler
 
 	private static final String WICKED_PLUGIN =
 		"jar:file:" + PLUGIN_PATH
-		+ "Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.good.GoodPlugin";
+		+ "Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.wicked.WickedPlugin";
 }

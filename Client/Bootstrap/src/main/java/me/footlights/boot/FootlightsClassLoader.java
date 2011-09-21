@@ -24,8 +24,10 @@ import java.security.AllPermission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
+import java.util.Map;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
@@ -36,6 +38,7 @@ class FootlightsClassLoader extends ClassLoader
 		throws MalformedURLException
 	{
 		this.classpaths = Iterables.unmodifiableIterable(classpaths);
+		this.knownPackages = Maps.newLinkedHashMap();
 
 		corePermissions = new Permissions();
 		corePermissions.add(new AllPermission());
@@ -81,6 +84,17 @@ class FootlightsClassLoader extends ClassLoader
 			}
 		}
 
+		// Do we already know what classpath to find the class in?
+		String packageName = name.substring(0, name.lastIndexOf('.'));
+		URL packageUrl = knownPackages.get(packageName);
+		if (packageUrl != null)
+			try { return findClass(packageUrl, name, privileged); }
+			catch(IOException e)
+			{
+				throw new ClassNotFoundException("Error reading from '" + packageUrl + "'", e);
+			}
+
+		// Fall back to exhaustive search.
 		for (URL url : classpaths)
 			try { return findClass(url, name, privileged); }
 			catch(ClassNotFoundException e) {}
@@ -114,6 +128,9 @@ class FootlightsClassLoader extends ClassLoader
 
 		ProtectionDomain domain = new ProtectionDomain(bytecode.source, perms);
 
+		String packageName = name.substring(0, name.lastIndexOf('.'));
+		knownPackages.put(packageName, classpath);
+
 		return defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
 	}
 
@@ -137,4 +154,7 @@ class FootlightsClassLoader extends ClassLoader
 
 	/** Where we can find core classes. */
 	private final Iterable<URL> classpaths;
+
+	/** Mapping of packages to classpaths. */
+	private final Map<String, URL> knownPackages;
 }

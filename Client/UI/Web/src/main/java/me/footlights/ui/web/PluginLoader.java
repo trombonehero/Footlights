@@ -26,10 +26,10 @@ import me.footlights.plugin.WebRequest;
 
 public class PluginLoader implements AjaxHandler
 {
-	PluginLoader(Footlights footlights, AjaxServer ajaxServer)
+	PluginLoader(Footlights footlights, Context ajaxContext)
 	{
 		this.footlights = footlights;
-		this.ajaxServer = ajaxServer;
+		this.ajaxContext = ajaxContext;
 	}
 
 	@Override
@@ -46,14 +46,14 @@ public class PluginLoader implements AjaxHandler
 		response.append(name);
 		response.append(")');");
 
-		ajaxServer.register(name, new Context() // plugin.getAjaxContext());
+		ajaxContext.register(name, new Context() // plugin.getAjaxContext());
 			{
 				{
 					super.register("hello", new EchoPlugin());
 				}
 			});
 
-		response.append("var sb = sandboxes.create('");
+		response.append("var sb = sandboxes.create('plugin/");
 		response.append(plugin.getPluginName());
 		response.append("', rootContext, rootContext.log, 0, 0, 200, 200);");
 
@@ -67,5 +67,5 @@ public class PluginLoader implements AjaxHandler
 
 
 	private final Footlights footlights;
-	private final AjaxServer ajaxServer;
+	private final Context ajaxContext;
 }

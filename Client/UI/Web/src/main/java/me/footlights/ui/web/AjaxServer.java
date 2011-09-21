@@ -36,6 +36,9 @@ public class AjaxServer implements WebServer
 	{
 		this.contexts = Maps.newLinkedHashMap();
 		this.globalContext = new GlobalContext(footlights, this);
+		this.pluginContext = new Context();
+
+		globalContext.register("load_plugin", new PluginLoader(footlights, pluginContext));
 
 		init();
 	}
@@ -61,7 +64,9 @@ public class AjaxServer implements WebServer
 	synchronized void init()
 	{
 		contexts.clear();
+
 		register("global", globalContext);
+		register("plugin", pluginContext);
 
 		// TODO(jon): get rid of this demo hack
 		register("foo", new Context().register("hello", new HelloWorldPlugin()));
@@ -82,6 +87,9 @@ public class AjaxServer implements WebServer
 
 	/** Global context to handle top-level Ajax requests. */
 	private final GlobalContext globalContext;
+
+	/** Context for the Ajax handlers of {@link Plugin}s. */
+	private final Context pluginContext;
 
 	/** Plugin/sandbox contexts. */
 	private final LinkedHashMap<String, Context> contexts;

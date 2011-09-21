@@ -16,14 +16,12 @@
 package me.footlights.ui.web;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
 import com.google.common.collect.Maps;
 
 import me.footlights.core.*;
-import me.footlights.core.plugin.PluginWrapper;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 
@@ -36,7 +34,6 @@ public class AjaxServer implements WebServer
 
 	public AjaxServer(Footlights footlights)
 	{
-		this.footlights = footlights;
 		this.contexts = Maps.newLinkedHashMap();
 		this.globalContext = new GlobalContext(footlights, this);
 
@@ -80,22 +77,8 @@ public class AjaxServer implements WebServer
 	}
 
 
-	private String runPlugin(URI url) throws Throwable
-	{
-		PluginWrapper plugin = footlights.loadPlugin("foo", url);
-		plugin.run(footlights);
-
-		String result = "(loaded: '" + plugin.getPluginName() + "')\n";
-
-		return result;
-	}
-
-
 	/** Log. */
 	private static final Logger log = Logger.getLogger(AjaxServer.class.getName());
-
-	/** Loads plugins */
-	private final Footlights footlights;
 
 	/** Global context to handle top-level Ajax requests. */
 	private final GlobalContext globalContext;

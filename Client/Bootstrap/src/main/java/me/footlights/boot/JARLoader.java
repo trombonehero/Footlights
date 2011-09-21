@@ -36,16 +36,17 @@ class JARLoader
 	 *
 	 * @param url      a URL, no "jar:" prefix (e.g. "file:///home/...", "http://foo.com/...")
 	 */
-	public static JARLoader open(URL url) throws IOException
+	public static JARLoader open(final URL url) throws IOException
 	{
-		final URL jarUrl = new URL("jar:" + url + "!/");
+		if (!url.getProtocol().equals("jar"))
+			throw new MalformedURLException("JAR URL does not start with 'jar:' '" + url + "'");
 
 		JarFile jar =
 			AccessController.doPrivileged(new PrivilegedAction<JarFile>()
 			{
 				public JarFile run()
 				{
-					try { return ((JarURLConnection) jarUrl.openConnection()).getJarFile(); }
+					try { return ((JarURLConnection) url.openConnection()).getJarFile(); }
 					catch(IOException e) { throw new Error("Unable to load JAR file", e); }
 				}
 			});

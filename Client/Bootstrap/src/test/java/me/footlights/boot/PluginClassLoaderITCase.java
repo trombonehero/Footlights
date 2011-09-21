@@ -72,7 +72,7 @@ public class PluginClassLoaderITCase
 	private static String pluginUri(String projectDir, String projectName, String pluginClassName)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("file://");
+		sb.append("jar:file://");
 		sb.append(
 			System.getProperty("java.class.path")
 				.replaceFirst("Client/Bootstrap/.*", "Client/Plugins/"));

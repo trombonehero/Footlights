@@ -113,6 +113,7 @@ public class WickedPlugin implements me.footlights.plugin.Plugin
 					"Encapsulation failure: ran another plugin");
 		}
 		catch(AccessControlException e) { log.info("denied."); }
+		catch(ClassNotFoundException e) { log.info("not found. (not denied, just not found)"); }
 		catch(Exception e) { throw new Error(e); }
 
 

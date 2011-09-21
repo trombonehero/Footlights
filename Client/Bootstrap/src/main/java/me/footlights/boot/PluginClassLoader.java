@@ -62,7 +62,7 @@ class PluginClassLoader extends ClassLoader
 		String[] parts = name.split("\\.jar!/");
 		if (parts.length == 2)
 		{
-			String jarFile = parts[0] + ".jar";
+			String jarFile = parts[0] + ".jar!/";
 
 			// Both the JAR file and class name have been given explicitly; open the JAR file.
 			try { jar = JARLoader.open(new URL(jarFile)); }

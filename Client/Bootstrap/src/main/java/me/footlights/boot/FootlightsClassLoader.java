@@ -63,7 +63,19 @@ class FootlightsClassLoader extends ClassLoader
 			throw new SecurityException(
 				getClass().getCanonicalName() + " can only load core Footlights classes");
 
-		Bytecode bytecode = readBytecode(name);
+		Bytecode bytecode = null;
+		for (URL url : classpaths)
+			try
+			{
+				bytecode = Bytecode.read(url, name);
+				break;
+			}
+			catch(ClassNotFoundException e) {}
+			catch(IOException e) {}
+
+		if (bytecode == null)
+			throw new ClassNotFoundException("No " + name + " in " + classpaths);
+
 		ProtectionDomain domain = new ProtectionDomain(bytecode.source, corePermissions);
 
 		return defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
@@ -82,21 +94,6 @@ class FootlightsClassLoader extends ClassLoader
 			catch(MalformedURLException e) { throw new Error(e); }
 		}
 		return super.findResource(name);
-	}
-
-
-
-	/** Read bytecode for a core Footlights class. */
-	private Bytecode readBytecode(String className)
-		throws ClassNotFoundException
-	{
-		for (URL url : classpaths)
-			try { return Bytecode.read(url, className); }
-			catch(ClassNotFoundException e) {}
-			catch(IOException e) {}
-
-		throw new ClassNotFoundException("No " + className + " in " +
-				classpaths);
 	}
 
 

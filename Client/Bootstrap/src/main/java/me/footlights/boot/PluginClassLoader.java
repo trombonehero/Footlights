@@ -93,12 +93,8 @@ class PluginClassLoader extends ClassLoader
 		try { bytecode = jar.readBytecode(className); }
 		catch (IOException e) { throw new ClassNotFoundException("Error reading JAR", e); }
 
-		String sourceURL = bytecode.source.getLocation().toString();
-		if (sourceURL.startsWith("file:"))
-			sourceURL = sourceURL.replace("file:", "");
-
 		Permissions permissions = new Permissions();
-		permissions.add(new FilePermission(sourceURL, "read"));
+		permissions.add(new FilePermission(bytecode.source.getLocation().toExternalForm(), "read"));
 		ProtectionDomain domain = new ProtectionDomain(bytecode.source, permissions);
 
 		int lastDot = className.lastIndexOf(".");

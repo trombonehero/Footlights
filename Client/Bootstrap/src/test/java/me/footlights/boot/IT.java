@@ -8,6 +8,7 @@ import java.security.AllPermission;
 import java.security.PermissionCollection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import me.footlights.plugin.KernelInterface;
 
@@ -23,6 +24,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 
 
 /** Integration tests for bootstrap class loading. */
@@ -103,6 +108,9 @@ public class IT
 			fail("Unable to find static init() method in plugin " + c.getCanonicalName());
 
 		Object plugin = init.invoke(null, null, logger);
+		assertNotNull(plugin);
+
+		verify(logger, atLeastOnce()).info(anyString());
 	}
 
 
@@ -125,6 +133,6 @@ public class IT
 
 	private FootlightsClassLoader loader;
 	private Object kernelInterface;
-	private Object logger;
+	private Logger logger;
 	private final List<String> coreClasspaths;
 }

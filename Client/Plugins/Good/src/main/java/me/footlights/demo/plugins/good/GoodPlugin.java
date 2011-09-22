@@ -43,7 +43,8 @@ public class GoodPlugin implements me.footlights.plugin.Plugin
 		log.info(h.help());
 
 		log.info("Finally, do a 'syscall'... ");
-		log.info("new UUID: " + kernel.generateUUID());
+		if (kernel == null) log.info("but we can't! our kernel reference is null.");
+		else log.info("new UUID: " + kernel.generateUUID());
 
 		log.info("The plugin works!.");
 

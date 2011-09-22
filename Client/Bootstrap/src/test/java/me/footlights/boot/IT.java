@@ -10,8 +10,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
-import me.footlights.plugin.KernelInterface;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -54,8 +52,6 @@ public class IT
 		}
 
 		loader = new FootlightsClassLoader(classpaths);
-
-		kernelInterface = Mockito.mock(KernelInterface.class);
 		logger = Mockito.mock(java.util.logging.Logger.class);
 	}
 
@@ -132,7 +128,6 @@ public class IT
 	}
 
 	private FootlightsClassLoader loader;
-	private Object kernelInterface;
 	private Logger logger;
 	private final List<String> coreClasspaths;
 }

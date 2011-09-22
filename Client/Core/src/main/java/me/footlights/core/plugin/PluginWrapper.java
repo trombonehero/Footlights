@@ -16,9 +16,7 @@
 package me.footlights.core.plugin;
 
 import java.net.URI;
-import java.util.logging.Logger;
 
-import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.Plugin;
 
 
@@ -27,18 +25,12 @@ import me.footlights.plugin.Plugin;
 public final class PluginWrapper
 {
 	/** Constructor */
-	public PluginWrapper(String name, URI url, Plugin plugin, KernelInterface kernel, Logger log)
+	public PluginWrapper(String name, URI url, Plugin plugin)
 		throws PluginException
 	{
 		this.name = name;
 		this.url = url;
 		this.plugin = plugin;
-
-		try { plugin.init(kernel, log); }
-		catch(Throwable t)
-		{
-			throw new PluginException("Error running '" + name + "' (" + url + ")", t);
-		}
 	}
 
 

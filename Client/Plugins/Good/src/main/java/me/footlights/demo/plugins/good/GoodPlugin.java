@@ -28,7 +28,7 @@ import me.footlights.plugin.KernelInterface;
  */
 public class GoodPlugin implements me.footlights.plugin.Plugin
 {
-	@Override public void init(KernelInterface kernel, Logger log) throws Exception
+	public static GoodPlugin init(KernelInterface kernel, Logger log) throws Exception
 	{
 		log.info("I am a well-behaved plugin.");
 		log.info("The time is " + new Date());
@@ -46,9 +46,20 @@ public class GoodPlugin implements me.footlights.plugin.Plugin
 		log.info("new UUID: " + kernel.generateUUID());
 
 		log.info("The plugin works!.");
+
+		return new GoodPlugin(kernel, new DemoAjaxHandler(), log);
 	}
 
 	@Override public AjaxHandler ajaxHandler() { return ajax; }
 
-	private final AjaxHandler ajax = new DemoAjaxHandler();
+	private GoodPlugin(KernelInterface kernel, AjaxHandler ajax, Logger log)
+	{
+		this.ajax = ajax;
+		this.kernel = kernel;
+		this.log = log;
+	}
+
+	private final AjaxHandler ajax;
+	private final KernelInterface kernel;
+	private final Logger log;
 }

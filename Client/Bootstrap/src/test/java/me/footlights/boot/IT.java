@@ -1,12 +1,16 @@
 package me.footlights.boot;
 
 import java.io.FilePermission;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AllPermission;
 import java.security.PermissionCollection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Logger;
+
+import me.footlights.plugin.KernelInterface;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -77,6 +81,13 @@ public class IT
 		for (String path : coreClasspaths)
 			assertFalse(className + " should not be able to read " + path,
 				permissions.implies(new FilePermission(path, "read")));
+				
+
+		Method[] methods = c.getMethods();
+		for (Method m : methods)
+			System.out.println(m.toGenericString());
+
+//		Method init = c.getMethod("init", KernelInterface.class, Logger.class);
 	}
 
 

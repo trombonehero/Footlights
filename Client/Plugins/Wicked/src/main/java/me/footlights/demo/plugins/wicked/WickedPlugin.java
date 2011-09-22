@@ -29,14 +29,14 @@ import me.footlights.plugin.KernelInterface;
 
 public class WickedPlugin implements me.footlights.plugin.Plugin
 {
-	@Override public void init(KernelInterface kernel, Logger log) throws SecurityException
+	public static WickedPlugin init(KernelInterface kernel, Logger log) throws SecurityException
 	{
 		log.info("Attempting to load a fake 'core' class via URL... ");
 		try
 		{
 			String url = 
 				"jar:file:///Users/jon/Documents/School/Research/Social Networks/Footlights/Client/plugins/wicked/wicked.jar!/footlights.core.Test";
-			getClass().getClassLoader().loadClass(url);
+			kernel.getClass().getClassLoader().loadClass(url);
 
 			throw new SecurityException(
 					"Encapsulation failure: loaded fake 'core' class");
@@ -97,7 +97,7 @@ public class WickedPlugin implements me.footlights.plugin.Plugin
 		log.info("Trying to instantiate another plugin... ");
 		try
 		{
-			Class<?> c = this.getClass().getClassLoader().loadClass(
+			Class<?> c = kernel.getClass().getClassLoader().loadClass(
 				"jar:file:///home/jra40/Research/Social Networks/Footlights/Client/plugins/good/good.jar!/footlights.demo.plugins.good.Plugin");
 
 			Class<?> classes[] = new Class[] { c };
@@ -118,6 +118,8 @@ public class WickedPlugin implements me.footlights.plugin.Plugin
 
 
 		log.info("Failed to do anything wicked (hooray!).");
+
+		return new WickedPlugin();
 	}
 
 	@Override public AjaxHandler ajaxHandler() { return null; }

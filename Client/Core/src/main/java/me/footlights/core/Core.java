@@ -17,6 +17,7 @@ package me.footlights.core;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import me.footlights.core.data.store.DiskStore;
 import me.footlights.core.data.store.Store;
 import me.footlights.core.plugin.PluginLoadException;
 import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.Plugin;
 
 
@@ -88,12 +90,11 @@ public class Core implements Footlights
 		try
 		{
 			Class<?> c = pluginLoader.loadClass(uri.toString());
-			Plugin p = (Plugin) c.newInstance();
-			plugin = new PluginWrapper(name, uri, p, this, Logger.getLogger(uri.toString()));
+			Method init = c.getMethod("init", KernelInterface.class, Logger.class);
+			Plugin p = (Plugin) init.invoke(null, this, Logger.getLogger(uri.toString()));
+			plugin = new PluginWrapper(name, uri, p);
 		}
-		catch (ClassNotFoundException e) { throw new PluginLoadException(uri, e); }
-		catch (IllegalAccessException e) { throw new PluginLoadException(uri, e); }
-		catch (InstantiationException e) { throw new PluginLoadException(uri, e); }
+		catch (Exception e) { throw new PluginLoadException(uri, e); }
 
 
 		plugins.put(uri, plugin);

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -131,11 +133,20 @@ public class Core implements Footlights
 		chunked.add(data);  // TODO: actually chunk properly
 		try
 		{
-			File f = File.newBuilder()
+			final File f = File.newBuilder()
 				.setContent(chunked)
 				.freeze();
 
-			store.store(f.toSave());
+			AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
+				{
+					@Override
+					public Void run() throws IOException
+					{
+						store.store(f.toSave());
+						return null;
+					}
+				});
+
 			return f;
 		}
 		catch (Exception e)

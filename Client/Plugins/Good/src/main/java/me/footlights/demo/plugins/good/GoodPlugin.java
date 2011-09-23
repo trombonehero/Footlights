@@ -15,7 +15,6 @@
  */
 package me.footlights.demo.plugins.good;
 
-import java.util.Date;
 import java.util.logging.Logger;
 
 import me.footlights.plugin.AjaxHandler;
@@ -30,37 +29,16 @@ public class GoodPlugin implements me.footlights.plugin.Plugin
 {
 	public static GoodPlugin init(KernelInterface kernel, Logger log) throws Exception
 	{
-		log.info("I am a well-behaved plugin.");
-		log.info("The time is " + new Date());
-
-		log.info("Let's test a static method in the Helper class... ");
-		log.info(Helper.staticHelp());
-
-		log.info("Ok, that was fine. Now a constructor... ");
-		Helper h = new Helper();
-
-		log.info("And a regular method... ");
-		log.info(h.help());
-
-		log.info("Finally, do a 'syscall'... ");
-		if (kernel == null) log.info("but we can't! our kernel reference is null.");
-		else log.info("new UUID: " + kernel.generateUUID());
-
-		log.info("The plugin works!.");
-
-		return new GoodPlugin(kernel, new DemoAjaxHandler(), log);
+		log.info("Loading " + GoodPlugin.class.getCanonicalName() + "...");
+		return new GoodPlugin(new DemoAjaxHandler(kernel, log));
 	}
 
 	@Override public AjaxHandler ajaxHandler() { return ajax; }
 
-	private GoodPlugin(KernelInterface kernel, AjaxHandler ajax, Logger log)
+	private GoodPlugin(AjaxHandler ajax)
 	{
 		this.ajax = ajax;
-		this.kernel = kernel;
-		this.log = log;
 	}
 
 	private final AjaxHandler ajax;
-	private final KernelInterface kernel;
-	private final Logger log;
 }

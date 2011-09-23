@@ -46,7 +46,7 @@ public class Fingerprint
 		return new Fingerprint(algorithm, ByteBuffer.wrap(new Base32().decode(hash.getBytes())));
 	}
 
-	public static Builder newBuilder() { return new Builder(); }
+	public static Builder newBuilder() { return new Builder(Preferences.getDefaultPreferences()); }
 
 	public String encode()
 	{
@@ -99,12 +99,12 @@ public class Fingerprint
 			return this;
 		}
 		
-		private Builder()
+		private Builder(Preferences preferences)
 		{
 			try
 			{
 				algorithm = MessageDigest.getInstance(
-						Preferences.getDefaultPreferences().getString("crypto.hash.algorithm"));
+					preferences.getString("crypto.hash.algorithm"));
 			}
 			catch (NoSuchAlgorithmException e)
 			{

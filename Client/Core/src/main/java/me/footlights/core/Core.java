@@ -142,7 +142,7 @@ public class Core implements Footlights
 		{
 			String message = "Unable to save user data: " + e.getMessage();
 			log.warning(message);
-			throw new IOException(message);
+			throw new IOException(message, e);
 		}
 	}
 

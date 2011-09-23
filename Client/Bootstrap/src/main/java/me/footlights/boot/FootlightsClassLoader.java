@@ -20,9 +20,12 @@ import java.io.FilePermission;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
 import java.security.AllPermission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.util.Map;
 
@@ -78,7 +81,7 @@ class FootlightsClassLoader extends ClassLoader
 				throw new ClassNotFoundException("Invalid class name: '" + name + "'");
 
 			try { return findClass(new URL(tokens[0] + "!/"), tokens[1], privileged); }
-			catch (IOException e)
+			catch (Exception e)
 			{
 				throw new ClassNotFoundException("Unable to load '" + name + "'", e);
 			}
@@ -89,7 +92,7 @@ class FootlightsClassLoader extends ClassLoader
 		URL packageUrl = knownPackages.get(packageName);
 		if (packageUrl != null)
 			try { return findClass(packageUrl, name, privileged); }
-			catch(IOException e)
+			catch(Exception e)
 			{
 				throw new ClassNotFoundException("Error reading from '" + packageUrl + "'", e);
 			}
@@ -97,8 +100,7 @@ class FootlightsClassLoader extends ClassLoader
 		// Fall back to exhaustive search.
 		for (URL url : classpaths)
 			try { return findClass(url, name, privileged); }
-			catch(ClassNotFoundException e) {}
-			catch(IOException e) {}
+			catch(Exception e) {}
 
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
 	}
@@ -113,10 +115,17 @@ class FootlightsClassLoader extends ClassLoader
 	 *                        classpath (and thus open its own resources).
 	 *                        Obviously, this should only be set true for core Footlights code.
 	 */
-	private Class<?> findClass(URL classpath, String name, boolean privileged)
-		throws ClassNotFoundException, IOException
+	private Class<?> findClass(final URL classpath, final String name, boolean privileged)
+		throws ClassNotFoundException, IOException, PrivilegedActionException
 	{
-		Bytecode bytecode = Bytecode.read(classpath, name);
+		Bytecode bytecode = AccessController.doPrivileged(new PrivilegedExceptionAction<Bytecode>()
+			{
+				@Override
+				public Bytecode run() throws ClassNotFoundException, IOException
+				{
+					return Bytecode.read(classpath, name);
+				}
+			});
 
 		PermissionCollection perms;
 		if (privileged) perms = corePermissions;

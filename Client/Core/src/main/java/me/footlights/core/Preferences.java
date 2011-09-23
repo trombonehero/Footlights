@@ -39,7 +39,8 @@ public class Preferences
 	/** Create a Preferences instance with auto-detected default settings. */
 	public static Preferences getDefaultPreferences()
 	{
-		return new Preferences(null);
+		if (defaultPreferences != null) return defaultPreferences;
+		else return new Preferences(null);
 	}
 
 	/** Load Preferences from the default filesystem location. */
@@ -51,7 +52,9 @@ public class Preferences
 	/** Create preferences with an explicit backing engine. */
 	public static Preferences create(PreferenceStorageEngine engine)
 	{
-		return new Preferences(engine);
+		Preferences prefs = new Preferences(engine);
+		if (defaultPreferences == null) defaultPreferences = prefs;
+		return prefs;
 	}
 
 
@@ -239,6 +242,9 @@ public class Preferences
 		return defaults;
 	}
 
+
+	/** The preferences you get if you aren't specific (the first ones created). */
+	private static Preferences defaultPreferences;
 
 	/** Platform-specific preference storage. */
 	private final PreferenceStorageEngine engine;

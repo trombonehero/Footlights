@@ -16,17 +16,10 @@
 package me.footlights.boot;
 
 import java.io.File;
-import java.io.FilePermission;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.AllPermission;
-import java.security.PermissionCollection;
 import java.security.Permissions;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.security.ProtectionDomain;
 import java.util.Map;
 
 import com.google.common.collect.Iterables;
@@ -52,9 +45,6 @@ class FootlightsClassLoader extends ClassLoader
 	@Override protected synchronized Class<?> loadClass(String name, boolean resolve)
 		throws ClassNotFoundException
 	{
-		if (!name.startsWith("me.footlights"))
-			return super.loadClass(name, resolve);
-
 		Class<?> c = findClass(name);
 		if (resolve) resolveClass(c);
 
@@ -66,82 +56,57 @@ class FootlightsClassLoader extends ClassLoader
 	@Override protected synchronized Class<?> findClass(String name)
 		throws ClassNotFoundException
 	{
-		// If we're not loading from the 'me.footlights' package, treat as a plugin:
-		// load from anywhere we're asked to, but apply security restrictions.
-		boolean privileged =
-			(name.startsWith("me.footlights.core") || name.startsWith("me.footlights.ui"));
-
 		// If the "class name" is very specially encoded, we actually want to load a plugin.
 		if (name.contains("!/"))
 		{
-			privileged = false;
-
 			String[] tokens = name.split("!/");
 			if (tokens.length != 2)
 				throw new ClassNotFoundException("Invalid class name: '" + name + "'");
 
-			try { return findClass(new URL(tokens[0] + "!/"), tokens[1], privileged); }
-			catch (Exception e)
+			URL classpath;
+			try { classpath = new URL(tokens[0] + "!/"); }
+			catch (MalformedURLException e)
 			{
-				throw new ClassNotFoundException("Unable to load '" + name + "'", e);
+				throw new ClassNotFoundException("Invalid classpath: " + tokens[0], e);
 			}
+
+			String className = tokens[1];
+			String packageName = className.substring(0, className.lastIndexOf("."));
+
+			return ClasspathLoader.create(this, classpath, packageName).loadClass(className);
 		}
+
+		// We must be loading a core Footlights class or a Java library class.
+		if (!name.startsWith("me.footlights"))
+			return getParent().loadClass(name);
 
 		// Do we already know what classpath to find the class in?
 		String packageName = name.substring(0, name.lastIndexOf('.'));
-		URL packageUrl = knownPackages.get(packageName);
-		if (packageUrl != null)
-			try { return findClass(packageUrl, name, privileged); }
-			catch(Exception e)
-			{
-				throw new ClassNotFoundException("Error reading from '" + packageUrl + "'", e);
-			}
+		ClassLoader packageLoader = knownPackages.get(packageName);
+		if (packageLoader != null)
+			return packageLoader.loadClass(name);
 
-		// Fall back to exhaustive search.
+		// Search known package sources.
+		for (String prefix : knownPackages.keySet())
+			if (packageName.startsWith(prefix))
+				return knownPackages.get(prefix).loadClass(name);
+
+		// Fall back to exhaustive search of core classpaths.
 		for (URL url : classpaths)
-			try { return findClass(url, name, privileged); }
-			catch(Exception e) {}
+		{
+			try
+			{
+				ClasspathLoader loader = ClasspathLoader.create(this, url, packageName);
+				Class<?> c = loader.loadClass(name);
+				knownPackages.put(packageName, loader);
+				return c;
+			}
+			catch (Exception e) {}
+		}
 
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
 	}
 
-
-	/**
-	 * Find a class, which may or may not be privileged.
-	 *
-	 * @param  privileged     If true, the class will be granted the {@link AllPermission},
-	 *                        allowing it to access arbitrary files, open sockets, etc.
-	 *                        If false, the class will be granted permission to read its own
-	 *                        classpath (and thus open its own resources).
-	 *                        Obviously, this should only be set true for core Footlights code.
-	 */
-	private Class<?> findClass(final URL classpath, final String name, boolean privileged)
-		throws ClassNotFoundException, IOException, PrivilegedActionException
-	{
-		Bytecode bytecode = AccessController.doPrivileged(new PrivilegedExceptionAction<Bytecode>()
-			{
-				@Override
-				public Bytecode run() throws ClassNotFoundException, IOException
-				{
-					return Bytecode.read(classpath, name);
-				}
-			});
-
-		PermissionCollection perms;
-		if (privileged) perms = corePermissions;
-		else
-		{
-			perms = new Permissions();
-			perms.add(new FilePermission(classpath.toExternalForm(), "read"));
-		}
-
-		ProtectionDomain domain = new ProtectionDomain(bytecode.source, perms);
-
-		String packageName = name.substring(0, name.lastIndexOf('.'));
-		knownPackages.put(packageName, classpath);
-
-		return defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
-	}
 
 	@Override public synchronized URL findResource(String name)
 	{
@@ -165,5 +130,5 @@ class FootlightsClassLoader extends ClassLoader
 	private final Iterable<URL> classpaths;
 
 	/** Mapping of packages to classpaths. */
-	private final Map<String, URL> knownPackages;
+	private final Map<String, ClassLoader> knownPackages;
 }

@@ -1,6 +1,7 @@
 package me.footlights.boot;
 
 import java.io.FilePermission;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -114,6 +115,24 @@ public class IT
 		Class<?> c1 = loader.loadClass(GOOD_PLUGIN);
 		Class<?> c2 = loader.loadClass(GOOD_PLUGIN);
 		assertNotSame(c1.getClassLoader(), c2.getClassLoader());
+	}
+
+	/** Make sure that we can load resource from a JAR file. */
+	@Test public void testResources() throws Exception
+	{
+		Class<?> c = loader.loadClass(GOOD_PLUGIN);
+		ClassLoader loader = c.getClassLoader();
+
+		// Read the .class file for the plugin's entry point.
+		String classFileName = GOOD_CLASSNAME.replaceAll("\\.", "/") + ".class";
+		InputStream in = loader.getResourceAsStream(classFileName);
+		byte buffer[] = new byte[4096];
+		int bytes = in.read(buffer);
+
+		// Just make sure the file is a valid Java class file (magic 0xCAFEBABE).
+		byte magic[] = { (byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE };
+		assertTrue(bytes > magic.length);
+		for (int i = 0; i < magic.length; i++) assertEquals(magic[i], buffer[i]);
 	}
 
 

@@ -112,10 +112,6 @@ public class IT
 	@Test public void testReload() throws Exception
 	{
 		Class<?> c1 = loader.loadClass(GOOD_PLUGIN);
-
-		Class<?> fileClass = c1.getClassLoader().loadClass("me.footlights.File");
-		assertEquals(c1.getClassLoader(), fileClass.getClassLoader());
-
 		Class<?> c2 = loader.loadClass(GOOD_PLUGIN);
 		assertNotSame(c1.getClassLoader(), c2.getClassLoader());
 	}

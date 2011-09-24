@@ -76,11 +76,11 @@ class Bootstrapper
 
 
 		// Load the Footlights class.
-		Class<?> footlightsClass =
-			classLoader.loadClass("me.footlights.core.Core");
+		Class<?> footlightsClass = classLoader.loadClass("me.footlights.core.Footlights");
+		Class<?> coreClass = classLoader.loadClass("me.footlights.core.Core");
 
 		Object footlights =
-			footlightsClass.getConstructor(ClassLoader.class).newInstance(classLoader);
+			coreClass.getConstructor(ClassLoader.class).newInstance(classLoader);
 
 		// Load the UI(s).
 		List<Thread> uiThreads = new ArrayList<Thread>();
@@ -89,7 +89,7 @@ class Bootstrapper
 			final String className = ui.packageName + "." + ui.className;
 
 			Class<?> uiClass = classLoader.loadClass(className);
-			Constructor<?> constructor = uiClass.getConstructors()[0];
+			Constructor<?> constructor = uiClass.getConstructor(footlightsClass);
 			Object obj = constructor.newInstance(new Object[] { footlights });
 			uiThreads.add(new Thread((Runnable) obj, ui.name));
 		}

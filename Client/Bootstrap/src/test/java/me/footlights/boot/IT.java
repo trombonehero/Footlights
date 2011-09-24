@@ -19,6 +19,7 @@ import com.google.common.collect.Sets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -105,6 +106,18 @@ public class IT
 		assertNotNull(plugin);
 
 		verify(logger, atLeastOnce()).info(anyString());
+	}
+
+	/** Make sure that we can load a plugin and then re-load it. */
+	@Test public void testReload() throws Exception
+	{
+		Class<?> c1 = loader.loadClass(GOOD_PLUGIN);
+
+		Class<?> fileClass = c1.getClassLoader().loadClass("me.footlights.File");
+		assertEquals(c1.getClassLoader(), fileClass.getClassLoader());
+
+		Class<?> c2 = loader.loadClass(GOOD_PLUGIN);
+		assertNotSame(c1.getClassLoader(), c2.getClassLoader());
 	}
 
 

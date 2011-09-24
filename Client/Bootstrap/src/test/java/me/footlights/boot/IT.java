@@ -66,25 +66,23 @@ public class IT
 		assertTrue(permissions.implies(new AllPermission()));
 	}
 
-
 	@Test public void testGoodPlugin() throws Exception
 	{
-		final String className = "me.footlights.demo.plugins.good.GoodPlugin";
 
-		Class<?> c = loader.loadClass(pluginUri("Good", "good-plugin", className));
+		Class<?> c = loader.loadClass(GOOD_PLUGIN);
 
 		assertNotNull(c);
-		assertEquals(className, c.getCanonicalName());
+		assertEquals(GOOD_CLASSNAME, c.getCanonicalName());
 
 		PermissionCollection permissions = c.getProtectionDomain().getPermissions();
-		assertFalse(className + " should not get AllPermission",
+		assertFalse(c.getName() + " should not get AllPermission",
 			permissions.implies(new AllPermission()));
 
-		assertFalse(className + " should not get 'exitVM' permission",
+		assertFalse(c.getName() + " should not get 'exitVM' permission",
 			permissions.implies(new RuntimePermission("exitVM")));
 
 		for (String path : coreClasspaths)
-			assertFalse(className + " should not be able to read " + path,
+			assertFalse(c.getName() + " should not be able to read " + path,
 				permissions.implies(new FilePermission(path, "read")));
 
 
@@ -126,6 +124,9 @@ public class IT
 
 		return sb.toString();
 	}
+
+	private static final String GOOD_CLASSNAME = "me.footlights.demo.plugins.good.GoodPlugin";
+	private static final String GOOD_PLUGIN = pluginUri("Good", "good-plugin", GOOD_CLASSNAME);
 
 	private FootlightsClassLoader loader;
 	private Logger logger;

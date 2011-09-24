@@ -18,7 +18,6 @@ package me.footlights.plugin;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import me.footlights.File;
 
 
 /** A plugin's interface to the Footlights core. */

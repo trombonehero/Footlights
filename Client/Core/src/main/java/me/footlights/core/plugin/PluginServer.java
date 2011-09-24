@@ -18,8 +18,8 @@ package me.footlights.core.plugin;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import me.footlights.File;
 import me.footlights.core.Footlights;
+import me.footlights.plugin.File;
 import me.footlights.plugin.KernelInterface;
 
 

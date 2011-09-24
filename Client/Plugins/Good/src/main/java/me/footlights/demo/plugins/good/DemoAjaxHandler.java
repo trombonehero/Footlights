@@ -6,8 +6,8 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.footlights.File;
 import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.File;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.WebRequest;

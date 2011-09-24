@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights;
+package me.footlights.plugin;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;

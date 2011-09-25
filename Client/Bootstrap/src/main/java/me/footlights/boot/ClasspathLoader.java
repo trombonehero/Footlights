@@ -101,6 +101,7 @@ class ClasspathLoader extends ClassLoader
 	}
 
 
+	@Override public URL getResource(String name) { return findResource(name); }
 	@Override public synchronized URL findResource(String name)
 	{
 		try

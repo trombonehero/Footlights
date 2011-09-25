@@ -103,7 +103,17 @@ class ClasspathLoader extends ClassLoader
 
 	@Override public synchronized URL findResource(String name)
 	{
-		try { return new URL(classpath.toString() + "/" + name); }
+		try
+		{
+			String externalUrl = classpath.toExternalForm();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(externalUrl);
+			if (!externalUrl.endsWith("/")) sb.append('/');
+			sb.append(name);
+
+			return new URL(sb.toString());
+		}
 		catch(MalformedURLException e) { return null; }
 	}
 

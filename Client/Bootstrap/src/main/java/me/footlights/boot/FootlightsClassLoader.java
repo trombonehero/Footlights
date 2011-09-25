@@ -15,7 +15,6 @@
  */
 package me.footlights.boot;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AllPermission;
@@ -105,21 +104,6 @@ class FootlightsClassLoader extends ClassLoader
 		}
 
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
-	}
-
-
-	@Override public synchronized URL findResource(String name)
-	{
-		for (URL url : classpaths)
-		{
-			try
-			{
-				URL bigURL = new URL(url.toString() + "/" + name);
-				if (new File(bigURL.getFile()).exists()) return bigURL;
-			}
-			catch(MalformedURLException e) { throw new Error(e); }
-		}
-		return super.findResource(name);
 	}
 
 

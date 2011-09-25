@@ -1,5 +1,6 @@
 package me.footlights.boot;
 
+import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -10,6 +11,8 @@ import java.security.PermissionCollection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Logger;
+
+import me.footlights.core.Core;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -124,8 +127,10 @@ public class IT
 		ClassLoader loader = c.getClassLoader();
 
 		// Read the .class file for the plugin's entry point.
-		String classFileName = GOOD_CLASSNAME.replaceAll("\\.", "/") + ".class";
-		InputStream in = loader.getResourceAsStream(classFileName);
+		URL classFileUrl = loader.getResource(GOOD_CLASS_FILE);
+		InputStream in = classFileUrl.openStream();
+		assertNotNull(in);
+
 		byte buffer[] = new byte[4096];
 		int bytes = in.read(buffer);
 
@@ -133,6 +138,34 @@ public class IT
 		byte magic[] = { (byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE };
 		assertTrue(bytes > magic.length);
 		for (int i = 0; i < magic.length; i++) assertEquals(magic[i], buffer[i]);
+	}
+
+	/** Make sure that we can only load our own resources. */
+	@Test public void testLoadUnauthorizedResources() throws Exception
+	{
+		loader.loadClass(GOOD_PLUGIN);
+		Class<?> wicked = loader.loadClass(WICKED_PLUGIN);
+
+		ClassLoader wickedLoader = wicked.getClassLoader();
+
+		// Try to load code from the "good" plugin.
+		URL url = wickedLoader.getResource(GOOD_CLASS_FILE);
+		try
+		{
+			url.openStream();
+			fail("Should not be able to open " + GOOD_CLASS_FILE + " via wicked plugin");
+		}
+		catch (FileNotFoundException e) { /* expected result */ }
+
+		// Try to load core Footlights code.
+		String className = Core.class.getCanonicalName();
+		url = wickedLoader.getResource(className);
+		try
+		{
+			url.openStream();
+			fail("Should not be able to open " + className + " via wicked plugin");
+		}
+		catch (FileNotFoundException e) { /* expected result */ }
 	}
 
 
@@ -154,7 +187,12 @@ public class IT
 	}
 
 	private static final String GOOD_CLASSNAME = "me.footlights.demo.plugins.good.GoodPlugin";
+	private static final String GOOD_CLASS_FILE = GOOD_CLASSNAME.replaceAll("\\.", "/") + ".class";
 	private static final String GOOD_PLUGIN = pluginUri("Good", "good-plugin", GOOD_CLASSNAME);
+
+	private static final String WICKED_CLASSNAME = "me.footlights.demo.plugins.wicked.WickedPlugin";
+	private static final String WICKED_PLUGIN =
+		pluginUri("Wicked", "wicked-plugin", WICKED_CLASSNAME);
 
 	private FootlightsClassLoader loader;
 	private Logger logger;

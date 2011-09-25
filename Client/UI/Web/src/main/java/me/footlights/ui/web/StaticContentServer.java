@@ -56,7 +56,7 @@ class StaticContentServer implements WebServer
 			return Response.newBuilder()
 				.setResponse(
 						mimeType("index.html"),
-						this.getClass().getResourceAsStream("index.html"))
+						this.getClass().getResource("index.html").openStream())
 				.build();
 
 		Class<?> c = paths.get(request.prefix());

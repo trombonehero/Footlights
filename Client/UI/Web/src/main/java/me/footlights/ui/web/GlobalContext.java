@@ -40,27 +40,6 @@ class GlobalContext extends Context
 			}
 		});
 
-		register("cajole", new AjaxHandler()
-			{
-				@Override public JavaScript service(WebRequest request) throws Throwable
-				{
-					JavaScript code = new JavaScript();
-					code.append(
-						"var sandbox = sandboxes.getOrCreate('sandbox', rootContext, rootContext.log, 0, 0, 200, 200);");
-
-					try
-					{
-						server.register("sandbox", new TestContext());
-						code.append("sandbox.load('test.js');");
-					}
-					catch (Exception e)
-					{
-						code.append("sandbox.log('Error registering context: " + e + "')");
-					}
-					return code;
-				}
-			});
-
 		register("load_plugin", pluginLoader);
 	}
 }

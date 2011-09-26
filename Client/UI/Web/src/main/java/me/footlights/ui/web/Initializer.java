@@ -32,7 +32,6 @@ class Initializer implements AjaxHandler
 		script.append("var buttons = document.getElementById('buttons');");
 		script.append("buttons.innerHTML='';");
 
-		script.append(button("Cajole", ajax("cajole")));
 		script.append(button("Good Plugin", ajax("load_plugin/" + GOOD_PLUGIN)));
 		script.append(button("Wicked Plugin", ajax("load_plugin/" + WICKED_PLUGIN)));
 

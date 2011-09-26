@@ -21,7 +21,9 @@ class DemoAjaxHandler implements AjaxHandler
 		INIT,
 		TEST_METHODS,
 		SYSCALL,
+		CONTENT,
 		ALL_DONE,
+		CLICKED,
 	}
 
 	DemoAjaxHandler(KernelInterface kernel, Logger log)
@@ -81,11 +83,26 @@ class DemoAjaxHandler implements AjaxHandler
 					}
 				}
 
-				response.append(ajax(AjaxRequest.ALL_DONE.name()));
+				response.append(ajax(AjaxRequest.CONTENT.name()));
 				break;
+
+			case CONTENT:
+				response.append("context.load('test.js');");
+				/*
+				 * TODO: fix ajax.js so that we have more than one XHR object.
+				 *
+				 * Until this is done, sending ajax('ALL_DONE') will cancel load('test.js'),
+				 * leading to a rather less convincing demo.
+				 */
+//				response.append(ajax(AjaxRequest.ALL_DONE.name()));
+//				break;
 
 			case ALL_DONE:
 				response.append(makeDiv("The plugin works!."));
+				break;
+
+			case CLICKED:
+				response.append("context.log('Clicked \\'" + request.shift().path() + "\\'');");
 				break;
 		}
 

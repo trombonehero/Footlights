@@ -1,0 +1,2 @@
+- persistent state for plugins
+- placeholders (e.g. something like ${user.name})

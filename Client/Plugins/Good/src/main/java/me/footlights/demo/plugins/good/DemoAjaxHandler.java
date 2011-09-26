@@ -16,6 +16,14 @@ import me.footlights.plugin.WebRequest;
 /** A demonstration of what a {@link Plugin}'s {@link AjaxHandler} can do. */
 class DemoAjaxHandler implements AjaxHandler
 {
+	enum AjaxRequest
+	{
+		INIT,
+		TEST_METHODS,
+		SYSCALL,
+		ALL_DONE,
+	}
+
 	DemoAjaxHandler(KernelInterface kernel, Logger log)
 	{
 		this.kernel = kernel;
@@ -27,37 +35,66 @@ class DemoAjaxHandler implements AjaxHandler
 	{
 		JavaScript response = new JavaScript();
 
-		response.append(makeDiv("I am a well-behaved plugin."));
-		response.append(makeDiv("The time is " + new Date()));
+		response.append(hr());
+		response.append(makeDiv("Acting in response to request '" + request.path() + "'"));
 
-		response.append(
-			makeDiv(
-				"Let's test a static method in the Helper class... " + Helper.staticHelp()));
-
-		response.append(makeDiv("Ok, that was fine. Now a constructor... "));
-		Helper h = new Helper();
-
-		response.append(makeDiv("And a regular method... "+ h.help()));
-
-		response.append(makeDiv("Finally, do a 'syscall'..."));
-		if (kernel == null) response.append(makeDiv("but we can't! our kernel reference is null."));
-		else
+		final AjaxRequest ajax;
+		try { ajax = AjaxRequest.valueOf(request.prefix().toUpperCase()); }
+		catch (IllegalArgumentException e)
 		{
-			try
-			{
-				File file = kernel.save(ByteBuffer.wrap("Hello, world!".getBytes()));
-				response.append(makeDiv("saved file: " + file));
-			}
-			catch (IOException e)
-			{
-				response.append(makeDiv("Error saving data: " + e));
-				log.log(Level.SEVERE, "Error saving data", e);
-			}
+			return response.append(
+				"log.log('Unknown request \\'" + JavaScript.sanitizeText(request.path()) + "\\'')");
 		}
 
-		response.append(makeDiv("The plugin works!."));
+		switch (ajax)
+		{
+			case INIT:
+				response.append(makeDiv("Initializing well-behaved plugin."));
+				response.append(makeDiv("The time is " + new Date()));
+				response.append(ajax(AjaxRequest.TEST_METHODS.name()));
+				break;
+
+			case TEST_METHODS:
+				response.append(
+					makeDiv("Test static method in the Helper class... " + Helper.staticHelp()));
+					response.append(makeDiv("Ok, that was fine. Now a constructor... "));
+					Helper h = new Helper();
+					response.append(makeDiv("And a regular method... "+ h.help()));
+					response.append(ajax(AjaxRequest.SYSCALL.name()));
+					break;
+
+			case SYSCALL:
+				response.append(makeDiv("Finally, do a 'syscall'..."));
+				if (kernel == null)
+					response.append(makeDiv("but we can't! our kernel reference is null."));
+				else
+				{
+					try
+					{
+						File file = kernel.save(ByteBuffer.wrap("Hello, world!".getBytes()));
+						response.append(makeDiv("saved file: " + file));
+					}
+					catch (IOException e)
+					{
+						response.append(makeDiv("Error saving data: " + e));
+						log.log(Level.SEVERE, "Error saving data", e);
+					}
+				}
+
+				response.append(ajax(AjaxRequest.ALL_DONE.name()));
+				break;
+
+			case ALL_DONE:
+				response.append(makeDiv("The plugin works!."));
+				break;
+		}
 
 		return response;
+	}
+
+	private static JavaScript hr()
+	{
+		return new JavaScript().append("context.root.appendElement('hr')");
 	}
 
 	private static JavaScript makeDiv(String text)
@@ -67,6 +104,14 @@ class DemoAjaxHandler implements AjaxHandler
 		.append(".appendText('")
 		.append(JavaScript.sanitizeText(text))
 		.append("')");
+	}
+
+	private static JavaScript ajax(String command)
+	{
+		return new JavaScript()
+			.append("context.ajax('")
+			.append(JavaScript.sanitizeText(command))
+			.append("')");
 	}
 
 	private final KernelInterface kernel;

@@ -43,12 +43,22 @@ class Context implements AjaxHandler
 	@Override
 	public final JavaScript service(WebRequest request) throws Throwable
 	{
-		AjaxHandler handler = handlers.get(request.prefix());
+		String handlerName = request.prefix();
 
-		if (handler == null) handler = defaultHandler;
+		final AjaxHandler handler;
+		if (handlers.containsKey(handlerName)) handler = handlers.get(handlerName);
+		else
+		{
+			if (defaultHandler == null)
+				throw new IllegalArgumentException(
+					"No handler for request " + request.prefix() + " registered in " + this);
+
+			handler = defaultHandler;
+		}
+
 		if (handler == null)
 			throw new IllegalArgumentException(
-				"No handler for request '" + request.prefix() + "' in context " + this);
+				"Registered handler for request '" + request.prefix() + "' is null");
 
 		return handler.service(request.shift());
 	}

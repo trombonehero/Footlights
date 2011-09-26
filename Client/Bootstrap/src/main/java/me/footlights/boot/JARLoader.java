@@ -83,7 +83,7 @@ class JARLoader
 			}
 		}
 
-		throw new ClassNotFoundException();
+		throw new ClassNotFoundException("No class " + className + " in JAR file " + url);
 	}
 
 

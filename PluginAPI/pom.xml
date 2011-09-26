@@ -12,5 +12,12 @@
 
 	<artifactId>plugin-api</artifactId>
 	<name>Plugin API</name>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
+	</dependencies>
 </project>
 

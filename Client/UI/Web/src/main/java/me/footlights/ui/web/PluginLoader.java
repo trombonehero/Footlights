@@ -20,6 +20,7 @@ import java.net.URI;
 import me.footlights.core.Footlights;
 import me.footlights.core.plugin.PluginWrapper;
 import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.Context;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 

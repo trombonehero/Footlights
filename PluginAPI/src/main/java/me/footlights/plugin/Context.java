@@ -13,32 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web;
+package me.footlights.plugin;
 
 import java.util.Map;
-
-import me.footlights.plugin.AjaxHandler;
-import me.footlights.plugin.JavaScript;
-import me.footlights.plugin.WebRequest;
 
 import com.google.common.collect.Maps;
 
 
-
 /** Handle to a client-side context (ECMAScript sandbox or 'window'). */ 
-class Context implements AjaxHandler
+public class Context implements AjaxHandler
 {
 	/** Construct a {@link Context} with an Ajax handler of last resort. */
-	Context(AjaxHandler defaultHandler)
+	public Context(AjaxHandler defaultHandler)
 	{
 		this.defaultHandler = defaultHandler;
+		handlers = Maps.newLinkedHashMap();
 	}
 
 	/**
 	 * Construct a {@link Context} with no default Ajax handler. Any {@link WebRequest} that does not
 	 * match a registered handler will cause an {@link AjaxResponse.Type.ERROR}.
 	 */
-	Context() { this(null); }
+	public Context() { this(null); }
 
 	@Override
 	public final JavaScript service(WebRequest request) throws Throwable
@@ -64,7 +60,7 @@ class Context implements AjaxHandler
 	}
 
 	synchronized
-	protected final Context register(String request, AjaxHandler handler)
+	public final Context register(String request, AjaxHandler handler)
 	{
 		if (handlers.containsKey(request))
 			throw new IllegalArgumentException(
@@ -75,7 +71,7 @@ class Context implements AjaxHandler
 		return this;
 	}
 
-	synchronized protected final void unloadHandlers() { handlers.clear(); }
+	synchronized public final void unloadHandlers() { handlers.clear(); }
 
 
 	@Override public String toString()
@@ -96,7 +92,7 @@ class Context implements AjaxHandler
 
 
 	/** Objects which handle requests. */
-	private final Map<String, AjaxHandler> handlers = Maps.newLinkedHashMap();
+	private final Map<String, AjaxHandler> handlers;
 
 	/** {@link AjaxHandler} of last resort, in case no handler matches a {@link WebRequest}. */
 	private final AjaxHandler defaultHandler;

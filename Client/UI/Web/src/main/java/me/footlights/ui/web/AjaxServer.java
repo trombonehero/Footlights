@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.*;
+import me.footlights.plugin.Context;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 

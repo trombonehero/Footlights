@@ -34,11 +34,10 @@ class StaticContentServer implements WebServer
 	StaticContentServer(Map<String,PluginWrapper> plugins)
 	{
 		paths = Maps.newHashMap();
+		this.plugins = plugins;
 
 		for (Map.Entry<String,PluginWrapper> plugin : plugins.entrySet())
 			paths.put(plugin.getKey(), plugin.getValue().getClass());
-
-		paths.put("footlights", getClass());
 
 		// TODO: this is a temporary cheat for testing.
 		paths.put("sandbox", getClass());
@@ -46,7 +45,7 @@ class StaticContentServer implements WebServer
 
 	@Override public String name() { return "static content server"; }
 
-	@Override public Response handle(final WebRequest request)
+	@Override public Response handle(WebRequest request)
 		throws FileNotFoundException, IOException, SecurityException
 	{
 		if (request.path().contains(".."))
@@ -59,18 +58,30 @@ class StaticContentServer implements WebServer
 						this.getClass().getResource("index.html").openStream())
 				.build();
 
-		Class<?> c = paths.get(request.prefix());
-		if (c == null)
-			throw new FileNotFoundException("No such directory '" + request.prefix() + "'");
+		final Class<?> resourceLoader;
+		if (request.prefix().equals("plugin"))
+		{
+			request = request.shift();
+			PluginWrapper plugin = plugins.get(request.prefix());
+			if (plugin == null)
+				throw new FileNotFoundException("No such plugin " + request.prefix());
+
+			resourceLoader = plugin.getWrappedPlugin().getClass();
+		}
+		else if (request.prefix().equals("footlights"))
+		{
+			resourceLoader = this.getClass();
+			if (resourceLoader == null)
+				throw new FileNotFoundException("No such directory '" + request.prefix() + "'");
+		}
+		else throw new FileNotFoundException(
+			"Static content filename must start with either 'footlights' or 'plugin'");
 
 		String path = request.shift().path();
-		URL resource = c.getResource(request.shift().path());
-		if (resource == null) throw new FileNotFoundException(path);
+		URL url = resourceLoader.getResource(path);
+		if (url == null) throw new FileNotFoundException(path);
 
-		java.io.File file = new java.io.File(resource.getFile());
-		if (!file.isFile()) throw new FileNotFoundException(path);
-
-		InputStream data = resource.openStream();
+		InputStream data = url.openStream();
 		if (data == null) throw new FileNotFoundException(path);
 
 		return Response.newBuilder()
@@ -103,4 +114,5 @@ class StaticContentServer implements WebServer
 	}
 
 	private final Map<String,Class<?>> paths;
+	private final Map<String, PluginWrapper> plugins;
 }

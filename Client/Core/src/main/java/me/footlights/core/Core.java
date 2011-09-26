@@ -84,25 +84,32 @@ public class Core implements Footlights
 
 
 	/** Load a plugin and wrap it up in a convenient wrapper */
-	public PluginWrapper loadPlugin(String name, URI uri) throws PluginLoadException
+	public PluginWrapper loadPlugin(final String name, final URI uri) throws PluginLoadException
 	{
 		if (plugins.containsKey(uri)) return plugins.get(uri);
 
-		PluginWrapper plugin;
+		final Plugin plugin;
 		try
 		{
-			Class<?> c = pluginLoader.loadClass(uri.toString());
+			Class<?> c = AccessController.doPrivileged(
+				new PrivilegedExceptionAction<Class<?> >()
+					{
+						@Override public Class<?> run() throws Exception
+						{
+							return pluginLoader.loadClass(uri.toString());
+						}
+					});
+
 			Method init = c.getMethod("init", KernelInterface.class, Logger.class);
-			Plugin p = (Plugin) init.invoke(null, this, Logger.getLogger(uri.toString()));
-			plugin = new PluginWrapper(name, uri, p);
+			plugin = (Plugin) init.invoke(null, this, Logger.getLogger(uri.toString()));
 		}
 		catch (Exception e) { throw new PluginLoadException(uri, e); }
 
+		PluginWrapper wrapper = new PluginWrapper(name, uri, plugin);
+		plugins.put(uri, wrapper);
+		for (UI ui : uis) ui.pluginLoaded(wrapper);
 
-		plugins.put(uri, plugin);
-		for (UI ui : uis) ui.pluginLoaded(plugin);
-
-		return plugin;
+		return wrapper;
 	}
 
 

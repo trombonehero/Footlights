@@ -100,13 +100,7 @@ class DemoAjaxHandler extends Context
 			{
 				return new JavaScript()
 					.append("context.load('test.js');")
-					/*
-					 * TODO: fix ajax.js so that we have more than one XHR object.
-					 *
-					 * Until this is done, sending ajax('ALL_DONE') will cancel load('test.js'),
-					 * leading to a rather less convincing demo.
-					 */
-//					.append(ajax(AjaxRequest.ALL_DONE.name()))
+					.append(ajax(AjaxRequest.ALL_DONE.name()))
 					;
 			}
 		});

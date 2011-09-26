@@ -1,11 +1,10 @@
-var xhr = false;
-
-if(window.XMLHttpRequest) { xhr = new XMLHttpRequest(); } 
-else if(window.ActiveXObject) { xhr = new ActiveXObject("Microsoft.XMLHTTP"); }
-
-
 function ajax(url, context)
 {
+	var xhr = false;
+
+	if(window.XMLHttpRequest) { xhr = new XMLHttpRequest(); }
+	else if(window.ActiveXObject) { xhr = new ActiveXObject("Microsoft.XMLHTTP"); }
+
 	try
 	{
 		xhr.open('GET', url);

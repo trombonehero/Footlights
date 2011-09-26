@@ -24,7 +24,7 @@ import me.footlights.plugin.WebRequest;
 /** The global context - code sent here has full DOM access. */
 class GlobalContext extends Context
 {
-	GlobalContext(final Footlights footlights, final AjaxServer server)
+	GlobalContext(final Footlights footlights, final AjaxServer server, PluginLoader pluginLoader)
 	{
 		register("initialize", new Initializer());
 		register("reset", new AjaxHandler() {
@@ -60,5 +60,7 @@ class GlobalContext extends Context
 					return code;
 				}
 			});
+
+		register("load_plugin", pluginLoader);
 	}
 }

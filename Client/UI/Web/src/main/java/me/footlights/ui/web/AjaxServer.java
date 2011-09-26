@@ -34,14 +34,13 @@ public class AjaxServer implements WebServer
 
 	public AjaxServer(Footlights footlights)
 	{
-		this.contexts = Maps.newLinkedHashMap();
-		this.globalContext = new GlobalContext(footlights, this);
-		this.pluginContext = new Context();
+		contexts = Maps.newLinkedHashMap();
 
-		globalContext.register("load_plugin", new PluginLoader(footlights, pluginContext));
-
-		contexts.put("global", globalContext);
+		pluginContext = new Context();
 		contexts.put("plugin", pluginContext);
+
+		contexts.put("global",
+			new GlobalContext(footlights, this, new PluginLoader(footlights, pluginContext)));
 	}
 
 	@Override public String name() { return "Ajax"; }
@@ -75,9 +74,6 @@ public class AjaxServer implements WebServer
 
 	/** Log. */
 	private static final Logger log = Logger.getLogger(AjaxServer.class.getName());
-
-	/** Global context to handle top-level Ajax requests. */
-	private final GlobalContext globalContext;
 
 	/** Context for the Ajax handlers of {@link Plugin}s. */
 	private final Context pluginContext;

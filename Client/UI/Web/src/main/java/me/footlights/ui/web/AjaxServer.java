@@ -67,10 +67,6 @@ public class AjaxServer implements WebServer
 
 		register("global", globalContext);
 		register("plugin", pluginContext);
-
-		// TODO(jon): get rid of this demo hack
-		register("foo", new Context().register("hello", new HelloWorldPlugin()));
-		register("echo", new Context().register("echo", new EchoPlugin()));
 	}
 
 	synchronized void register(String name, Context context)

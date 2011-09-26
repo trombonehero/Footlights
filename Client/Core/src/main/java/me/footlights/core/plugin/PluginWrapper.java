@@ -26,7 +26,6 @@ public final class PluginWrapper
 {
 	/** Constructor */
 	public PluginWrapper(String name, URI url, Plugin plugin)
-		throws PluginException
 	{
 		this.name = name;
 		this.url = url;

@@ -65,6 +65,8 @@ class Context implements AjaxHandler
 		return this;
 	}
 
+	synchronized protected final void unloadHandlers() { handlers.clear(); }
+
 
 	@Override public String toString()
 	{

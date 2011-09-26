@@ -40,7 +40,8 @@ public class AjaxServer implements WebServer
 
 		globalContext.register("load_plugin", new PluginLoader(footlights, pluginContext));
 
-		init();
+		contexts.put("global", globalContext);
+		contexts.put("plugin", pluginContext);
 	}
 
 	@Override public String name() { return "Ajax"; }
@@ -61,13 +62,7 @@ public class AjaxServer implements WebServer
 	}
 
 
-	synchronized void init()
-	{
-		contexts.clear();
-
-		register("global", globalContext);
-		register("plugin", pluginContext);
-	}
+	synchronized void reset() { pluginContext.unloadHandlers(); }
 
 	synchronized void register(String name, Context context)
 	{

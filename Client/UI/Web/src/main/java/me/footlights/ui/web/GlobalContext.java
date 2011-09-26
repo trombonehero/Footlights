@@ -35,7 +35,7 @@ class GlobalContext extends Context
 					footlights.unloadPlugin(
 						footlights.plugins().iterator().next());
 
-				server.init();
+				server.reset();
 				return new JavaScript().append("window.location.reload()");
 			}
 		});

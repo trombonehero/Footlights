@@ -52,7 +52,7 @@ public class PluginLoader implements AjaxHandler
 		response.append(plugin.getPluginName());
 		response.append("', rootContext, rootContext.log, 0, 0, 200, 200);");
 
-		response.append("sb.ajax('hello');");
+		response.append("sb.ajax('init');");
 
 		return response;
 	}

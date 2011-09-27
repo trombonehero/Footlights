@@ -28,17 +28,26 @@ import static me.footlights.ui.web.Constants.*;
 
 public class WebUI extends me.footlights.core.UI
 {
-	public WebUI(Footlights footlights)
+	public static WebUI init(Footlights footlights)
+	{
+		int port = WEB_PORT;
+		log.info("Using TCP port " + port);
+
+		Map<String, PluginWrapper> plugins = Maps.newLinkedHashMap();
+
+		AjaxServer ajax = new AjaxServer(footlights);
+		StaticContentServer staticContent = new StaticContentServer(plugins);
+		MasterServer master = new MasterServer(port, footlights, ajax, staticContent);
+
+		return new WebUI(footlights, master, plugins);
+	}
+
+	private WebUI(Footlights footlights, MasterServer server, Map<String, PluginWrapper> plugins)
 	{
 		super("Web UI", footlights);
 
-		this.port = WEB_PORT;
-		this.plugins = Maps.newHashMap();
-
-		log.info("Starting server() on port " + port);
-		server = new MasterServer(port, footlights,
-			new AjaxServer(footlights),
-			new StaticContentServer(plugins));
+		this.plugins = plugins;
+		this.server = server;
 	}
 
 
@@ -66,9 +75,6 @@ public class WebUI extends me.footlights.core.UI
 
 	/** The main web server */
 	private MasterServer server;
-
-	/** The TCP/IP port we're serving from */
-	private final int port;
 
 	/** Currently-loaded plugins. */
 	private final Map<String, PluginWrapper> plugins;

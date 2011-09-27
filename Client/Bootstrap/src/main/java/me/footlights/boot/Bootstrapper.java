@@ -17,7 +17,7 @@ package me.footlights.boot;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Policy;
@@ -89,9 +89,10 @@ class Bootstrapper
 			final String className = ui.packageName + "." + ui.className;
 
 			Class<?> uiClass = classLoader.loadClass(className);
-			Constructor<?> constructor = uiClass.getConstructor(footlightsClass);
-			Object obj = constructor.newInstance(new Object[] { footlights });
-			uiThreads.add(new Thread((Runnable) obj, ui.name));
+			Method init = uiClass.getMethod("init", footlightsClass);
+			Object uiObject = init.invoke(null, footlights);
+
+			uiThreads.add(new Thread((Runnable) uiObject, ui.name));
 		}
 
 		for (Thread thread : uiThreads) thread.start();

@@ -26,7 +26,12 @@ import me.footlights.core.plugin.PluginWrapper;
 
 public class SwingUI extends me.footlights.core.UI
 {
-	public SwingUI(Footlights footlights)
+	public static SwingUI init(Footlights footlights)
+	{
+		return new SwingUI(footlights);
+	}
+
+	private SwingUI(Footlights footlights)
 	{
 		super("Java UI", footlights);
 

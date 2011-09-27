@@ -64,7 +64,11 @@ class FootlightsClassLoader extends ClassLoader
 				throw new ClassNotFoundException("Invalid class name: '" + name + "'");
 
 			URL classpath;
-			try { classpath = new URL(tokens[0] + "!/"); }
+			try
+			{
+				if (tokens[0].startsWith("jar")) classpath = new URL(tokens[0] + "!/");
+				else classpath = new URL(tokens[0]);
+			}
 			catch (MalformedURLException e)
 			{
 				throw new ClassNotFoundException("Invalid classpath: " + tokens[0], e);

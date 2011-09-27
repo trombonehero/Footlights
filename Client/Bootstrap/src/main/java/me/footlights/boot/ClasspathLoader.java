@@ -15,6 +15,7 @@
  */
 package me.footlights.boot;
 
+import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -35,6 +36,7 @@ import com.google.common.collect.Maps;
 class ClasspathLoader extends ClassLoader
 {
 	static ClasspathLoader create(ClassLoader parent, URL classpath, String basePackage)
+		throws FileNotFoundException
 	{
 		// Only grant privileges to code Footlights code.
 		final PermissionCollection permissions;
@@ -48,6 +50,12 @@ class ClasspathLoader extends ClassLoader
 			permissions.setReadOnly();
 		}
 
+		if (classpath.getProtocol().equals("file"))
+		{
+			java.io.File file = new java.io.File(classpath.getFile());
+			if (!file.exists())
+				throw new FileNotFoundException("No such classpath '" + classpath + "'");
+		}
 		return new ClasspathLoader(parent, classpath, basePackage, permissions);
 	}
 

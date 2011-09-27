@@ -15,6 +15,7 @@
  */
 package me.footlights.boot;
 
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AllPermission;
@@ -72,7 +73,14 @@ class FootlightsClassLoader extends ClassLoader
 			String className = tokens[1];
 			String packageName = className.substring(0, className.lastIndexOf("."));
 
-			return ClasspathLoader.create(this, classpath, packageName).loadClass(className);
+			try
+			{
+				return ClasspathLoader.create(this, classpath, packageName).loadClass(className);
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new ClassNotFoundException("Invalid classpath: " + classpath, e);
+			}
 		}
 
 		// We must be loading a core Footlights class or a Java library class.

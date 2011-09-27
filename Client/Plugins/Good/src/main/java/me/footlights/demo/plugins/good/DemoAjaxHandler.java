@@ -99,6 +99,7 @@ class DemoAjaxHandler extends Context
 				throws FileNotFoundException, SecurityException, Throwable
 			{
 				return new JavaScript()
+					.append("context.log('loading static JavaScript...');")
 					.append("context.load('test.js');")
 					.append(ajax(AjaxRequest.ALL_DONE.name()))
 					;
@@ -110,7 +111,7 @@ class DemoAjaxHandler extends Context
 			@Override public JavaScript service(WebRequest request)
 				throws FileNotFoundException, SecurityException, Throwable
 			{
-				return new JavaScript().append(makeDiv("The plugin works!."));
+				return new JavaScript().append("context.log('The plugin works!');");
 			}
 		});
 

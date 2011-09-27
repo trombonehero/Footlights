@@ -230,7 +230,7 @@ class EvilAjaxHandler extends Context
 				}
 			});
 
-		register(CLICKED.name(), new AjaxHandler()
+		register(CLICKED.name().toLowerCase(), new AjaxHandler()
 			{
 				@Override public JavaScript service(WebRequest request)
 					throws FileNotFoundException, SecurityException, Throwable

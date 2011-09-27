@@ -27,6 +27,8 @@ class EvilAjaxHandler implements AjaxHandler
 		CORE_ACCESS,
 		NEW_CLASSLOADER,
 		LOAD_PLUGIN,
+		JS_HACKS,
+		CLICKED,
 		ALL_DONE,
 	}
 
@@ -152,8 +154,18 @@ class EvilAjaxHandler implements AjaxHandler
 					response.append(makeDiv("not found. (not denied, just not found)"));
 				}
 				catch(Exception e) { throw new Error(e); }
-				response.append(ajax(ALL_DONE.name()));
+				response.append(ajax(JS_HACKS.name()));
 				break;
+
+			case JS_HACKS:
+				response.append("context.load('evil.js');");
+				response.append(ajax(AjaxRequest.ALL_DONE.name()));
+				break;
+
+			case CLICKED:
+				response.append("context.log('clicked \\'");
+				response.append(JavaScript.sanitizeText(request.shift().path()));
+				response.append("\\'');");
 
 			case ALL_DONE:
 				response.append(makeDiv("Failed to do anything wicked (hooray!)."));

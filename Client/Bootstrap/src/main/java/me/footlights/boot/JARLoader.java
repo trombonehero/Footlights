@@ -56,6 +56,7 @@ class JARLoader
 	public Bytecode readBytecode(String className)
 		throws ClassNotFoundException, IOException
 	{
+		final String classPath = className.replace('.', '/') + ".class";
 		for (Enumeration<JarEntry> i = jar.entries() ; i.hasMoreElements() ;)
 		{
 			JarEntry entry = i.nextElement();
@@ -70,7 +71,7 @@ class JARLoader
 			is.read(buffer);
 			is.close();
 
-			if (entry.getName().equals(className.replace('.', '/') + ".class"))
+			if (entry.getName().equals(classPath))
 			{
 				if (entry.getCodeSigners() == null)
 					throw new Error(entry.toString() + " not signed");

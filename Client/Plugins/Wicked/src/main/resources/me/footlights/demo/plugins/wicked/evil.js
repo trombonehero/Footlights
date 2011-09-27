@@ -52,6 +52,12 @@ remoteImage.onclick = function()
 
 remoteImage.onerror = function()
 {
+	try { rootContext.log('logged VIA ROOT CONTEXT!!!!'); }
+	catch (e) { context.log('Failed to log to rootContext (good!)'); }
+
+	try { context.log('got img PARENT NODE: ' + this.parentNode); }
+	catch (e) { context.log('Failed to access parent node (good!)'); }
+
 	remoteImage.src = 'missing.png';
 
 	this.style.opacity = 0.5;

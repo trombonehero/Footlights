@@ -41,6 +41,8 @@ public class JavaScript
 		return this;
 	}
 
+	public JavaScript appendText(String text) { return append(sanitizeText(text)); }
+
 	/** JavaScript for an Ajax call. */
 	public static JavaScript ajax(String code) { return ajax(code, "global"); }
 	public static JavaScript ajax(String code, String context)

@@ -68,8 +68,8 @@ class Initializer implements AjaxHandler
 	private static final String PLUGIN_PATH = CORE_PATH.replaceFirst("Bootstrap/.*", "Plugins/");
 
 	private static final String GOOD_PLUGIN =
-		"jar:file:" + PLUGIN_PATH
-		+ "Good/target/good-plugin-HEAD.jar!/me.footlights.demo.plugins.good.GoodPlugin";
+		"file:" + PLUGIN_PATH
+		+ "Good/target/classes!/me.footlights.demo.plugins.good.GoodPlugin";
 
 	private static final String WICKED_PLUGIN =
 		"jar:file:" + PLUGIN_PATH

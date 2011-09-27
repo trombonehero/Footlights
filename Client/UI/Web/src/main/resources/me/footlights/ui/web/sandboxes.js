@@ -29,15 +29,17 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 
 	parent.root.appendChild(container);
 
-	var sandbox = Object.freeze(
+	var sandbox =
 		{
 			ajax: function(request) { ajax('/ajax/' + name + '/' + request, this); },
 			exec: function(request) { cajaVM.compileModule(request)({ 'context': this }); },
 			load: function(filename) { ajax('static/' + this.name + '/' + filename, this); },
 			log: log,
 			name: name,
-			root: proxy(content, name),
-		});
+		};
+
+	sandbox.root = proxy(content, sandbox);
+	sandbox = Object.freeze(sandbox);
 
 	sandboxes[name] = sandbox;		
 	return sandbox;

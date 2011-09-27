@@ -4,7 +4,7 @@
 //   appendText(text)              returns a proxied Text node
 //   appendElement(type)           returns a proxied Node
 //
-function proxy(node, sandbox_name)
+function proxy(node, context)
 {
 	var theProxy =
 	{
@@ -12,7 +12,7 @@ function proxy(node, sandbox_name)
 		{
 			var element = document.createTextNode(text);
 			node.appendChild(element);
-			return proxy(element);
+			return proxy(element, context);
 		},
 
 		appendElement: function(type)
@@ -37,7 +37,7 @@ function proxy(node, sandbox_name)
 								throw 'Sandboxed script attempted to load' +
 									' an image with an absolute URI';
 
-							else element.src = '/static/' + sandbox_name + '/' + uri;
+							else element.src = '/static/' + context.name + '/' + uri;
 						},
 
 						set alt(text) { element.alt = text; },
@@ -53,7 +53,7 @@ function proxy(node, sandbox_name)
 
 				default:
 					element = document.createElement(type);
-					subproxy = proxy(element);
+					subproxy = proxy(element, context);
 			}
 
 			node.appendChild(element);

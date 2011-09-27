@@ -43,6 +43,7 @@ function proxy(node, sandbox_name)
 						set alt(text) { element.alt = text; },
 						set height(x) { element.height = x; },
 						set onclick(js) { element.onclick = js; },
+						set onerror(js) { element.onerror = js; },
 						set onload(js) { element.onload = js; },
 						set onmouseout(js) { element.onmouseout = js; },
 						set onmouseover(js) { element.onmouseover = js; },

@@ -41,6 +41,10 @@ public class PluginLoader implements AjaxHandler
 		JavaScript response = new JavaScript();
 
 		PluginWrapper plugin = footlights.loadPlugin(name, new URI(request.path()));
+		response.append("rootContext.log('loaded plugin \\'");
+		response.append(name.substring(name.lastIndexOf('.') + 1));
+		response.append("\\'');");
+
 		response.append("console.log('\"");
 		response.append(JavaScript.sanitizeText(plugin.getPluginName()));
 		response.append("\" loaded as \"");

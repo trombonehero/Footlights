@@ -125,6 +125,7 @@ iframe
 .sandbox
 {
 	border: 3px solid orange;
+	position: relative;
 }
 
 .sandbox:before

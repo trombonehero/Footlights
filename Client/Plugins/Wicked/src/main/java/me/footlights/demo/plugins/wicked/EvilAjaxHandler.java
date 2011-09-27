@@ -1,5 +1,6 @@
 package me.footlights.demo.plugins.wicked;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.Socket;
@@ -8,6 +9,7 @@ import java.security.AccessController;
 import java.util.logging.Logger;
 
 import me.footlights.plugin.AjaxHandler;
+import me.footlights.plugin.Context;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.WebRequest;
@@ -16,7 +18,7 @@ import static me.footlights.demo.plugins.wicked.EvilAjaxHandler.AjaxRequest.*;
 
 
 /** A demonstration of what a {@link Plugin}'s {@link AjaxHandler} can do. */
-class EvilAjaxHandler implements AjaxHandler
+class EvilAjaxHandler extends Context
 {
 	enum AjaxRequest
 	{
@@ -32,171 +34,228 @@ class EvilAjaxHandler implements AjaxHandler
 		ALL_DONE,
 	}
 
-	EvilAjaxHandler(KernelInterface kernel, Logger log)
+	EvilAjaxHandler(final KernelInterface kernel, final Logger log)
 	{
-		this.kernel = kernel;
-		this.log = log;
-	}
-
-	@Override
-	public JavaScript service(WebRequest request)
-	{
-		JavaScript response = new JavaScript();
-
-		response.append(hr());
-		response.append(makeDiv("Acting in response to request '" + request.path() + "'"));
-
-		final AjaxRequest ajax;
-		try { ajax = AjaxRequest.valueOf(request.prefix().toUpperCase()); }
-		catch (IllegalArgumentException e)
-		{
-			return response.append(
-				"context.log('Unknown request \\'" + JavaScript.sanitizeText(request.path()) + "\\'')");
-		}
-
-		switch (ajax)
-		{
-			case INIT:
-				response.append(ajax(FAKE_CORE.name()));
-				break;
-
-			case FAKE_CORE:
-				response.append(makeDiv("Attempting to load a fake 'core' class via URL... "));
-				try
+		register(INIT.name().toLowerCase(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					String url = 
-						"jar:file:///Users/jon/Documents/School/Research/Social Networks/Footlights/Client/plugins/wicked/wicked.jar!/footlights.core.Test";
-					kernel.getClass().getClassLoader().loadClass(url);
+					return new JavaScript()
+						.append(ajax(FAKE_CORE.name()));
+				}
+			});
 
-					throw new SecurityException(
+		register(FAKE_CORE.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
+				{
+					JavaScript response = new JavaScript()
+						.append(openDiv())
+						.appendText("Attempting to load a fake 'core' class via URL... ");
+
+					try
+					{
+						String url = 
+							"jar:file:///Users/jon/Documents/School/Research/Social Networks/Footlights/Client/plugins/wicked/wicked.jar!/footlights.core.Test";
+						kernel.getClass().getClassLoader().loadClass(url);
+
+						throw new SecurityException(
 							"Encapsulation failure: loaded fake 'core' class");
+					}
+					catch(AccessControlException e) { response.append("denied."); }
+					catch(ClassNotFoundException e) { response.append("not found."); }
+
+					return response
+						.append(closeDiv())
+						.append(ajax(SEALED_PACKAGE.name()));
 				}
-				catch(AccessControlException e) { response.append(makeDiv("denied.")); }
-				catch(ClassNotFoundException e) { response.append(makeDiv("not found.")); }
-				response.append(ajax(SEALED_PACKAGE.name()));
-				break;
+			});
 
-			case SEALED_PACKAGE:
-				response.append(makeDiv("Attempting to load a class in[to] a sealed package... "));
-				try
+		register(SEALED_PACKAGE.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					response.append(makeDiv(me.footlights.core.Test.test()));
+					JavaScript response = new JavaScript()
+						.append(openDiv())
+						.appendText("Attempting to load a class in[to] a sealed package... ");
 
-					throw new SecurityException(
-							"Encapsulation failure: loaded footlights.core.Test");
+					try
+					{
+						response.append(me.footlights.core.Test.test());
+
+						throw new SecurityException(
+								"Encapsulation failure: loaded footlights.core.Test");
+					}
+					catch(AccessControlException e) { response.append("denied."); }
+					catch(NoClassDefFoundError e) { response.append("not found."); }
+
+					return response.append(closeDiv()).append(ajax(WICKED_WEBSITE.name()));
 				}
-				catch(AccessControlException e) { response.append(makeDiv("denied.")); }
-				catch(NoClassDefFoundError e) { response.append(makeDiv("not found.")); }
-				response.append(ajax(WICKED_WEBSITE.name()));
-				break;
+			});
 
-			case WICKED_WEBSITE:
-				response.append(makeDiv("Trying to connect to a wicked website... "));
-				try
+		register(WICKED_WEBSITE.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					new Socket("www-dyn.cl.cam.ac.uk", 80);
-					throw new SecurityException(
-							"Encapsulation failure: connection succeeded");
+					JavaScript response = new JavaScript()
+						.append(openDiv())
+						.appendText("Trying to connect to a wicked website... ");
+
+					try
+					{
+						new Socket("www-dyn.cl.cam.ac.uk", 80);
+						throw new SecurityException(
+								"Encapsulation failure: connection succeeded");
+					}
+					catch(AccessControlException e) { response.append("denied."); }
+					catch(IOException e) { throw new Error(e); }
+
+					return response
+						.append(closeDiv())
+						.append(ajax(CORE_ACCESS.name()));
 				}
-				catch(AccessControlException e) { response.append(makeDiv("denied.")); }
-				catch(IOException e) { throw new Error(e); }
-				response.append(ajax(CORE_ACCESS.name()));
-				break;
+			});
 
-			case CORE_ACCESS:
-				response.append(makeDiv("Check access to footlights.core... "));
-				try
+		register(CORE_ACCESS.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					AccessController.checkPermission(
-						new RuntimePermission("accessClassInPackage.footlights.core"));
-					throw new SecurityException("Access granted to footlights.core");
+					JavaScript response = new JavaScript()
+						.append(openDiv())
+						.appendText("Check access to footlights.core... ");
+
+					try
+					{
+						AccessController.checkPermission(
+							new RuntimePermission("accessClassInPackage.footlights.core"));
+						throw new SecurityException("Access granted to footlights.core");
+					}
+					catch(AccessControlException e) { response.appendText("denied."); }
+
+					return response
+						.append(closeDiv())
+						.append(ajax(NEW_CLASSLOADER.name()));
 				}
-				catch(AccessControlException e) { response.append(makeDiv("denied.")); }
-				response.append(ajax(NEW_CLASSLOADER.name()));
-				break;
+			});
 
-			case NEW_CLASSLOADER:
-				response.append(makeDiv("Check ability to create a new ClassLoader... "));
-				try
+		register(NEW_CLASSLOADER.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					AccessController.checkPermission(
-						new RuntimePermission("createClassLoader"));
+					JavaScript response = new JavaScript()
+						.append(openDiv())
+						.appendText("Check ability to create a new ClassLoader... ");
 
-					throw new SecurityException(
+					try
+					{
+						AccessController.checkPermission(
+							new RuntimePermission("createClassLoader"));
+
+						throw new SecurityException(
 							"Encapsulation failure: permission to create ClassLoader");
+					}
+					catch(AccessControlException e) { response.appendText("denied."); }
+
+					return response
+						.append(closeDiv())
+						.append(ajax(LOAD_PLUGIN.name()));
 				}
-				catch(AccessControlException e) { response.append(makeDiv("denied.")); }
-				response.append(ajax(LOAD_PLUGIN.name()));
-				break;
+			});
 
-			case LOAD_PLUGIN:
-				response.append(makeDiv("Trying to instantiate another plugin... "));
-				try
+		register(LOAD_PLUGIN.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					Class<?> c = kernel.getClass().getClassLoader().loadClass(
-						"jar:file:///home/jra40/Research/Social Networks/Footlights/Client/plugins/good/good.jar!/footlights.demo.plugins.good.Plugin");
+					JavaScript response = new JavaScript()
+						.append(openDiv())
+						.appendText("Trying to instantiate another plugin... ");
 
-					Class<?> classes[] = new Class[] { c };
+					try
+					{
+						Class<?> c = kernel.getClass().getClassLoader().loadClass(
+							"jar:file:///home/jra40/Research/Social Networks/Footlights/Client/plugins/good/good.jar!/footlights.demo.plugins.good.Plugin");
 
-					Method setOut = c.getMethod("setOutputStream", classes);
-					Method run = c.getMethod("run", (Class<?>[]) null);
+						Class<?> classes[] = new Class[] { c };
 
-					Object p = c.newInstance();
-					setOut.invoke(p, new Object[] { log });
-					run.invoke(p, (Object[]) null);
+						Method setOut = c.getMethod("setOutputStream", classes);
+						Method run = c.getMethod("run", (Class<?>[]) null);
 
-					throw new SecurityException(
+						Object p = c.newInstance();
+						setOut.invoke(p, new Object[] { log });
+						run.invoke(p, (Object[]) null);
+
+						throw new SecurityException(
 							"Encapsulation failure: ran another plugin");
+					}
+					catch(AccessControlException e) { response.appendText("denied."); }
+					catch(ClassNotFoundException e)
+					{
+						response.appendText("not found. (not denied, just not found)");
+					}
+					catch(Exception e) { throw new Error(e); }
+
+					return response
+						.append(closeDiv())
+						.append(ajax(JS_HACKS.name()));
 				}
-				catch(AccessControlException e) { response.append(makeDiv("denied.")); }
-				catch(ClassNotFoundException e)
+			});
+
+		register(JS_HACKS.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
 				{
-					response.append(makeDiv("not found. (not denied, just not found)"));
+					return new JavaScript()
+						.append("context.load('evil.js');")
+						.append(ajax(AjaxRequest.ALL_DONE.name()));
 				}
-				catch(Exception e) { throw new Error(e); }
-				response.append(ajax(JS_HACKS.name()));
-				break;
+			});
 
-			case JS_HACKS:
-				response.append("context.load('evil.js');");
-				response.append(ajax(AjaxRequest.ALL_DONE.name()));
-				break;
+		register(ALL_DONE.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
+				{
+					return new JavaScript()
+						.append(openDiv())
+						.appendText("Failed to do anything wicked (hooray!).")
+						.append(closeDiv());
+				}
+			});
 
-			case CLICKED:
-				response.append("context.log('clicked \\'");
-				response.append(JavaScript.sanitizeText(request.shift().path()));
-				response.append("\\'');");
-
-			case ALL_DONE:
-				response.append(makeDiv("Failed to do anything wicked (hooray!)."));
-				break;
-		}
-
-		return response;
+		register(CLICKED.name(), new AjaxHandler()
+			{
+				@Override public JavaScript service(WebRequest request)
+					throws FileNotFoundException, SecurityException, Throwable
+				{
+					return new JavaScript()
+						.append("context.log('clicked \\'")
+						.appendText(request.shift().path())
+						.append("\\'');");
+				}
+			});
 	}
 
-	private static JavaScript hr()
+
+	private static String openDiv()
 	{
-		return new JavaScript().append("context.root.appendElement('hr')");
+		return "context.root.appendElement('div').appendText('";
 	}
 
-	private static JavaScript makeDiv(String text)
-	{
-		return new JavaScript()
-		.append("context.root.appendElement('div')")
-		.append(".appendText('")
-		.append(JavaScript.sanitizeText(text))
-		.append("')");
-	}
+	private static String closeDiv() { return "');"; }
 
 	private static JavaScript ajax(String command)
 	{
 		return new JavaScript()
 			.append("context.ajax('")
-			.append(JavaScript.sanitizeText(command))
+			.appendText(command)
 			.append("')");
 	}
-
-	private final KernelInterface kernel;
-	private final Logger log;
 }

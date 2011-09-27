@@ -50,4 +50,14 @@ remoteImage.onclick = function()
 		context.ajax('clicked/remote');
 	};
 
+remoteImage.onerror = function()
+{
+	remoteImage.src = 'missing.png';
+
+	this.style.opacity = 0.5;
+	this.style.position = 'absolute';
+	this.style.top = 0;
+	this.style.right = 0;
+};
+
 return 42;

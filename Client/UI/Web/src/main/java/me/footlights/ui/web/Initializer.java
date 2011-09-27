@@ -25,8 +25,12 @@ import static me.footlights.plugin.JavaScript.ajax;
 /** Initializes the UI after the static JavaScript has loaded. */
 class Initializer implements AjaxHandler
 {
+	Initializer(AjaxServer ajaxServer) { this.ajaxServer = ajaxServer; }
+
 	@Override public JavaScript service(WebRequest request)
 	{
+		ajaxServer.reset();
+
 		JavaScript script = new JavaScript();
 
 		script.append("var buttons = document.getElementById('buttons');");
@@ -74,4 +78,7 @@ class Initializer implements AjaxHandler
 	private static final String WICKED_PLUGIN =
 		"jar:file:" + PLUGIN_PATH
 		+ "Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.wicked.WickedPlugin";
+
+	/** The Ajax server that needs to be reset. */
+	private final AjaxServer ajaxServer;
 }

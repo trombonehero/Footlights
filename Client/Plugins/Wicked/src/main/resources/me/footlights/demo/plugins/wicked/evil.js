@@ -46,9 +46,9 @@ remoteImage.height = imageSize;
 remoteImage.width = imageSize;
 
 remoteImage.onclick = function()
-	{
-		context.ajax('clicked/remote');
-	};
+{
+	context.ajax('clicked/remote');
+};
 
 remoteImage.onerror = function()
 {

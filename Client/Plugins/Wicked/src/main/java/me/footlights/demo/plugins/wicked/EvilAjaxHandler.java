@@ -49,7 +49,7 @@ class EvilAjaxHandler implements AjaxHandler
 		catch (IllegalArgumentException e)
 		{
 			return response.append(
-				"log.log('Unknown request \\'" + JavaScript.sanitizeText(request.path()) + "\\'')");
+				"context.log('Unknown request \\'" + JavaScript.sanitizeText(request.path()) + "\\'')");
 		}
 
 		switch (ajax)

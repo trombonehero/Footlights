@@ -41,6 +41,7 @@ function proxy(node, context)
 						},
 
 						set alt(text) { element.alt = text; },
+						set class(name) { element.class = name; },
 						set height(x) { element.height = x; },
 						set onclick(js) { element.onclick = js; },
 						set onerror(js) { element.onerror = js; },

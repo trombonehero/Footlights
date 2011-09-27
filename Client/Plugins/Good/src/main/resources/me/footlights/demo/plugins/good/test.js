@@ -15,7 +15,8 @@ var t = p.appendText(text);
 var imageSize = 256;
 
 var localImage = context.root.appendElement('img');
-localImage.id = 'sandboxedimage';
+
+localImage.class = 'sandboxedimage';
 localImage.height = imageSize;
 localImage.width = imageSize;
 localImage.onmouseout = function()

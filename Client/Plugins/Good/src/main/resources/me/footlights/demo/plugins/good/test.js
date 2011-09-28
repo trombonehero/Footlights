@@ -10,8 +10,7 @@ var foo = 'foo';
 
 var text = context.name + ' - brought to you by sandboxed JavaScript code';
 var p = context.root.appendElement('p');
-var t = p.appendText(text);
-
+p.appendText(text);
 context.globals.p = p;
 
 var imageSize = 256;

@@ -56,7 +56,6 @@ remoteImage.onerror = function()
 	try { rootContext.log('logged VIA ROOT CONTEXT!!!!'); }
 	catch (e) { context.log('Failed to log to rootContext (good!)'); }
 
-
 	if (this.parentNode) context.log('got img PARENT NODE: ' + this.parentNode);
 	else context.log('Failed to access parent node (good!)');
 

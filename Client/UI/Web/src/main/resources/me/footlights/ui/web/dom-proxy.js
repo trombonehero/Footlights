@@ -29,6 +29,11 @@ function proxy(node, context)
 				// Allow only local images to be loaded.
 				case 'img':
 					element = document.createElement('img');
+
+					var env = {};
+					for (var name in context.globals) env[name] = context.globals[name];
+					env.context = context;
+
 					subproxy =
 					{
 						set src(uri)
@@ -45,12 +50,21 @@ function proxy(node, context)
 						set alt(text) { element.alt = text; },
 						set class(name) { element.class = name; },
 						set height(x) { element.height = x; },
-						set onclick(js) { element.onclick = js; },
-						set onerror(js) { element.onerror = js; },
-						set onload(js) { element.onload = js; },
-						set onmouseout(js) { element.onmouseout = js; },
-						set onmouseover(js) { element.onmouseover = js; },
 						set width(x) { element.width = x; },
+
+						// Proxy a method so that, when called, 'this' is defined to
+						// be the proxy, rather than the naked DOM object.
+						proxy_code: function(js)
+						{
+							subproxy[js] = context.compile(js)(context.globals);
+							return function() { subproxy[js](); }
+						},
+
+						set onclick(js)     { element.onclick = this.proxy_code(js); },
+						set onerror(js)     { element.onerror = this.proxy_code(js); },
+						set onload(js)      { element.onload = this.proxy_code(js); },
+						set onmouseout(js)  { element.onmouseout = this.proxy_code(js); },
+						set onmouseover(js) { element.onmouseover = this.proxy_code(js); },
 					};
 					break;
 

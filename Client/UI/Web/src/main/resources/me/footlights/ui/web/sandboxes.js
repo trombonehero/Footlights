@@ -34,12 +34,23 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 			ajax: function(request) { ajax('/ajax/' + name + '/' + request, this); },
 			compile: function(code) { return cajaVM.compileModule('return ' + code); },
 			exec: function(code) { cajaVM.compileModule(code)({ 'context': this }); },
-			globals: {},
 			load: function(filename) { ajax('static/' + this.name + '/' + filename, this); },
 			log: log,
 			name: name,
 		};
 
+	// Define a place to put global variables, which are automatically added to
+	// the scope of proxied code like event handlers. We define one such
+	// variable to be 'context', a reference to our sandbox.
+	//
+	// This global-variable-to-auto-scoped-variable facility supports proxied
+	// DOM event handlers, allowing code such as:
+	//
+	// var foo = { run: function() { ... } };
+	// context.globals['custom_name_for_foo'] = foo;
+	//
+	// an_image.onload = function() { custom_name_for_foo.run(); }
+	sandbox.globals = { context: sandbox };
 	sandbox.root = proxy(content, sandbox);
 	sandbox = Object.freeze(sandbox);
 

@@ -50,15 +50,18 @@ remoteImage.onclick = function()
 	context.ajax('clicked/remote');
 };
 
+context.globals.errors = 0;
 remoteImage.onerror = function()
 {
 	try { rootContext.log('logged VIA ROOT CONTEXT!!!!'); }
 	catch (e) { context.log('Failed to log to rootContext (good!)'); }
 
-	try { context.log('got img PARENT NODE: ' + this.parentNode); }
-	catch (e) { context.log('Failed to access parent node (good!)'); }
 
-	remoteImage.src = 'missing.png';
+	if (this.parentNode) context.log('got img PARENT NODE: ' + this.parentNode);
+	else context.log('Failed to access parent node (good!)');
+
+	if (context.globals.errors < 10) this.src = 'missing.png';
+	context.globals.errors++;
 
 	this.style.opacity = 0.5;
 	this.style.position = 'absolute';

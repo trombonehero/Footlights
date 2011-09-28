@@ -12,6 +12,8 @@ var text = context.name + ' - brought to you by sandboxed JavaScript code';
 var p = context.root.appendElement('p');
 var t = p.appendText(text);
 
+context.globals.p = p;
+
 var imageSize = 256;
 
 var localImage = context.root.appendElement('img');
@@ -32,7 +34,7 @@ localImage.onmouseover = function()
 localImage.onclick = function()
 {
 	context.ajax('clicked/local');
-	this.style.opacity = 0.1;
+	this.style.opacity -= 0.1;
 	p.style.color = 'red';
 };
 localImage.onload = function()

@@ -40,6 +40,8 @@ function proxy(node, context)
 							else element.src = '/static/' + context.name + '/' + uri;
 						},
 
+						get style() { return element.style; },
+
 						set alt(text) { element.alt = text; },
 						set class(name) { element.class = name; },
 						set height(x) { element.height = x; },

@@ -79,6 +79,10 @@ class Initializer implements AjaxHandler
 		"jar:file:" + PLUGIN_PATH
 		+ "Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.wicked.WickedPlugin";
 
+	private static final String TICTACTOE =
+		"file:" + PLUGIN_PATH
+		+ "TicTacToe/target/classes!/me.footlights.demo.tictactoe.TicTacToe";
+
 	/** The Ajax server that needs to be reset. */
 	private final AjaxServer ajaxServer;
 }

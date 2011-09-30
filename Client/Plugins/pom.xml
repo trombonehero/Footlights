@@ -18,6 +18,7 @@
 	<modules>
 		<module>BlockStoreClient</module>
 		<module>Good</module>
+		<module>TicTacToe</module>
 		<module>Wicked</module>
 	</modules>
 

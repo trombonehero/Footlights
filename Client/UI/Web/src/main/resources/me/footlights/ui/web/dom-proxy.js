@@ -8,6 +8,12 @@ function proxy(node, context)
 {
 	var theProxy =
 	{
+		clear: function()
+		{
+			while (node.childNodes.length >= 1)
+				node.removeChild(node.firstChild);
+		},
+
 		appendText: function(text)
 		{
 			var element = document.createTextNode(text);

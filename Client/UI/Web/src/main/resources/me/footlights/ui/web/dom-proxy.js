@@ -55,11 +55,11 @@ function proxy(node, context)
 							return function() { subproxy[js](); }
 						},
 
-						set onclick(js)     { element.onclick = this.proxy_code(js); },
-						set onerror(js)     { element.onerror = this.proxy_code(js); },
-						set onload(js)      { element.onload = this.proxy_code(js); },
-						set onmouseout(js)  { element.onmouseout = this.proxy_code(js); },
-						set onmouseover(js) { element.onmouseover = this.proxy_code(js); },
+						set onclick(js)     { element.onclick      = subproxy.proxy_code(js); },
+						set onerror(js)     { element.onerror      = subproxy.proxy_code(js); },
+						set onload(js)      { element.onload       = subproxy.proxy_code(js); },
+						set onmouseout(js)  { element.onmouseout   = subproxy.proxy_code(js); },
+						set onmouseover(js) { element.onmouseover  = subproxy.proxy_code(js); },
 					};
 					break;
 

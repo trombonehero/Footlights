@@ -36,9 +36,14 @@ localImage.onclick = function()
 	this.style.opacity -= 0.1;
 	p.style.color = 'red';
 };
+
+var imgload_text = context.root.appendElement('p');
+imgload_text.appendText('loading local image... ');
+context.globals.t = imgload_text;
+
 localImage.onload = function()
 {
-	context.log('image loaded');
+	t.appendText('image loaded.');
 
 	p.style.color = 'blue';
 
@@ -48,7 +53,12 @@ localImage.onload = function()
 	this.style.right = 0;
 };
 
-context.log('loading local image...');
+localImage.onerror = function()
+{
+	t.appendText('error!');
+	p.style.color = 'orange';
+}
+
 localImage.src = 'images/local.png';
 
 return 42;

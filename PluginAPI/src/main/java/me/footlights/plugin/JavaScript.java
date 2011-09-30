@@ -61,8 +61,8 @@ public class JavaScript
 		return input.replace("'", "\\'").replace("\n", "\\n");
 	}
 
-	String asScript() { return code(); }
-	String asFunction() { return "(function(){" + code() + "})"; }
+	public String asScript() { return code(); }
+	public String asFunction() { return "(function(){" + code() + "})"; }
 	public String exec() { return asFunction() + "();"; }
 
 	private String code()

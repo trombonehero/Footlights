@@ -23,45 +23,7 @@ function proxy(node, context)
 			switch (type)
 			{
 				case 'script':
-					throw 'Sandboxed script attempted to create a ' +
-						type + ' element';
-
-				// Allow only local images to be loaded.
-				case 'img':
-					element = document.createElement('img');
-					subproxy =
-					{
-						set src(uri)
-						{
-							if (uri.indexOf(':') != -1)
-								throw 'Sandboxed script attempted to load' +
-									' an image with an absolute URI';
-
-							else element.src = '/static/' + context.name + '/' + uri;
-						},
-
-						get style() { return element.style; },
-
-						set alt(text) { element.alt = text; },
-						set class(name) { element.class = name; },
-						set height(x) { element.height = x; },
-						set width(x) { element.width = x; },
-
-						// Proxy a method so that, when called, 'this' is defined to
-						// be the proxy, rather than the naked DOM object.
-						proxy_code: function(js)
-						{
-							subproxy[js] = context.compile(js)(context.globals);
-							return function() { subproxy[js](); }
-						},
-
-						set onclick(js)     { element.onclick      = subproxy.proxy_code(js); },
-						set onerror(js)     { element.onerror      = subproxy.proxy_code(js); },
-						set onload(js)      { element.onload       = subproxy.proxy_code(js); },
-						set onmouseout(js)  { element.onmouseout   = subproxy.proxy_code(js); },
-						set onmouseover(js) { element.onmouseover  = subproxy.proxy_code(js); },
-					};
-					break;
+					throw 'Sandboxed script attempted to create a ' + type + ' element';
 
 				default:
 					element = document.createElement(type);
@@ -73,6 +35,28 @@ function proxy(node, context)
 		},
 
 		get style() { return node.style; },
+
+		set src(uri)        { node.src = '/static/' + context.name + '/' + uri; },
+
+		set alt(text)       { node.alt = text; },
+		set class(name)     { node.class = name; },
+		set height(x)       { node.height = x; },
+		set width(x)        { node.width = x; },
+
+
+		// Event handlers must be proxied so that, when called, 'this' refers to the proxy object
+		// and not the naked DOM object.
+		proxy_code: function(js)
+		{
+			theProxy[js] = context.compile(js)(context.globals);
+			return function() { theProxy[js](); }
+		},
+
+		set onclick(js)     { node.onclick      = theProxy.proxy_code(js); },
+		set onerror(js)     { node.onerror      = theProxy.proxy_code(js); },
+		set onload(js)      { node.onload       = theProxy.proxy_code(js); },
+		set onmouseout(js)  { node.onmouseout   = theProxy.proxy_code(js); },
+		set onmouseover(js) { node.onmouseover  = theProxy.proxy_code(js); },
 	};
 
 	return theProxy;

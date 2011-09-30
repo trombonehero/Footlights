@@ -59,8 +59,21 @@ class DemoAjaxHandler extends Context
 
 				response.append(makeDiv("And a regular method... "+ h.help()));
 
-				response.append(ajax(AjaxRequest.SYSCALL.name()));
+				response.append(ajax(AjaxRequest.CONTENT.name()));
 				return response;
+			}
+		});
+
+		register(CONTENT.name(), new AjaxHandler()
+		{
+			@Override public JavaScript service(WebRequest request)
+				throws FileNotFoundException, SecurityException, Throwable
+			{
+				return new JavaScript()
+					.append(makeDiv("loading static JavaScript..."))
+					.append("context.load('test.js');")
+					.append(ajax(AjaxRequest.SYSCALL.name()))
+					;
 			}
 		});
 
@@ -88,21 +101,8 @@ class DemoAjaxHandler extends Context
 					}
 				}
 
-				response.append(ajax(AjaxRequest.CONTENT.name()));
+				response.append(ajax(AjaxRequest.ALL_DONE.name()));
 				return response;
-			}
-		});
-
-		register(CONTENT.name(), new AjaxHandler()
-		{
-			@Override public JavaScript service(WebRequest request)
-				throws FileNotFoundException, SecurityException, Throwable
-			{
-				return new JavaScript()
-					.append("context.log('loading static JavaScript...');")
-					.append("context.load('test.js');")
-					.append(ajax(AjaxRequest.ALL_DONE.name()))
-					;
 			}
 		});
 

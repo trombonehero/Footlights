@@ -29,11 +29,6 @@ function proxy(node, context)
 				// Allow only local images to be loaded.
 				case 'img':
 					element = document.createElement('img');
-
-					var env = {};
-					for (var name in context.globals) env[name] = context.globals[name];
-					env.context = context;
-
 					subproxy =
 					{
 						set src(uri)

@@ -77,8 +77,7 @@ public class Context implements AjaxHandler
 	@Override public String toString()
 	{
 		StringBuffer sb = new StringBuffer();
-		sb.append(this.getClass().getSimpleName());
-		sb.append(" { handlers: [ ");
+		sb.append("{ handlers: [ ");
 		for (Map.Entry<String, AjaxHandler> handler : handlers.entrySet())
 		{
 			sb.append("'");

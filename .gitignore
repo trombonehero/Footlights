@@ -8,3 +8,4 @@ target
 .DS_Store
 META-INF
 bin
+.scala_dependencies

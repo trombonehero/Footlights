@@ -15,37 +15,75 @@
  */
 package me.footlights.ui.web;
 
+import _root_.me.footlights.core.Footlights;
 import _root_.me.footlights.plugin.AjaxHandler;
 import _root_.me.footlights.plugin.JavaScript;
 import _root_.me.footlights.plugin.WebRequest;
 
 
-/** Initializes the UI after the static JavaScript has loaded. */
-class Initializer(server: AjaxServer) extends AjaxHandler
-{
-	override def service(request:WebRequest): JavaScript = {
-		server.reset()
 
-		new JavaScript()
-			.append("""
+/** The global context - code sent here has full DOM access. */
+class GlobalContext(footlights:Footlights, server:AjaxServer)
+	extends AjaxHandler
+{
+	override def service(request:WebRequest) = {
+		request.path() match {
+			case "init" => {
+				server.reset()
+
+				new JavaScript()
+					.append("""
 var buttons = document.getElementById('buttons');
 buttons.innerHTML='';""")
 
-			.append(button("Good Plugin", JavaScript.ajax("load_plugin/" + GOOD_PLUGIN)))
-			.append(button("Wicked Plugin", JavaScript.ajax("load_plugin/" + WICKED_PLUGIN)))
-			.append(button("Tic-Tac-Toe", JavaScript.ajax("load_plugin/" + TICTACTOE)))
+					.append(button("Good Plugin", JavaScript.ajax("load_plugin/" + GOOD_PLUGIN)))
+					.append(button("Wicked Plugin", JavaScript.ajax("load_plugin/" + WICKED_PLUGIN)))
+					.append(button("Tic-Tac-Toe", JavaScript.ajax("load_plugin/" + TICTACTOE)))
 
-			.append(button("Reset", JavaScript.ajax("reset")))
+					.append(button("Reset", JavaScript.ajax("reset")))
 
-			.append(JavaScript.ajax("load_plugin/" + TICTACTOE))
-			/*
-			.append(ajax("load_plugin/" + GOOD_PLUGIN))
-			.append(ajax("load_plugin/" + WICKED_PLUGIN))
-			 */
+					.append(JavaScript.ajax("load_plugin/" + TICTACTOE))
+					/*
+					.append(ajax("load_plugin/" + GOOD_PLUGIN))
+					.append(ajax("load_plugin/" + WICKED_PLUGIN))
+					 */
 
-			.append("console.log('UI Initialized');")
+					.append("console.log('UI Initialized');")
+			}
+
+			case "reset" => {
+				while (footlights.plugins().size() > 0)
+					footlights.unloadPlugin(
+						footlights.plugins().iterator().next());
+
+				server.reset();
+				new JavaScript().append("window.location.reload()");
+			}
+
+			case LoadPlugin(path) => {
+				val name = path.substring(path.lastIndexOf('/') + 1);
+				val uri = new java.net.URI(request.shift().path())
+				val plugin = footlights.loadPlugin(name, uri)
+
+				server.register(name, plugin.getWrappedPlugin.ajaxHandler)
+
+				new JavaScript()
+					.append("""
+rootContext.log('loaded plugin \'""" + name.substring(name.lastIndexOf('.') + 1) + """');
+
+console.log('"""").appendText(plugin.getPluginName())
+	.append("""" loaded as """").appendText(name).append(""""');
+
+var sb = sandboxes.create('plugin/""")
+	.appendText(plugin.getPluginName())
+	.append("""', rootContext, rootContext.log, 0, 0, 200, 200);
+
+sb.ajax('init');""")
+			}
+		}
 	}
 
+	private val LoadPlugin = """load_plugin/(.*)""".r
 
 	private def button(label:String, onClick:JavaScript) = new JavaScript()
 		.append("""

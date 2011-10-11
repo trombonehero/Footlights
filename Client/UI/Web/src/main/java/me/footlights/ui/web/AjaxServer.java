@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.*;
-import me.footlights.plugin.Context;
+import me.footlights.plugin.AjaxHandler;
 import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 
@@ -35,26 +35,30 @@ public class AjaxServer implements WebServer
 
 	public AjaxServer(Footlights footlights)
 	{
-		contexts = Maps.newLinkedHashMap();
-
-		pluginContext = new Context();
-		contexts.put("plugin", pluginContext);
-
-		contexts.put("global",
-			new GlobalContext(footlights, this, new PluginLoader(footlights, pluginContext)));
+		pluginAjaxHandlers = Maps.newLinkedHashMap();
+		globalContext = new GlobalContext(footlights, this);
 	}
 
 	@Override public String name() { return "Ajax"; }
 	@Override public Response handle(WebRequest request) throws Throwable
 	{
 		String contextName = request.prefix();
-		Context context = contexts.get(contextName);
-		if (context == null)
-			throw new IllegalArgumentException("No such context '" + contextName + "'");
 
-		log.fine("Routing request to " + context);
-		JavaScript response = context.service(request.shift());
+		final AjaxHandler handler;
+		if (contextName.equals("global")) handler = globalContext;
+		else if (contextName.equals("plugin"))
+		{
+			request = request.shift();
+			handler = pluginAjaxHandlers.get(request.prefix());
+			if (handler == null)
+				throw new IllegalArgumentException("No such plugin '" + request.prefix() + "'");
+		}
+		else throw new IllegalArgumentException("No such context '" + contextName + "'");
 
+		if (handler == null)
+			throw new IllegalArgumentException("Can't handle request '" + request.path() + "'");
+
+		JavaScript response = handler.service(request.shift());
 		return Response.newBuilder()
 			.setResponse("text/javascript",
 				new ByteArrayInputStream(response.exec().getBytes()))
@@ -62,23 +66,25 @@ public class AjaxServer implements WebServer
 	}
 
 
-	synchronized void reset() { pluginContext.unloadHandlers(); }
-
-	synchronized void register(String name, Context context)
+	synchronized void reset()
 	{
-		if (contexts.containsKey(name))
+		pluginAjaxHandlers.clear();
+	}
+
+	synchronized void register(String name, AjaxHandler pluginHandler)
+	{
+		if (pluginAjaxHandlers.containsKey(name))
 			throw new RuntimeException(name + " already registered");
 
-		contexts.put(name, context);
+		pluginAjaxHandlers.put(name, pluginHandler);
 	}
 
 
 	/** Log. */
 	private static final Logger log = Logger.getLogger(AjaxServer.class.getName());
 
-	/** Context for the Ajax handlers of {@link Plugin}s. */
-	private final Context pluginContext;
+	private final AjaxHandler globalContext;
 
 	/** Plugin/sandbox contexts. */
-	private final LinkedHashMap<String, Context> contexts;
+	private final LinkedHashMap<String, AjaxHandler> pluginAjaxHandlers;
 }

@@ -15,10 +15,54 @@
  */
 package me.footlights.ui.web;
 
+import scala.collection.mutable.HashMap
+
 import _root_.me.footlights.core.Footlights;
 import _root_.me.footlights.plugin.AjaxHandler;
 import _root_.me.footlights.plugin.JavaScript;
 import _root_.me.footlights.plugin.WebRequest;
+
+
+
+/** Acts as an Ajax server for the JavaScript client */
+class AjaxServer(footlights:Footlights) extends WebServer
+{
+	val pluginAjaxHandlers = new HashMap[String, AjaxHandler]
+	val globalContext = new GlobalContext(footlights, this)
+
+	override def name:String = "Ajax"
+
+	override def handle(request:WebRequest) = {
+		val js =
+			request.prefix() match {
+				case "global" => globalContext.service(request.shift())
+				case "plugin" => {
+					val pluginRequest = request.shift()
+
+					pluginAjaxHandlers.get(pluginRequest.prefix())
+						.getOrElse(throw new IllegalArgumentException(
+							"No such plugin '" + pluginRequest.prefix() + "'"))
+						.service(pluginRequest.shift())
+				}
+				case _:String => new JavaScript()
+			}
+
+		Response.newBuilder()
+			.setResponse("text/javascript",
+				new java.io.ByteArrayInputStream(js.exec().getBytes()))
+			.build()
+	}
+
+
+	def reset = pluginAjaxHandlers.clear();
+	def register(name:String, pluginHandler:AjaxHandler)
+	{
+		if (pluginAjaxHandlers.contains(name))
+			throw new RuntimeException(name + " already registered");
+
+		pluginAjaxHandlers += name -> pluginHandler
+	}
+}
 
 
 
@@ -29,7 +73,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 	override def service(request:WebRequest) = {
 		request.path() match {
 			case "init" => {
-				server.reset()
+				server.reset
 
 				new JavaScript()
 					.append("""
@@ -56,8 +100,8 @@ buttons.innerHTML='';""")
 					footlights.unloadPlugin(
 						footlights.plugins().iterator().next());
 
-				server.reset();
-				new JavaScript().append("window.location.reload()");
+				server.reset
+				new JavaScript().append("window.location.reload()")
 			}
 
 			case LoadPlugin(path) => {

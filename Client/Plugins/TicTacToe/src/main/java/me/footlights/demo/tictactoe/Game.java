@@ -27,6 +27,13 @@ class Game
 		public final int offset;
 	};
 
+	enum Status
+	{
+		PLAYING,
+		WON,
+		LOST,
+	}
+
 	Game()
 	{
 		board = new Piece[3][];
@@ -36,10 +43,12 @@ class Game
 		nextTurn = CROSS;
 	}
 
-	Piece whoseTurnIsNext() { return nextTurn; }
-	synchronized Piece place(int x, int y) throws GameOverException
+	boolean isOver() { return (state != Status.PLAYING); }
+	Status state() { return state; }
+	Piece next() { return nextTurn; }
+	synchronized Piece place(int x, int y)
 	{
-		if (isOver) return null;
+		if (isOver()) return null;
 
 		if (board[x][y] != null)
 			throw new IllegalArgumentException(
@@ -48,21 +57,23 @@ class Game
 		Piece placed = nextTurn;
 		board[x][y] = placed;
 
-		if ((x == 2) && (placed == CROSS)) endGame();
+		if ((x == 2) && (placed == CROSS)) endGame(Status.WON);
 
 		nextTurn = ((nextTurn == CROSS) ? NOUGHT : CROSS);
 		return placed;
 	}
 
-	private synchronized void endGame() throws GameOverException
+	private synchronized void endGame(Status status)
 	{
-		this.isOver = true;
-		throw new GameOverException(GameOverException.EndState.WIN);
+		if (state != Status.PLAYING)
+			throw new IllegalStateException("Attempting to end a game that is already over");
+
+		this.state = status;
 	}
 
 
+	private Status state = Status.PLAYING;
 	private Piece nextTurn;
-	private boolean isOver;
 
 	private final Piece[][] board;
 }

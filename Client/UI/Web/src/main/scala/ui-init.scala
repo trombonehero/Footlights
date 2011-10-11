@@ -70,5 +70,5 @@ buttons.appendChild(button);""")
 		"Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.wicked.WickedPlugin"
 
 	private val TICTACTOE = PLUGIN_PATH +
-		"TicTacToe/target/classes!/me.footlights.demo.tictactoe.TicTacToeScala"
+		"TicTacToe/target/classes!/me.footlights.demo.tictactoe.TicTacToe"
 }

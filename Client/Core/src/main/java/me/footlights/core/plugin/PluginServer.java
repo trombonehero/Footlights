@@ -39,7 +39,7 @@ public class PluginServer implements KernelInterface
 		return kernel.generateUUID();
 	}
 
-	public File save(ByteBuffer data) throws IOException
+	@Override public File save(ByteBuffer data) throws IOException
 	{
 		return kernel.save(data);
 	}

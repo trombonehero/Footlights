@@ -32,7 +32,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.google.common.collect.Maps;
 
 
-public class Preferences
+public class Preferences implements me.footlights.plugin.Preferences
 {
 	static { Security.addProvider(new BouncyCastleProvider()); }
 
@@ -69,7 +69,7 @@ public class Preferences
 		return everything;
 	}
 
-	public String getString(String key) throws NoSuchElementException
+	@Override public String getString(String key) throws NoSuchElementException
 	{
 		if (engine != null)
 			try { return engine.getString(key); }
@@ -78,7 +78,7 @@ public class Preferences
 		return defaults.getString(key);
 	}
 
-	public boolean getBoolean(String key) throws NoSuchElementException 
+	@Override public boolean getBoolean(String key) throws NoSuchElementException
 	{
 		if (engine != null)
 			try { return engine.getBoolean(key); }
@@ -87,7 +87,7 @@ public class Preferences
 		return defaults.getBoolean(key);
 	}
 
-	public int getInt(String key) throws NoSuchElementException
+	@Override public int getInt(String key) throws NoSuchElementException
 	{
 		if (engine != null)
 			try { return engine.getInt(key); }
@@ -96,7 +96,7 @@ public class Preferences
 		return defaults.getInt(key);
 	}
 
-	public float getFloat(String key) throws NoSuchElementException
+	@Override public float getFloat(String key) throws NoSuchElementException
 	{
 		if (engine != null)
 			try { return engine.getFloat(key); }

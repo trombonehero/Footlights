@@ -123,19 +123,7 @@ public class Preferences
 			else homeDir += ".footlights";
 			defaultPrefs.put("home", homeDir);
 
-    		defaults = new PreferenceStorageEngine()
-    		{
-				@Override protected Map<String,?> getAll() { return defaultPrefs; }
-
-				@Override
-				protected String getRaw(String key) throws NoSuchElementException
-				{
-					if (!defaultPrefs.containsKey(key))
-						throw new NoSuchElementException(key);
-
-					return defaultPrefs.get(key);
-				}
-    		};
+			defaults = PreferenceStorageEngine.wrap(defaultPrefs);
 		}
 		catch (GeneralSecurityException e) { throw new ConfigurationError(e); }
 	}

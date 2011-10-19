@@ -51,4 +51,22 @@ public abstract class PreferenceStorageEngine
 	{
 		return Float.parseFloat(getRaw(key));
 	}
+
+
+	static PreferenceStorageEngine wrap(final Map<String,?> map)
+	{
+		return new PreferenceStorageEngine()
+			{
+				@Override protected Map<String,?> getAll() { return map; }
+
+				@Override
+				protected String getRaw(String key) throws NoSuchElementException
+				{
+					if (!map.containsKey(key))
+						throw new NoSuchElementException(key);
+
+					return map.get(key).toString();
+				}
+			};
+	}
 }

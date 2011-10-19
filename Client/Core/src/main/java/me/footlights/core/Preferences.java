@@ -58,6 +58,12 @@ public class Preferences implements me.footlights.plugin.Preferences
 	}
 
 
+	static Preferences wrap(Map<String,?> map)
+	{
+		return create(PreferenceStorageEngine.wrap(map));
+	}
+
+
 	// Methods to actually retrieve preferences.
 	public Map<String,?> getAll()
 	{

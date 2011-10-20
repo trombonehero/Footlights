@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,9 +39,18 @@ public class File implements me.footlights.plugin.File
 	public static MutableFile newBuilder() { return new MutableFile(); }
 	public static class MutableFile
 	{
-		public synchronized final MutableFile setContent(List<ByteBuffer> content)
+		public synchronized final MutableFile setContent(Collection<ByteBuffer> content)
 		{
 			this.content = ImmutableList.copyOf(content);
+			return this;
+		}
+
+		public synchronized final MutableFile setBlocks(Collection<Block> content)
+		{
+			List<ByteBuffer> bytes = Lists.newLinkedList();
+			for (Block b : content) bytes.add(b.content());
+			this.content = ImmutableList.copyOf(bytes);
+
 			return this;
 		}
 

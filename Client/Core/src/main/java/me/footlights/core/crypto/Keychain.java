@@ -18,6 +18,8 @@ package me.footlights.core.crypto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -28,10 +30,12 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.google.common.collect.Maps;
 
 import me.footlights.core.Preferences;
+import me.footlights.core.data.Link;
 
 
 /** Stores crypto keys. */
@@ -55,6 +59,25 @@ public class Keychain
 		secretKeys.put(key.getFingerprint(), key);
 	}
 
+	public Link getLink(Fingerprint fingerprint) throws NoSuchElementException
+	{
+		SecretKey key = secretKeys.get(fingerprint);
+		if (key == null)
+			throw new NoSuchElementException("We have no key for '" + fingerprint + "'");
+
+		final URI uri;
+		try { uri = new URI(fingerprint.encode()); }
+		catch (URISyntaxException e)
+		{
+			throw new NoSuchElementException("Can't convert key name '" + fingerprint + "' to URI");
+		}
+
+		return Link.newBuilder()
+			.setAlgorithm(fingerprint.getAlgorithm().getAlgorithm())
+			.setKey(key.getKeySpec().getEncoded())
+			.setUri(uri)
+			.build();
+	}
 
 
 	/** Merge a KeyStore file into this Keychain. */

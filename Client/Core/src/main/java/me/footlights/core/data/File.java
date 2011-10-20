@@ -207,6 +207,10 @@ public class File implements me.footlights.plugin.File
 		return everything;
 	}
 
+	/** A link to the {@link File} itself. */
+	public Link link() { return header.link(); }
+
+
 	/**
 	 * The contents of the file.
 	 *  

@@ -15,6 +15,7 @@
  */
 package me.footlights.core.crypto;
 
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 
 import javax.crypto.Cipher;
@@ -96,5 +97,41 @@ public class SecretKeyTest
 					+ "-bit key; is the JCE unlimited strength policy installed?");
 			}
 		}
+	}
+
+	@Test public void encryptAndDecrypt() throws Throwable
+	{
+		byte[] keyBytes = Hex.decodeHex("80000000000000000000000000000000".toCharArray());
+
+		final String algorithm = "AES";
+		final String fullAlgorithm = algorithm + "/CBC/NOPADDING";
+
+		SecretKey key = SecretKey.newGenerator()
+			.setAlgorithm(algorithm)
+			.setBytes(keyBytes)
+			.generate();
+
+		Cipher encryptor = key
+			.newCipherBuilder()
+			.parseAlgorithm(fullAlgorithm)
+			.setOperation(Operation.ENCRYPT)
+			.setIvLength((short) (8 * keyBytes.length))
+			.build();
+
+		Cipher decryptor = key
+			.newCipherBuilder()
+			.parseAlgorithm(fullAlgorithm)
+			.setOperation(Operation.DECRYPT)
+			.setIvLength((short) (8 * keyBytes.length))
+			.build();
+
+		ByteBuffer plaintext = ByteBuffer.wrap(new byte[128]);
+		ByteBuffer ciphertext = ByteBuffer.allocate(plaintext.remaining());
+		ByteBuffer decrypted = ByteBuffer.allocate(plaintext.remaining());
+
+		encryptor.doFinal(plaintext, ciphertext);
+		decryptor.doFinal(ciphertext, decrypted);
+
+		assertArrayEquals(plaintext.array(), decrypted.array());
 	}
 }

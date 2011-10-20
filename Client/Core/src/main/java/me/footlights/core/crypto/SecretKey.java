@@ -105,10 +105,10 @@ public class SecretKey
 		public CipherBuilder setMode(String m)          { mode = m;      return this; }
 		public CipherBuilder setPaddingScheme(String p) { padding = p;   return this; }
 
-		public CipherBuilder setInitializationVector(byte[] iv)
+		public CipherBuilder setIvLength(short bits)
 		{
-			if ((iv == null) || (iv.length == 0)) this.iv = null;
-			else this.iv = new IvParameterSpec(iv);
+			if (bits == 0) this.iv = null;
+			else this.iv = new IvParameterSpec(new byte[Util.bytesToStore(bits)]);
 
 			return this;
 		}

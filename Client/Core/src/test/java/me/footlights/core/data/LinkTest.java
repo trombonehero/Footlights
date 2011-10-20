@@ -84,8 +84,8 @@ public class LinkTest
 
 		assertEquals(defaultAlgorithm, l.algorithm());
 		assertEquals(uri, l.uri());
+		assertEquals(0, l.ivLength());
 		assertArrayEquals(key, l.key());
-		assertArrayEquals(new byte[0], l.iv());
 	}
 
 	/** Test parsing a {@link Link} with fewer bytes than advertised. */

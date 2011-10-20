@@ -89,10 +89,9 @@ public class Link implements FootlightsPrimitive
 				short uriLength = b.getShort();
 				short keyBits = b.getShort();
 				int keyBytes = (keyBits / 8) + ((keyBits % 8 != 0) ? 1 : 0);
-				short ivBits = b.getShort();
-				int ivBytes = (ivBits / 8) + ((ivBits % 8 != 0) ? 1 : 0);
+				setIvLength(b.getShort());
 
-				int subtotal = algorithmLength + uriLength + keyBytes + ivBytes;
+				int subtotal = algorithmLength + uriLength + keyBytes;
 				if (bodyLength != subtotal)
 				{
 					throw new FormatException(
@@ -116,9 +115,6 @@ public class Link implements FootlightsPrimitive
 	
 				key = new byte[keyBytes];
 				b.get(key);
-	
-				iv = new byte[ivBytes];
-				b.get(iv);
 			}
 			catch (java.nio.BufferUnderflowException e)
 			{
@@ -135,13 +131,13 @@ public class Link implements FootlightsPrimitive
 				algorithm != null ? algorithm : "",
 				uri,
 				key != null ? key : new byte[0],
-				iv != null ? iv : new byte[0]);
+				ivBytes);
 		}
 
 		private String algorithm;
 		private URI uri;
 		private byte[] key;
-		private byte[] iv;
+		private short ivBytes;
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -156,7 +152,7 @@ public class Link implements FootlightsPrimitive
 	public String algorithm() { return algorithms; }
 	public URI uri() { return uri; }
 	public byte[] key() { return Arrays.copyOf(key, key.length); }
-	public byte[] iv() { return Arrays.copyOf(iv, iv.length); }
+	public short ivLength() { return ivBits; }
 
 
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException
@@ -168,7 +164,7 @@ public class Link implements FootlightsPrimitive
 				.generate()
 				.newCipherBuilder()
 				.setOperation(Operation.DECRYPT)
-				.setInitializationVector(iv)
+				.setIvLength(ivBits)
 				.build();
 
 		int toDecrypt = cipher.getOutputSize(ciphertext.remaining());
@@ -188,13 +184,13 @@ public class Link implements FootlightsPrimitive
 	 * @param algorithm  The algorithm used to encrypt the block (or null)
 	 * @param uri        URI of the linked block (often relative, a Base64 hash)
 	 * @param key        Encoded decryption key (or null)
-	 * @param iv         Initialization vector (null & key => all-zero IV)
+	 * @param ivBits     Bits of all-zero Initialization Vector
 	 *
 	 * @throws IllegalArgumentException if uri is null
 	 */
-	private Link(String algorithm, URI uri, byte[] key, byte[] iv)
+	private Link(String algorithm, URI uri, byte[] key, short ivBits)
 	{
-		Preconditions.notNull(algorithm, uri, key, iv);
+		Preconditions.notNull(algorithm, uri, key);
 
 		if (uri.toString().length() == 0)
 			throw new IllegalArgumentException("Link has no URI");
@@ -202,7 +198,7 @@ public class Link implements FootlightsPrimitive
 		this.algorithms = algorithm;
 		this.uri = uri;
 		this.key = key;
-		this.iv = iv;
+		this.ivBits = ivBits;
 	}
 
 
@@ -211,8 +207,7 @@ public class Link implements FootlightsPrimitive
 		final short bodyLength = (short)
 			(algorithms.length()
 			 + uri.toString().length()
-			 + key.length
-		    + iv.length);
+			 + key.length);
 
 		final short totalLength = (short) (MAGIC.length + 10 + bodyLength);
 
@@ -223,14 +218,13 @@ public class Link implements FootlightsPrimitive
 		buffer.putShort((short) algorithms.length());
 		buffer.putShort((short) uri.toString().length());
 		buffer.putShort((short) (8 * key.length));  // TODO: finer-grained lengths
-		buffer.putShort((short) iv.length);
+		buffer.putShort(ivBits);
 
 		try
 		{
 			buffer.put(algorithms.getBytes(ASCII));
 			buffer.put(uri.toString().getBytes(ASCII));
 			buffer.put(key);
-			buffer.put(iv);
 		}
 		catch (UnsupportedEncodingException e)
 		{
@@ -269,14 +263,9 @@ public class Link implements FootlightsPrimitive
 		buf.append(uri);
 		buf.append("', key: ");
 		buf.append((key == null) ? "<null>" : "<key>");
-		buf.append(", iv: ");
-		if (iv == null) buf.append("<null>");
-		else
-		{
-			buf.append("[");
-			for (byte b : iv) buf.append((0xff & b) + " ");
-			buf.append("] ");
-		}
+		buf.append(", iv: 0 * ");
+		buf.append(ivBits);
+		buf.append("b");
 		buf.append(" }");
 
 		return buf.toString();
@@ -323,11 +312,8 @@ public class Link implements FootlightsPrimitive
 	/** Key to decrypt the linked block (or null) */
 	private final byte[] key;
 
-	/**
-	 * Initialisation vector (null if the block is not encrypted, or has an
-	 * all-zero IV).
-	 */
-	private final byte[] iv;
+	/** Bits of all-zero IV required. */
+	private final short ivBits;
 
 	/** Cipher used to decrypt the linked block. */
 	private Cipher cipher;

@@ -68,7 +68,7 @@ public class SecretKeyTest
 			String algorithm = v[i++];
 			String mode = v[i++];
 			byte[] secret = Hex.decodeHex(v[i++].toCharArray());
-			byte[] iv = Hex.decodeHex(v[i++].toCharArray());
+			short ivLength = (short) (4 * v[i++].length());
 			byte[] plaintext = Hex.decodeHex(v[i++].toCharArray());
 			byte[] ciphertext = Hex.decodeHex(v[i++].toCharArray());
 
@@ -80,7 +80,7 @@ public class SecretKeyTest
 			CipherBuilder builder = 
 				key.newCipherBuilder()
 					.setMode(mode)
-					.setInitializationVector(iv);
+					.setIvLength(ivLength);
 
 			try
 			{

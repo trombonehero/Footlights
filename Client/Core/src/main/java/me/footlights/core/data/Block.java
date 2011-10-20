@@ -147,7 +147,7 @@ public class Block implements FootlightsPrimitive
 	{
 		SecretKey.Generator keygen = SecretKey.newGenerator();
 
-		int length = keygen.getKeyLength();
+		short length = (short) keygen.getKeyLength();
 		byte[] hashBytes = fingerprint.copyBytes();
 		byte[] secret = new byte[length / 8];
 		System.arraycopy(secret, 0, hashBytes, 0, secret.length);
@@ -157,6 +157,7 @@ public class Block implements FootlightsPrimitive
 			.generate()
 			.newCipherBuilder()
 			.setOperation(SecretKey.Operation.ENCRYPT)
+			.setIvLength(length)
 			.build();
 
 		int len = cipher.getOutputSize(bytes.remaining());
@@ -167,6 +168,7 @@ public class Block implements FootlightsPrimitive
 		Link link = Link.newBuilder()
 			.setAlgorithm(cipher.getAlgorithm())
 			.setKey(secret)
+			.setIvLength((short) length)
 			.setUri(URI.create(fingerprint.encode()))
 			.build();
 

@@ -56,9 +56,9 @@ public class Link implements FootlightsPrimitive
 			return this;
 		}
 
-		public Builder setIv(byte[] iv)
+		public Builder setIvLength(short ivBits)
 		{
-			this.iv = iv;
+			this.ivBytes = (short) Util.bytesToStore(ivBits);
 			return this;
 		}
 

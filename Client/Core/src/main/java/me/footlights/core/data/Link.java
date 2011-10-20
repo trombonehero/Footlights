@@ -159,10 +159,11 @@ public class Link implements FootlightsPrimitive
 	{
 		if (cipher == null)
 			cipher = SecretKey.newGenerator()
-				.setAlgorithm(algorithms)
+				.setAlgorithm(algorithms.split("/")[0])
 				.setBytes(key)
 				.generate()
 				.newCipherBuilder()
+				.parseAlgorithm(algorithms)
 				.setOperation(Operation.DECRYPT)
 				.setIvLength(ivBits)
 				.build();

@@ -26,6 +26,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import me.footlights.core.Preferences;
+import me.footlights.core.Util;
 
 
 /** A secret, symmetric key, whose bits cannot be extracted outside of me.footlights.core.crypto. */
@@ -67,6 +68,10 @@ public class SecretKey
 
 		public SecretKey generate() throws NoSuchAlgorithmException
 		{
+			if (algorithm.contains("/"))
+				throw new NoSuchAlgorithmException(
+					"Don't need mode or padding information in " + SecretKey.class.getName());
+
 			if (secret == null)
 			{
 				secret = new byte[keylen];
@@ -100,6 +105,23 @@ public class SecretKey
 			cipher.init(operation.opcode(), keySpec, iv);
 
 			return cipher;
+		}
+
+		public CipherBuilder parseAlgorithm(String a)
+		{
+			String[] parts = a.split("/");
+			if (parts.length != 3)
+				throw new IllegalArgumentException(
+					"parseAlgorithm() requires 'alg/mode/padding' string, got '" + a + "'");
+
+			if (!parts[0].equals(keySpec.getAlgorithm()))
+				throw new IllegalArgumentException(
+					"Wrong algorithm: got " + parts[0] + ", expected " + keySpec.getAlgorithm());
+
+			setMode(parts[1]);
+			setPaddingScheme(parts[2]);
+
+			return this;
 		}
 
 		public CipherBuilder setOperation(Operation o)  { operation = o; return this; }

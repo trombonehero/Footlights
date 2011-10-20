@@ -66,8 +66,7 @@ public abstract class Store
 
 
 	/** Retrieve a stored block (returns null if no such block is found) */
-	public final ByteBuffer retrieve(String name)
-		throws IOException, NoSuchBlockException
+	public final ByteBuffer retrieve(String name) throws IOException, NoSuchBlockException
 	{
 		ByteBuffer buffer = null;
 

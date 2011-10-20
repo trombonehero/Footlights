@@ -98,21 +98,21 @@ public class Link implements FootlightsPrimitive
 						"Link length (" + bodyLength + ") != sum of its parts ("
 						+ subtotal + ")");
 				}
-	
+
 				if (algorithmLength > 0)
 				{
 					byte[] bytes = new byte[algorithmLength];
 					b.get(bytes);
 					algorithm = new String(bytes);
 				}
-	
+
 				if (uriLength > 0)
 				{
 					byte[] bytes = new byte[uriLength];
 					b.get(bytes);
 					uri = URI.create(new String(bytes));
 				}
-	
+
 				key = new byte[keyBytes];
 				b.get(key);
 			}

@@ -80,6 +80,7 @@ public class SecretKey
 
 
 		private String algorithm = preferences.getString("crypto.sym.algorithm");
+
 		private int keylen = preferences.getInt("crypto.sym.keylen");
 		private byte[] secret = null;
 		private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();

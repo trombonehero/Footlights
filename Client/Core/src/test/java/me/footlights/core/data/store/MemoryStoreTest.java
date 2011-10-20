@@ -40,7 +40,7 @@ public class MemoryStoreTest
 
 		assertEquals(b, Block.parse(store.retrieve(b.name())));
 	}
-	
+
 	@Test public void testReplacement() throws Throwable
 	{
 		// TODO: LRU or something

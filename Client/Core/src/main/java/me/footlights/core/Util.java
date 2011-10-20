@@ -46,4 +46,10 @@ public class Util
 
 		return bytes.toByteArray();
 	}
+
+	/** The number of bytes required to store a number of bits. */
+	public static int bytesToStore(int bits)
+	{
+		return (bits / 8) + ((bits % 8 != 0) ? 1 : 0);
+	}
 }

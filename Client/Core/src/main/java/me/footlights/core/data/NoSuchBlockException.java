@@ -15,10 +15,12 @@
  */
 package me.footlights.core.data;
 
+import java.io.IOException;
+
 import me.footlights.core.data.store.Store;
 
 
-public class NoSuchBlockException extends Exception
+public class NoSuchBlockException extends IOException
 {
 	public NoSuchBlockException(Store store, String name)
 	{

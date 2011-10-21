@@ -70,7 +70,7 @@ public abstract class Store
 	{
 		ByteBuffer buffer = null;
 
-		if (cache != null) buffer = cache.get(name);
+		if (cache != null) buffer = cache.retrieve(name);
 		if (buffer == null) buffer = get(name);
 
 		return buffer.asReadOnlyBuffer();

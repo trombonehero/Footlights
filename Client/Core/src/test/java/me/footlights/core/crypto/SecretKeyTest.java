@@ -44,25 +44,7 @@ public class SecretKeyTest
 	 */
 	@Test public void testEncryptDecrypt() throws Throwable
 	{
-		String[][] vectors =
-		{
-			{
-				"AES", "ECB",
-				"80000000000000000000000000000000",
-				"",
-				"00000000000000000000000000000000",
-				"0edd33d3c621e546455bd8ba1418bec8",
-			},
-			{
-				"AES", "CBC",
-				"8000000000000000000000000000000000000000000000000000000000000000",
-				"00000000000000000000000000000000",
-				"00000000000000000000000000000000",
-				"e35a6dcb19b201a01ebcfa8aa22b5759",
-			},
-		};
-
-		for (String[] v : vectors)
+		for (String[] v : TEST_VECTORS)
 		{
 			int i = 0;
 
@@ -101,10 +83,15 @@ public class SecretKeyTest
 
 	@Test public void encryptAndDecrypt() throws Throwable
 	{
-		byte[] keyBytes = Hex.decodeHex("80000000000000000000000000000000".toCharArray());
+		final String[] vector = TEST_VECTORS[1];
 
-		final String algorithm = "AES";
-		final String fullAlgorithm = algorithm + "/CBC/NOPADDING";
+		int i = 0;
+		String algorithm = vector[i++];
+		String mode = vector[i++];
+		byte[] keyBytes = Hex.decodeHex(vector[i++].toCharArray());
+		short ivlen = (short) (vector[i++].length() / 2);
+
+		final String fullAlgorithm = algorithm + "/" + mode + "/NOPADDING";
 
 		SecretKey key = SecretKey.newGenerator()
 			.setAlgorithm(algorithm)
@@ -134,4 +121,23 @@ public class SecretKeyTest
 
 		assertArrayEquals(plaintext.array(), decrypted.array());
 	}
+
+
+	private static final String[][] TEST_VECTORS =
+	{
+		{
+			"AES", "ECB",
+			"80000000000000000000000000000000",
+			"",
+			"00000000000000000000000000000000",
+			"0edd33d3c621e546455bd8ba1418bec8",
+		},
+		{
+			"AES", "CBC",
+			"8000000000000000000000000000000000000000000000000000000000000000",
+			"00000000000000000000000000000000",
+			"00000000000000000000000000000000",
+			"e35a6dcb19b201a01ebcfa8aa22b5759",
+		},
+	};
 }

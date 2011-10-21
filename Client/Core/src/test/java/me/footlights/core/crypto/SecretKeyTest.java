@@ -17,6 +17,7 @@ package me.footlights.core.crypto;
 
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
@@ -52,8 +53,12 @@ public class SecretKeyTest
 			String mode = v[i++];
 			byte[] secret = Hex.decodeHex(v[i++].toCharArray());
 			short ivLength = (short) (4 * v[i++].length());
+
 			byte[] plaintext = Hex.decodeHex(v[i++].toCharArray());
+			ByteBuffer plainbuf = ByteBuffer.wrap(Arrays.copyOf(plaintext, plaintext.length));
+
 			byte[] ciphertext = Hex.decodeHex(v[i++].toCharArray());
+			ByteBuffer cipherbuf = ByteBuffer.wrap(Arrays.copyOf(ciphertext, ciphertext.length));
 
 			SecretKey key = SecretKey.newGenerator()
 				.setAlgorithm(algorithm)
@@ -72,6 +77,13 @@ public class SecretKeyTest
 
 				assertArrayEquals(ciphertext, e.doFinal(plaintext));
 				assertArrayEquals(plaintext, d.doFinal(ciphertext));
+
+				// Do it again, but this time with ByteBuffers.
+				e.doFinal(plainbuf, cipherbuf);
+				assertArrayEquals(ciphertext, cipherbuf.array());
+
+				d.doFinal(cipherbuf, plainbuf);
+				assertArrayEquals(plaintext, plainbuf.array());
 			}
 			catch (InvalidKeyException e)
 			{
@@ -79,47 +91,6 @@ public class SecretKeyTest
 					+ "-bit key; is the JCE unlimited strength policy installed?");
 			}
 		}
-	}
-
-	@Test public void encryptAndDecrypt() throws Throwable
-	{
-		final String[] vector = TEST_VECTORS[1];
-
-		int i = 0;
-		String algorithm = vector[i++];
-		String mode = vector[i++];
-		byte[] keyBytes = Hex.decodeHex(vector[i++].toCharArray());
-		short ivlen = (short) (vector[i++].length() / 2);
-
-		final String fullAlgorithm = algorithm + "/" + mode + "/NOPADDING";
-
-		SecretKey key = SecretKey.newGenerator()
-			.setAlgorithm(algorithm)
-			.setBytes(keyBytes)
-			.generate();
-
-		Cipher encryptor = key
-			.newCipherBuilder()
-			.parseAlgorithm(fullAlgorithm)
-			.setOperation(Operation.ENCRYPT)
-			.setIvLength((short) (8 * keyBytes.length))
-			.build();
-
-		Cipher decryptor = key
-			.newCipherBuilder()
-			.parseAlgorithm(fullAlgorithm)
-			.setOperation(Operation.DECRYPT)
-			.setIvLength((short) (8 * keyBytes.length))
-			.build();
-
-		ByteBuffer plaintext = ByteBuffer.wrap(new byte[128]);
-		ByteBuffer ciphertext = ByteBuffer.allocate(plaintext.remaining());
-		ByteBuffer decrypted = ByteBuffer.allocate(plaintext.remaining());
-
-		encryptor.doFinal(plaintext, ciphertext);
-		decryptor.doFinal(ciphertext, decrypted);
-
-		assertArrayEquals(plaintext.array(), decrypted.array());
 	}
 
 

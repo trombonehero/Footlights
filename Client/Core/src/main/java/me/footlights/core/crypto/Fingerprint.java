@@ -67,7 +67,9 @@ public class Fingerprint
 	public byte[] copyBytes()
 	{
 		byte[] copy = new byte[bytes.remaining()];
+		bytes.mark();
 		bytes.get(copy);
+		bytes.reset();
 		return copy;
 	}
 

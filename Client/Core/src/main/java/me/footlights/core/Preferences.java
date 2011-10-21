@@ -158,7 +158,7 @@ public class Preferences implements me.footlights.plugin.Preferences
 
 		// symmetric-key cipher
 		String symPreferences[] = { "AES", "TripleDES", "Blowfish" };
-		String modePreferences[] = { "GCM", "CTR", "CBC" };
+		String modePreferences[] = { "CBC", "CTR" };
 
 		Provider.Service cipher = null;
 		List<String> modes = null;

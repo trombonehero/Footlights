@@ -67,8 +67,7 @@ public class SecretKeyTest
 
 			CipherBuilder builder = 
 				key.newCipherBuilder()
-					.setMode(mode)
-					.setIvLength(ivLength);
+					.setMode(mode);
 
 			try
 			{

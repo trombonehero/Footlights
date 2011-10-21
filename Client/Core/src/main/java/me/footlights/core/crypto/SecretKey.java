@@ -26,7 +26,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import me.footlights.core.Preferences;
-import me.footlights.core.Util;
 
 
 /** A secret, symmetric key, whose bits cannot be extracted outside of me.footlights.core.crypto. */
@@ -102,6 +101,9 @@ public class SecretKey
 			String fullAlgorithm = keySpec.getAlgorithm() + "/" + mode + "/" + padding;
 			Cipher cipher = Cipher.getInstance(fullAlgorithm);
 
+			IvParameterSpec iv = null;
+			if (!mode.equals("ECB")) iv = new IvParameterSpec(new byte[cipher.getBlockSize()]);
+
 			cipher.init(operation.opcode(), keySpec, iv);
 
 			return cipher;
@@ -128,22 +130,12 @@ public class SecretKey
 		public CipherBuilder setMode(String m)          { mode = m;      return this; }
 		public CipherBuilder setPaddingScheme(String p) { padding = p;   return this; }
 
-		public CipherBuilder setIvLength(short bits)
-		{
-			if (bits == 0) this.iv = null;
-			else this.iv = new IvParameterSpec(new byte[Util.bytesToStore(bits)]);
-
-			return this;
-		}
-
 
 		private CipherBuilder() {}
 
 		private Operation operation = Operation.ENCRYPT;
 		private String mode = preferences.getString("crypto.sym.mode");
 		private String padding = preferences.getString("crypto.sym.padding");
-
-		private IvParameterSpec iv;
 	}
 
 	

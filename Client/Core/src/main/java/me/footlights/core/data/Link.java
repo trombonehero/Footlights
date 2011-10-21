@@ -168,7 +168,6 @@ public class Link implements FootlightsPrimitive
 				.newCipherBuilder()
 				.parseAlgorithm(algorithms)
 				.setOperation(Operation.DECRYPT)
-				.setIvLength(ivBits)
 				.build();
 
 		int toDecrypt = cipher.getOutputSize(ciphertext.remaining());

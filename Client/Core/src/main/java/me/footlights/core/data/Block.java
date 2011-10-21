@@ -157,7 +157,6 @@ public class Block implements FootlightsPrimitive
 			.generate()
 			.newCipherBuilder()
 			.setOperation(SecretKey.Operation.ENCRYPT)
-			.setIvLength(length)
 			.build();
 
 		int len = cipher.getOutputSize(bytes.remaining());

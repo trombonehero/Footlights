@@ -26,6 +26,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import me.footlights.core.Preferences;
+import me.footlights.core.data.Link;
 
 
 /** A secret, symmetric key, whose bits cannot be extracted outside of me.footlights.core.crypto. */
@@ -50,6 +51,13 @@ public class SecretKey
 	/** Get the cipher instance, which can be used for encrypting and decrypting data. */
 	public CipherBuilder newCipherBuilder() { return new CipherBuilder(); }
 
+	/** Start constructing a {@link Link} to data encrypted by this key. */
+	Link.Builder createLinkBuilder()
+	{
+		return Link.newBuilder()
+			.setAlgorithm(fingerprint.getAlgorithm().getAlgorithm())
+			.setKey(keySpec.getEncoded());
+	}
 
 	public static class Generator
 	{

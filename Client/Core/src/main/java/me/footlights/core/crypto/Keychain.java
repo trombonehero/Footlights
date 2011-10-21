@@ -72,9 +72,7 @@ public class Keychain
 			throw new NoSuchElementException("Can't convert key name '" + fingerprint + "' to URI");
 		}
 
-		return Link.newBuilder()
-			.setAlgorithm(fingerprint.getAlgorithm().getAlgorithm())
-			.setKey(key.getKeySpec().getEncoded())
+		return key.createLinkBuilder()
 			.setUri(uri)
 			.build();
 	}

@@ -65,7 +65,6 @@ public class LinkTest
 			0, 0,                                 // algorithm unspecified
 			0x07, 0x00,                           // ID length: 7
 			0x00, 0x01,                           // key length: 256b (0x0100)
-			0, 0,                                 // IV unspecified
 			's', 'o', 'm', 'e', '_', 'I', 'D',    // ID: "some ID"
 		};
 		
@@ -84,7 +83,6 @@ public class LinkTest
 
 		assertEquals(defaultAlgorithm, l.algorithm());
 		assertEquals(uri, l.uri());
-		assertEquals(0, l.ivLength());
 		assertArrayEquals(key, l.key());
 	}
 
@@ -155,7 +153,6 @@ public class LinkTest
 		assertEquals((short) algorithms.length(), buffer.getShort());
 		assertEquals((short) uri.toString().length(), buffer.getShort());
 		assertEquals((short) 8 * key.length, buffer.getShort());
-		assertEquals(0, buffer.getShort());
 
 		byte[] tmp = new byte[algBytes.length];
 		buffer.get(tmp);

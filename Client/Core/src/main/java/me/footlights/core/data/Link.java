@@ -56,12 +56,6 @@ public class Link implements FootlightsPrimitive
 			return this;
 		}
 
-		public Builder setIvLength(short ivBits)
-		{
-			this.ivBytes = (short) Util.bytesToStore(ivBits);
-			return this;
-		}
-
 		/**
 		 * Parse a {@link Link} from bytes on the wire.
 		 *
@@ -89,7 +83,6 @@ public class Link implements FootlightsPrimitive
 				short uriLength = b.getShort();
 				short keyBits = b.getShort();
 				int keyBytes = (keyBits / 8) + ((keyBits % 8 != 0) ? 1 : 0);
-				setIvLength(b.getShort());
 
 				int subtotal = algorithmLength + uriLength + keyBytes;
 				if (bodyLength != subtotal)
@@ -130,14 +123,12 @@ public class Link implements FootlightsPrimitive
 			return new Link(
 				algorithm != null ? algorithm : "",
 				uri,
-				key != null ? key : new byte[0],
-				ivBytes);
+				key != null ? key : new byte[0]);
 		}
 
 		private String algorithm;
 		private URI uri;
 		private byte[] key;
-		private short ivBytes;
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
@@ -152,7 +143,6 @@ public class Link implements FootlightsPrimitive
 	public String algorithm() { return algorithms; }
 	public URI uri() { return uri; }
 	public byte[] key() { return Arrays.copyOf(key, key.length); }
-	public short ivLength() { return ivBits; }
 
 
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException
@@ -187,11 +177,10 @@ public class Link implements FootlightsPrimitive
 	 * @param algorithm  The algorithm used to encrypt the block (or null)
 	 * @param uri        URI of the linked block (often relative, a Base64 hash)
 	 * @param key        Encoded decryption key (or null)
-	 * @param ivBits     Bits of all-zero Initialization Vector
 	 *
 	 * @throws IllegalArgumentException if uri is null
 	 */
-	private Link(String algorithm, URI uri, byte[] key, short ivBits)
+	private Link(String algorithm, URI uri, byte[] key)
 	{
 		Preconditions.notNull(algorithm, uri, key);
 
@@ -201,7 +190,6 @@ public class Link implements FootlightsPrimitive
 		this.algorithms = algorithm;
 		this.uri = uri;
 		this.key = key;
-		this.ivBits = ivBits;
 	}
 
 
@@ -212,7 +200,7 @@ public class Link implements FootlightsPrimitive
 			 + uri.toString().length()
 			 + key.length);
 
-		final short totalLength = (short) (MAGIC.length + 10 + bodyLength);
+		final short totalLength = (short) (MAGIC.length + 8 + bodyLength);
 
 		ByteBuffer buffer = ByteBuffer.allocate(totalLength);
 		Util.setByteOrder(buffer);
@@ -221,7 +209,6 @@ public class Link implements FootlightsPrimitive
 		buffer.putShort((short) algorithms.length());
 		buffer.putShort((short) uri.toString().length());
 		buffer.putShort((short) (8 * key.length));  // TODO: finer-grained lengths
-		buffer.putShort(ivBits);
 
 		try
 		{
@@ -266,9 +253,6 @@ public class Link implements FootlightsPrimitive
 		buf.append(uri);
 		buf.append("', key: ");
 		buf.append((key == null) ? "<null>" : "<key>");
-		buf.append(", iv: 0 * ");
-		buf.append(ivBits);
-		buf.append("b");
 		buf.append(" }");
 
 		return buf.toString();
@@ -314,9 +298,6 @@ public class Link implements FootlightsPrimitive
 
 	/** Key to decrypt the linked block (or null) */
 	private final byte[] key;
-
-	/** Bits of all-zero IV required. */
-	private final short ivBits;
 
 	/** Cipher used to decrypt the linked block. */
 	private Cipher cipher;

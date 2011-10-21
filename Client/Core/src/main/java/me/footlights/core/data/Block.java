@@ -167,7 +167,6 @@ public class Block implements FootlightsPrimitive
 		Link link = Link.newBuilder()
 			.setAlgorithm(cipher.getAlgorithm())
 			.setKey(secret)
-			.setIvLength((short) length)
 			.setUri(URI.create(fingerprint.encode()))
 			.build();
 

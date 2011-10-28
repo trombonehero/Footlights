@@ -52,6 +52,7 @@ public class EncryptedBlock
 
 	/** The name of the block. */
 	public String name() { return link.uri().toString(); }
+	@Override public String toString() { return name(); }
 
 	/** The ciphertext itself. */
 	public ByteBuffer ciphertext() { return ciphertext.asReadOnlyBuffer(); }

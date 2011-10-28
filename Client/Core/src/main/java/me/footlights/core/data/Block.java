@@ -294,6 +294,12 @@ public class Block implements FootlightsPrimitive
 
 		// That's the last of the raw bytes.
 		rawBytes.rewind();
+
+		if ((desiredSize != 0) && (rawBytes.remaining() != desiredSize))
+			throw new FormatException(
+				"Built block of incorrect size: wanted " + desiredSize
+				 + "B, was " + rawBytes.remaining() + "B");
+
 		this.bytes = rawBytes;
 		if ((desiredSize != 0) && (desiredSize != this.bytes.limit()))
 			throw new IllegalArgumentException(

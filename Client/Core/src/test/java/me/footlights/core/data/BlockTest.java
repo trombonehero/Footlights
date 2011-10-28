@@ -114,7 +114,7 @@ public class BlockTest
 				Block.newBuilder().setDesiredSize(size).build();
 				fail("We should not be able to build a " + size + "B Block");
 			}
-			catch (IllegalArgumentException e) { /* correct error */ }
+			catch (FormatException e) { /* correct error */ }
 		}
 	}
 }

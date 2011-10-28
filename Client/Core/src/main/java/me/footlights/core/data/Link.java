@@ -147,6 +147,9 @@ public class Link implements FootlightsPrimitive
 
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException
 	{
+		if (ciphertext.remaining() == 0)
+			throw new GeneralSecurityException("Nothing to decrypt!");
+
 		if (algorithms.isEmpty())
 			throw new GeneralSecurityException("Cannot decrypt with algorithm ''");
 

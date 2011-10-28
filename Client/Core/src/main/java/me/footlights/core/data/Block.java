@@ -236,6 +236,7 @@ public class Block implements FootlightsPrimitive
 		for (Link link : links) byteCount += link.bytes();
 		int dataOffset = byteCount;
 		byteCount += content.limit();
+		if (padding != null) byteCount += padding.remaining();
 
 		// Do we want the block to be a particular size?
 		if (desiredSize != 0) byteCount = desiredSize;

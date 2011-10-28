@@ -67,6 +67,19 @@ public class EncryptedBlock
 	public Link link() { return link; }
 
 
+	@Override public boolean equals(Object o)
+	{
+		if (o == null) return false;
+		if (!(o instanceof EncryptedBlock)) return false;
+		EncryptedBlock e = (EncryptedBlock) o;
+
+		if (!link.equals(e.link)) return false;
+		if (!ciphertext.equals(e.ciphertext)) return false;
+		if (!plaintext.equals(e.plaintext)) return false;
+
+		return true;
+	}
+
 	private EncryptedBlock(ByteBuffer ciphertext, Block plaintext, Link link)
 	{
 		Preconditions.notNull(ciphertext, plaintext, link);

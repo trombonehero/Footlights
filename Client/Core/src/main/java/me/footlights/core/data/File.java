@@ -245,7 +245,7 @@ public class File implements me.footlights.plugin.File
 
 	/** Default constructor; produces an anonymous file */
 	private File(EncryptedBlock header,
-		List<Block> plaintext, List<EncryptedBlock> ciphertext)
+		Collection<Block> plaintext, Collection<EncryptedBlock> ciphertext)
 	{
 		this.header = header;
 		this.plaintext = ImmutableList.<Block>builder().addAll(plaintext).build();

@@ -224,6 +224,19 @@ public class File implements me.footlights.plugin.File
 		return content;
 	}
 
+	@Override public boolean equals(Object o)
+	{
+		if (o == null) return false;
+		if (!(o instanceof File)) return false;
+
+		File f = (File) o;
+		if (!this.header.equals(f.header)) return false;
+		if (!this.plaintext.equals(f.plaintext)) return false;
+		if (!this.ciphertext.equals(f.ciphertext)) return false;
+
+		return true;
+	}
+
 	@Override
 	public String toString()
 	{

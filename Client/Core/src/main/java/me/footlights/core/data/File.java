@@ -45,15 +45,15 @@ public class File implements me.footlights.plugin.File
 	}
 
 	public static MutableFile newBuilder() { return new MutableFile(); }
-	public static class MutableFile
+	public static final class MutableFile
 	{
-		public synchronized final MutableFile setContent(Collection<ByteBuffer> content)
+		public MutableFile setContent(Collection<ByteBuffer> content)
 		{
 			this.content = ImmutableList.copyOf(content);
 			return this;
 		}
 
-		public synchronized final MutableFile setBlocks(Collection<Block> content)
+		MutableFile setBlocks(Collection<Block> content)
 		{
 			List<ByteBuffer> bytes = Lists.newLinkedList();
 			for (Block b : content) bytes.add(b.content());
@@ -62,7 +62,7 @@ public class File implements me.footlights.plugin.File
 			return this;
 		}
 
-		public synchronized final MutableFile setDesiredBlockSize(int size)
+		MutableFile setDesiredBlockSize(int size)
 		{
 			this.desiredBlockSize = size;
 			return this;
@@ -72,7 +72,7 @@ public class File implements me.footlights.plugin.File
 		 * Produce a proper {@link File} by fixing the current contents of this
 		 * {@link MutableFile}.
 		 */
-		public synchronized final File freeze() throws FormatException, GeneralSecurityException
+		public File freeze() throws FormatException, GeneralSecurityException
 		{
 			// First, break the content into chunks of the appropriate size.
 			final int chunkSize = desiredBlockSize - Block.OVERHEAD_BYTES;

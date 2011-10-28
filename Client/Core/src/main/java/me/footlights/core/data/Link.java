@@ -170,6 +170,7 @@ public class Link implements FootlightsPrimitive
 			throw new GeneralSecurityException(
 				"Decrypted wrong number of bytes; expected " + toDecrypt + ", got " + bytes);
 
+		plaintext.flip();
 		try { return Block.parse(plaintext); }
 		catch (FormatException e)
 		{

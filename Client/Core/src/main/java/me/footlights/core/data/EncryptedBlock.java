@@ -16,6 +16,9 @@
 package me.footlights.core.data;
 
 import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
+
+import me.footlights.core.Preconditions;
 
 
 /**
@@ -26,9 +29,9 @@ public class EncryptedBlock
 {
 	public static class Builder
 	{
-		public EncryptedBlock build()
+		public EncryptedBlock build() throws GeneralSecurityException
 		{
-			return new EncryptedBlock(ciphertext, link);
+			return new EncryptedBlock(ciphertext, link.decrypt(ciphertext), link);
 		}
 
 		public Builder setCiphertext(ByteBuffer ciphertext)
@@ -57,18 +60,23 @@ public class EncryptedBlock
 	/** The ciphertext itself. */
 	public ByteBuffer ciphertext() { return ciphertext.asReadOnlyBuffer(); }
 
+	/** Decrypted plaintext. */
+	public Block plaintext() { return plaintext; }
+
 	/** A link to the ciphertext. */
 	public Link link() { return link; }
 
 
-	private EncryptedBlock(ByteBuffer ciphertext, Link link)
+	private EncryptedBlock(ByteBuffer ciphertext, Block plaintext, Link link)
 	{
-		if (link == null) throw new NullPointerException("Link to EncryptedBlock must not be null");
+		Preconditions.notNull(ciphertext, plaintext, link);
 
 		this.ciphertext = ciphertext.asReadOnlyBuffer();
+		this.plaintext = plaintext;
 		this.link = link;
 	}
 
 	private final ByteBuffer ciphertext;
+	private final Block plaintext;
 	private final Link link;
 }

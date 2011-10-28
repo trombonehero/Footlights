@@ -36,6 +36,14 @@ import com.google.common.collect.Lists;
  */
 public class File implements me.footlights.plugin.File
 {
+	public static File from(EncryptedBlock header, Collection<EncryptedBlock> ciphertext)
+	{
+		List<Block> plaintext = Lists.newArrayListWithCapacity(ciphertext.size());
+		for (EncryptedBlock e : ciphertext) plaintext.add(e.plaintext());
+
+		return new File(header, plaintext, ciphertext);
+	}
+
 	public static MutableFile newBuilder() { return new MutableFile(); }
 	public static class MutableFile
 	{

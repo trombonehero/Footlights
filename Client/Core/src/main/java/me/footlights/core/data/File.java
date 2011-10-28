@@ -225,7 +225,10 @@ public class File implements me.footlights.plugin.File
 	}
 
 	@Override
-	public String toString() { return "Encrypted File [ name = '" + header.name() + "' ]"; }
+	public String toString()
+	{
+		return "Encrypted File [ " + plaintext.size() + " blocks, name = '" + header.name() + "' ]";
+	}
 
 	/** Default constructor; produces an anonymous file */
 	private File(EncryptedBlock header,

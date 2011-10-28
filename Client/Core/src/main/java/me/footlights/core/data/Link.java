@@ -165,7 +165,10 @@ public class Link implements FootlightsPrimitive
 
 		int toDecrypt = cipher.getOutputSize(ciphertext.remaining());
 		ByteBuffer plaintext = ByteBuffer.allocate(toDecrypt);
-		cipher.doFinal(ciphertext, plaintext);
+		int bytes = cipher.doFinal(ciphertext.asReadOnlyBuffer(), plaintext);
+		if (bytes != toDecrypt)
+			throw new GeneralSecurityException(
+				"Decrypted wrong number of bytes; expected " + toDecrypt + ", got " + bytes);
 
 		try { return Block.parse(plaintext); }
 		catch (FormatException e)

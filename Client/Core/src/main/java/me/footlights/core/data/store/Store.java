@@ -118,10 +118,10 @@ public abstract class Store
 	{
 		if (name == null) throw new NullPointerException("Expected block name, not null");
 
-		if (cache == null) put(name, bytes);
+		if (cache == null) put(name, bytes.asReadOnlyBuffer());
 		else
 		{
-			cache.store(name, bytes);
+			cache.store(name, bytes.asReadOnlyBuffer());
 			journal.add(name);
 		}
 	}

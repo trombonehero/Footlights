@@ -90,9 +90,9 @@ public class DiskStore extends LocalStore
 	@Override
 	protected void put(String name, ByteBuffer buffer) throws IOException
 	{
-		new FileOutputStream(new File(dir, name))
-			.getChannel()
-			.write(buffer.duplicate());
+		FileChannel channel = new FileOutputStream(new File(dir, name)).getChannel();
+		channel.write(buffer.duplicate());
+		channel.force(true);
 	}
 
 

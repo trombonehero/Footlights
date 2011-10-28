@@ -71,7 +71,6 @@ public class DiskStoreTest
 			.setContent(data)
 			.freeze();
 
-		System.err.println("Saving " + f.toSave());
 		store.store(f.toSave());
 
 		File fetched = store.fetch(f.link());

@@ -16,25 +16,31 @@
 package me.footlights.core.data.store;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import me.footlights.core.data.*;
 import me.footlights.core.data.store.DiskStore;
-import me.footlights.core.data.store.Store;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 
 
 public class DiskStoreTest
 {
+	@Before public void setUp() throws Throwable
+	{
+		store = DiskStore.newBuilder()
+				.createTemporaryDirectory()
+				.setCache(null)
+				.build();
+	}
+
 	@Test public void testClearStorage() throws Throwable
 	{
-		Store store = DiskStore.newBuilder()
-			.createTemporaryDirectory()
-			.setCache(null)
-			.build();
-
 		Block b1 = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3 }))
 			.build();
@@ -44,5 +50,34 @@ public class DiskStoreTest
 
 		assertEquals(b1.getBytes(), store.retrieve(b1.name()));
 	}
+
+	@Test public void testStoreAndFetch() throws Throwable
+	{
+		byte[] content = new byte[] { 1, 2, 3, 4 };
+		Block b = Block.newBuilder().setContent(ByteBuffer.wrap(content)).build();
+		store.store(b);
+
+		Block retrieved = Block.parse(store.retrieve(b.name()));
+		assertEquals(b, retrieved);
+	}
+
+	@Test public void testStoreFetchFile() throws Throwable
+	{
+		List<ByteBuffer> data = Lists.newLinkedList();
+		data.add(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }));
+		data.add(ByteBuffer.wrap(new byte[] { 6, 7, 8, 9, 10 }));
+
+		File f = File.newBuilder()
+			.setContent(data)
+			.freeze();
+
+		System.err.println("Saving " + f.toSave());
+		store.store(f.toSave());
+
+		File fetched = store.fetch(f.link());
+		assertEquals(f, fetched);
+	}
+
+	private DiskStore store;
 }
 

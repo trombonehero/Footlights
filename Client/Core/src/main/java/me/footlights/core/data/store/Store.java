@@ -17,11 +17,16 @@ package me.footlights.core.data.store;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import me.footlights.core.data.Block;
 import me.footlights.core.data.EncryptedBlock;
+import me.footlights.core.data.File;
+import me.footlights.core.data.Link;
 import me.footlights.core.data.NoSuchBlockException;
 
 
@@ -74,6 +79,34 @@ public abstract class Store
 		if (buffer == null) buffer = get(name);
 
 		return buffer.asReadOnlyBuffer();
+	}
+
+
+	/** Retrieve a stored (and encrypted) {@link File}. */
+	public File fetch(Link link) throws GeneralSecurityException, IOException
+	{
+		final String name = link.uri().toASCIIString();
+
+		EncryptedBlock header = EncryptedBlock.newBuilder()
+			.setLink(link)
+			.setCiphertext(retrieve(name))
+			.build();
+
+		Block plaintext = header.plaintext();
+
+		// Retrieve the blocks that this block links to.
+		List<EncryptedBlock> content = Lists.newArrayListWithCapacity(plaintext.links().size());
+		for (Link l : plaintext.links())
+		{
+			EncryptedBlock block = EncryptedBlock.newBuilder()
+				.setLink(l)
+				.setCiphertext(retrieve(l.uri().toASCIIString()))
+				.build();
+
+			content.add(block);
+		}
+
+		return File.from(header, content);
 	}
 
 

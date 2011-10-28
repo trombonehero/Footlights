@@ -15,7 +15,7 @@
  */
 package me.footlights.demo.tictactoe;
 
-import _root_.me.footlights.plugin.{KernelInterface,Plugin}
+import _root_.me.footlights.plugin.{KernelInterface,Plugin,Preferences}
 import _root_.java.util.logging.Logger
 
 
@@ -36,7 +36,7 @@ object TicTacToePlugin extends Plugin
 /** Builder used by Footlights to find and initialize the plugin. */
 object TicTacToe
 {
-	def init(kernel:KernelInterface, log:Logger) = {
+	def init(kernel:KernelInterface, prefs:Preferences, log:Logger) = {
 		log.warning("starting scala-based plugin")
 		TicTacToePlugin
 	}

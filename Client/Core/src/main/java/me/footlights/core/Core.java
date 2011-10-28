@@ -17,22 +17,28 @@ package me.footlights.core;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
+import java.security.GeneralSecurityException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.crypto.Keychain;
 import me.footlights.core.data.File;
+import me.footlights.core.data.Link;
 import me.footlights.core.data.store.DiskStore;
 import me.footlights.core.data.store.Store;
 import me.footlights.core.plugin.PluginLoadException;
@@ -88,6 +94,8 @@ public class Core implements Footlights
 	{
 		if (plugins.containsKey(uri)) return plugins.get(uri);
 
+		Preferences pluginPreferences = openPreferences("plugin.prefs." + name);
+
 		final Plugin plugin;
 		try
 		{
@@ -100,8 +108,13 @@ public class Core implements Footlights
 						}
 					});
 
-			Method init = c.getMethod("init", KernelInterface.class, Logger.class);
-			plugin = (Plugin) init.invoke(null, this, Logger.getLogger(uri.toString()));
+			Method init = c.getMethod("init",
+				KernelInterface.class,
+				me.footlights.plugin.Preferences.class,
+				Logger.class);
+
+			plugin = (Plugin) init.invoke(null,
+				this, pluginPreferences, Logger.getLogger(uri.toString()));
 		}
 		catch (Exception e) { throw new PluginLoadException(uri, e); }
 
@@ -134,6 +147,20 @@ public class Core implements Footlights
 	// KernelInterface implementation
 	public java.util.UUID generateUUID() { return java.util.UUID.randomUUID(); }
 
+	@Override public File open(String name) throws IOException
+	{
+		// Construct a complete Link, including secret key.
+		final Link link;
+		try { link = keychain.getLink(Fingerprint.decode(name)); }
+		catch (Exception e)
+		{
+			throw new IOException("Unable to find secret key for file '" + name + "'");
+		}
+
+		try { return store.fetch(link); }
+		catch (GeneralSecurityException e) { throw new IOException(e); }
+	}
+
 	@Override public File save(ByteBuffer data) throws IOException
 	{
 		List<ByteBuffer> chunked = Lists.newLinkedList();
@@ -161,6 +188,32 @@ public class Core implements Footlights
 			String message = "Unable to save user data: " + e.getMessage();
 			log.warning(message);
 			throw new IOException(message, e);
+		}
+	}
+
+
+
+	private Preferences openPreferences(String filename)
+	{
+		if ((filename == null) || filename.isEmpty()) return Preferences.create(null);
+
+		try
+		{
+			File file = open(filename);
+			Object o = new ObjectInputStream(file.getInputStream()).readObject();
+			HashMap<?,?> h = ((HashMap<?,?>) o);
+
+			// Explicitly convert objects of whatever form into Strings.
+			HashMap<String,String> prefs = Maps.newHashMap();
+			for (Map.Entry<?,?> entry : h.entrySet())
+				prefs.put(entry.getKey().toString(), entry.getValue().toString());
+
+			return Preferences.wrap(prefs);
+		}
+		catch (Exception e)
+		{
+			log.log(Level.WARNING, "Error opening preferences from '" + filename + "'", e);
+			return Preferences.create(null);
 		}
 	}
 

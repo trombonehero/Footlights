@@ -16,6 +16,7 @@
 package me.footlights.demo.plugins.good;
 
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import me.footlights.plugin.AjaxHandler;
 import me.footlights.plugin.KernelInterface;
@@ -27,7 +28,7 @@ import me.footlights.plugin.KernelInterface;
  */
 public class GoodPlugin implements me.footlights.plugin.Plugin
 {
-	public static GoodPlugin init(KernelInterface kernel, Logger log) throws Exception
+	public static GoodPlugin init(KernelInterface kernel, Preferences prefs, Logger log)
 	{
 		log.info("Loading " + GoodPlugin.class.getCanonicalName() + "...");
 		return new GoodPlugin(new DemoAjaxHandler(kernel, log));

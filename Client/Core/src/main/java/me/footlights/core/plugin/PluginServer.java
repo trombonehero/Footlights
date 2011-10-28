@@ -44,6 +44,8 @@ public class PluginServer implements KernelInterface
 		return kernel.save(data);
 	}
 
+	@Override public File open(String name) throws IOException { return kernel.open(name); }
+
 
 	/** The system core */
 	private Footlights kernel;

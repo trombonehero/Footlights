@@ -30,4 +30,7 @@ public interface KernelInterface
 	 * Save data to a logical file.
 	 */
 	public File save(ByteBuffer data) throws IOException;
+
+	/** Open a named file. */
+	public File open(String name) throws IOException;
 }

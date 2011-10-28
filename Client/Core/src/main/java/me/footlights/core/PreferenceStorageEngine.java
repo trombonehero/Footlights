@@ -18,6 +18,8 @@ package me.footlights.core;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import me.footlights.plugin.ModifiablePreferences;
+
 
 /**
  * Classes that provide [persistent] preferences should subclass this.
@@ -68,5 +70,33 @@ public abstract class PreferenceStorageEngine implements me.footlights.plugin.Pr
 					return map.get(key).toString();
 				}
 			};
+	}
+}
+
+/**
+ * A mutable {@link PreferenceStorageEngine}.
+ *
+ * The inheriter must implement {@link #set(String,String).
+ */
+abstract class ModifiableStorageEngine
+	extends PreferenceStorageEngine
+	implements ModifiablePreferences
+{
+	@Override public ModifiableStorageEngine set(String key, boolean value)
+	{
+		set(key, Boolean.toString(value));
+		return this;
+	}
+
+	@Override public ModifiableStorageEngine set(String key, int value)
+	{
+		set(key, Integer.toString(value));
+		return this;
+	}
+
+	@Override public ModifiableStorageEngine set(String key, float value)
+	{
+		set(key, Float.toString(value));
+		return this;
 	}
 }

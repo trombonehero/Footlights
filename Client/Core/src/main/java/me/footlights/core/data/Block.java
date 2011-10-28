@@ -163,6 +163,7 @@ public class Block implements FootlightsPrimitive
 		ByteBuffer ciphertext = ByteBuffer.allocate(len);
 
 		cipher.doFinal(bytes.asReadOnlyBuffer(), ciphertext);
+		ciphertext.flip();
 
 		Link link = Link.newBuilder()
 			.setAlgorithm(cipher.getAlgorithm())

@@ -117,8 +117,7 @@ public class Block implements FootlightsPrimitive
 
 		public Block build() throws FormatException
 		{
-			return new Block(links, content, padding, desiredSize,
-				fingerprintBuilder);
+			return new Block(links, content, padding, desiredSize, fingerprintBuilder);
 		}
 
 		private Builder() {}

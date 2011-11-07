@@ -29,7 +29,7 @@ import me.footlights.core.Preferences;
 import me.footlights.core.data.Link;
 
 
-/** A secret, symmetric key, whose bits cannot be extracted outside of me.footlights.core.crypto. */
+/** A secret, symmetric key. */
 public class SecretKey
 {
 	public enum Operation
@@ -43,7 +43,9 @@ public class SecretKey
 		private final int value;
 	};
 
+	public String getAlgorithm() { return keySpec.getAlgorithm(); }
 	public Fingerprint getFingerprint() { return fingerprint; }
+	public SecretKeySpec getKey() { return keySpec; }
 
 	/** Generate a new secret key. */
 	public static Generator newGenerator() { return new Generator(); }

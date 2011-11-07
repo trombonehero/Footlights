@@ -53,18 +53,10 @@ import me.footlights.plugin.Plugin;
 
 public class Core implements Footlights
 {
-	public Core(ClassLoader pluginLoader)
+	public static Core init(ClassLoader pluginLoader) throws IOException
 	{
-		this.pluginLoader = pluginLoader;
-
-		try { prefs = FileBackedPreferences.loadFromDefaultLocation(); }
-		catch (IOException e)
-		{
-			log.severe("Unable to load Footlights preferences");
-			throw new RuntimeException(e);
-		}
-
-		keychain = new Keychain();
+		FileBackedPreferences prefs = FileBackedPreferences.loadFromDefaultLocation();
+		Keychain keychain = new Keychain();
 		try
 		{
 			keychain.importKeystoreFile(
@@ -77,13 +69,14 @@ public class Core implements Footlights
 				.warning("Unable to open keychain: " + e.getLocalizedMessage());
 		}
 
-		plugins          = Maps.newHashMap();
-		uis              = Lists.newArrayList();
-		store            =
-			DiskStore.newBuilder()
+		Map<URI,PluginWrapper> plugins = Maps.newHashMap();
+		List<UI> uis = Lists.newArrayList();
+		Store store = DiskStore.newBuilder()
 				.setPreferences(Preferences.create(prefs))
 				.setDefaultDirectory()
 				.build();
+
+		return new Core(pluginLoader, prefs, keychain, plugins, uis, store);
 	}
 
 
@@ -195,6 +188,17 @@ public class Core implements Footlights
 		}
 	}
 
+
+	private Core(ClassLoader pluginLoader, FileBackedPreferences prefs, Keychain keychain,
+			Map<URI,PluginWrapper> plugins, List<UI> uis, Store store)
+	{
+		this.pluginLoader = pluginLoader;
+		this.prefs = prefs;
+		this.keychain = keychain;
+		this.plugins = plugins;
+		this.uis = uis;
+		this.store = store;
+	}
 
 	private ModifiablePreferences openPreferences(final String plugin)
 	{

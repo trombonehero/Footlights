@@ -25,6 +25,7 @@ import org.apache.commons.codec.binary.Hex;
 import com.google.common.annotations.VisibleForTesting;
 
 import me.footlights.HasBytes;
+import me.footlights.core.Preconditions;
 import me.footlights.core.Preferences;
 import me.footlights.core.ConfigurationError;
 
@@ -77,6 +78,8 @@ public class Fingerprint
 	{
 		public Fingerprint build()
 		{
+			Preconditions.notNull(bytes);
+
 			ByteBuffer hash = ByteBuffer.wrap(algorithm.digest(bytes));
 			return new Fingerprint(algorithm, hash);
 		}

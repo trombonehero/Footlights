@@ -26,6 +26,7 @@ import javax.crypto.Cipher;
 
 import com.google.common.collect.Lists;
 
+import me.footlights.core.Preconditions;
 import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.crypto.SecretKey;
 
@@ -229,6 +230,8 @@ public class Block implements FootlightsPrimitive
 			int desiredSize, Fingerprint.Builder fingerprintBuilder)
 		throws FormatException
 	{
+		Preconditions.notNull(links, content, fingerprintBuilder);
+
 		this.links    = Collections.unmodifiableList(links);
 
 		// How many bytes do we need for the raw byte representation?

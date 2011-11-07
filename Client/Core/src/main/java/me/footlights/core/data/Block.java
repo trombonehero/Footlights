@@ -15,7 +15,6 @@
  */
 package me.footlights.core.data;
 
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.util.Arrays;
@@ -63,7 +62,7 @@ public class Block implements FootlightsPrimitive
 			return this;
 		}
 
-		public Builder parse(ByteBuffer bytes) throws FormatException
+		public Builder parse(ByteBuffer bytes) throws FormatException, NoSuchAlgorithmException
 		{
 			int startPosition = bytes.position();
 
@@ -132,7 +131,7 @@ public class Block implements FootlightsPrimitive
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** Shorthand for {@link Builder#parse(ByteBuffer).build()}. */
-	public static Block parse(ByteBuffer bytes) throws FormatException
+	public static Block parse(ByteBuffer bytes) throws FormatException, NoSuchAlgorithmException
 	{
 		return newBuilder().parse(bytes).build();
 	}
@@ -151,9 +150,11 @@ public class Block implements FootlightsPrimitive
 		byte[] secret = new byte[length / 8];
 		System.arraycopy(secret, 0, hashBytes, 0, secret.length);
 
-		Cipher cipher = keygen
-			.setBytes(secret)
-			.generate()
+		SecretKey key = keygen
+				.setBytes(secret)
+				.generate();
+
+		Cipher cipher = key
 			.newCipherBuilder()
 			.setOperation(SecretKey.Operation.ENCRYPT)
 			.build();
@@ -165,9 +166,8 @@ public class Block implements FootlightsPrimitive
 		ciphertext.flip();
 
 		Link link = Link.newBuilder()
-			.setAlgorithm(cipher.getAlgorithm())
-			.setKey(secret)
-			.setUri(URI.create(fingerprint.encode()))
+			.setFingerprint(fingerprint)
+			.setKey(key)
 			.build();
 
 		return EncryptedBlock.newBuilder()

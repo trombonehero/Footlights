@@ -15,20 +15,39 @@
  */
 package me.footlights.core.data;
 
-import java.net.URI;
 import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 import static org.junit.Assert.*;
+
+import static org.mockito.Mockito.*;
 
 import me.footlights.core.Util;
 import me.footlights.core.data.Block;
 import me.footlights.core.data.FormatException;
 
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(Link.class)
 public class BlockTest
 {
-	@Test public void testSetContent() throws Throwable
+	@Before public void setUp() throws Throwable
+	{
+		PowerMockito.replace(Link.class.getMethod("parse", ByteBuffer.class))
+			.with(BlockTest.class.getMethod("mockLinkParse", ByteBuffer.class));
+
+		when(MOCK_LINK.bytes()).thenReturn(LINK_BYTES.length);
+		when(MOCK_LINK.getBytes()).thenReturn(ByteBuffer.wrap(LINK_BYTES));
+	}
+
+	@Test public void testSetContent() throws FormatException, NoSuchAlgorithmException
 	{
 		byte[] orig = new byte[] { 1, 2, 3, 4 };
 		Block b = Block.newBuilder().setContent(ByteBuffer.wrap(orig)).build();
@@ -39,56 +58,47 @@ public class BlockTest
 		assertArrayEquals(orig, copy);
 	}
 
-	@Test public void testParsing() throws FormatException
+	@Test public void testParsing() throws Throwable
 	{
-		Link link = Link.newBuilder().setUri(URI.create("foo")).build();
-
 		ByteBuffer data = ByteBuffer.allocate(64);
 		Util.setByteOrder(data);
 
 		data.put(new byte[] { (byte) 0xF0, 0x07, (byte) 0xDA, 0x7A, '\r', '\n' });
-		data.put((byte) 6);                 // total size: 2^6 = 64
-		data.put((byte) 1);                 // 1 link
-		data.putInt(16 + link.bytes());     // user data offset
+		data.put((byte) 6);                    // total size: 2^6 = 64
+		data.put((byte) 1);                    // 1 link
+		data.putInt(16 + LINK_BYTES.length);   // user data offset
 
 		ByteBuffer content = ByteBuffer.allocate(16);
 		data.putInt(content.capacity());
 		for (int i = 0; i < content.capacity(); i++) content.put((byte) i);
 		content.flip();
 
-		data.put(link.getBytes());
+		data.put(LINK_BYTES);
 		data.put(content);
 
 		ByteBuffer padding = ByteBuffer.allocate(data.remaining());
 		data.put(padding);
-
 		data.flip();
+
 		Block block = Block.parse(data);
 
 		assertEquals(64, block.bytes());
 
 		assertEquals(1, block.links().size());
-		assertEquals(link, block.links().get(0));
+		assertEquals(MOCK_LINK, block.links().get(0));
 
 		assertEquals(content.capacity(), block.content().limit());
 		for (int i = 0; i < content.capacity(); i++)
 			assertEquals(content.get(i), block.content().get(i));
 	}
 
-	@Test public void testGenerateAndParse() throws FormatException
+	@Test public void testGenerateAndParse() throws FormatException, NoSuchAlgorithmException
 	{
 		Block.Builder builder = Block.newBuilder();
 
 		builder.setContent(ByteBuffer.wrap(new byte[16]));
-		builder.addLink(Link.newBuilder()
-			.setAlgorithm("ABC/DEF-128")
-			.setUri(URI.create("foo_bar"))
-			.build());
-
-		builder.addLink(Link.newBuilder()
-			.setAlgorithm("JON-4096")
-			.setUri(URI.create("http://foo.com/bar_server?id=baz"))
-			.build());
+		builder.addLink(MOCK_LINK);
+		builder.addLink(MOCK_LINK);
 
 		Block original = builder.build();
 		Block parsed = Block.parse(original.getBytes());
@@ -117,4 +127,18 @@ public class BlockTest
 			catch (FormatException e) { /* correct error */ }
 		}
 	}
+
+
+	public static Link mockLinkParse(ByteBuffer buffer)
+	{
+		byte[] tmp = new byte[LINK_BYTES.length];
+		buffer.get(tmp);
+		assertArrayEquals(LINK_BYTES, tmp);
+
+		return MOCK_LINK;
+	}
+
+	private static final String LINK_STRING = "mock link";
+	private static final byte[] LINK_BYTES = LINK_STRING.getBytes();
+	private static final Link MOCK_LINK = mock(Link.class);
 }

@@ -54,7 +54,7 @@ public class EncryptedBlock
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** The name of the block. */
-	public String name() { return link.uri().toString(); }
+	public String name() { return link.fingerprint().encode(); }
 	@Override public String toString() { return name(); }
 
 	/** The ciphertext itself. */

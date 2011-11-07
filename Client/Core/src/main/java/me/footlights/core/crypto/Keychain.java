@@ -18,8 +18,6 @@ package me.footlights.core.crypto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -70,15 +68,8 @@ public class Keychain
 		if (key == null)
 			throw new NoSuchElementException("We have no key for '" + fingerprint + "'");
 
-		final URI uri;
-		try { uri = new URI(fingerprint.encode()); }
-		catch (URISyntaxException e)
-		{
-			throw new NoSuchElementException("Can't convert key name '" + fingerprint + "' to URI");
-		}
-
 		return key.createLinkBuilder()
-			.setUri(uri)
+			.setFingerprint(fingerprint)
 			.build();
 	}
 

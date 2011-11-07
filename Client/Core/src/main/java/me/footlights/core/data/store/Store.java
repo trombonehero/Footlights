@@ -85,7 +85,7 @@ public abstract class Store
 	/** Retrieve a stored (and encrypted) {@link File}. */
 	public File fetch(Link link) throws GeneralSecurityException, IOException
 	{
-		final String name = link.uri().toASCIIString();
+		final String name = link.fingerprint().encode();
 
 		EncryptedBlock header = EncryptedBlock.newBuilder()
 			.setLink(link)
@@ -100,7 +100,7 @@ public abstract class Store
 		{
 			EncryptedBlock block = EncryptedBlock.newBuilder()
 				.setLink(l)
-				.setCiphertext(retrieve(l.uri().toASCIIString()))
+				.setCiphertext(retrieve(l.fingerprint().encode()))
 				.build();
 
 			content.add(block);

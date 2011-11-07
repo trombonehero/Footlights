@@ -55,8 +55,8 @@ public class SecretKey
 	Link.Builder createLinkBuilder()
 	{
 		return Link.newBuilder()
-			.setAlgorithm(fingerprint.getAlgorithm().getAlgorithm())
-			.setKey(keySpec.getEncoded());
+			.setFingerprint(fingerprint)
+			.setKey(this);
 	}
 
 	public static class Generator
@@ -71,6 +71,7 @@ public class SecretKey
 			fingerprint.setAlgorithm(a);
 			return this;
 		}
+		public Generator setKey(SecretKeySpec spec) { keySpec = spec; return this; }
 		public Generator setKeyLength(int l) { keylen = l; return this; }
 
 		public SecretKey generate() throws NoSuchAlgorithmException
@@ -85,9 +86,8 @@ public class SecretKey
 				SecureRandom.getInstance(preferences.getString("crypto.prng")).nextBytes(secret);
 			}
 
-			return new SecretKey(
-					new SecretKeySpec(secret, algorithm),
-					fingerprint.setContent(secret).build());
+			if (keySpec == null) keySpec = new SecretKeySpec(secret, algorithm);
+			return new SecretKey(keySpec, fingerprint.setContent(secret).build());
 		}
 
 
@@ -96,6 +96,7 @@ public class SecretKey
 		private int keylen = preferences.getInt("crypto.sym.keylen");
 		private byte[] secret = null;
 		private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();
+		private SecretKeySpec keySpec;
 	}
 	
 

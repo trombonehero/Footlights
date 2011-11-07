@@ -16,15 +16,17 @@
 package me.footlights.core.data;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
 import me.footlights.core.Preconditions;
 import me.footlights.core.Util;
+import me.footlights.core.crypto.Fingerprint;
+import me.footlights.core.crypto.Keychain;
 import me.footlights.core.crypto.SecretKey;
 import me.footlights.core.crypto.SecretKey.Operation;
 
@@ -38,19 +40,13 @@ public class Link implements FootlightsPrimitive
 	/** Builds a {@link Link}. */
 	public static class Builder
 	{
-		public Builder setAlgorithm(String algorithm)
+		public Builder setFingerprint(Fingerprint fingerprint)
 		{
-			this.algorithm = algorithm;
+			this.fingerprint = fingerprint;
 			return this;
 		}
 
-		public Builder setUri(URI uri)
-		{
-			this.uri = uri;
-			return this;
-		}
-
-		public Builder setKey(byte[] key)
+		public Builder setKey(SecretKey key)
 		{
 			this.key = key;
 			return this;
@@ -64,7 +60,7 @@ public class Link implements FootlightsPrimitive
 		 * {@link ByteBuffer#slice()}, {@link ByteBuffer#duplicate()} or
 		 * {@link ByteBuffer#asReadOnlyBuffer()}.
 		 */
-		public Builder parse(ByteBuffer b) throws FormatException
+		public Builder parse(ByteBuffer b) throws FormatException, NoSuchAlgorithmException
 		{
 			Util.setByteOrder(b);
 
@@ -79,12 +75,14 @@ public class Link implements FootlightsPrimitive
 
 				short bodyLength = b.getShort();
 
+				short fingerprintLength = b.getShort();
 				short algorithmLength = b.getShort();
-				short uriLength = b.getShort();
 				short keyBits = b.getShort();
 				int keyBytes = (keyBits / 8) + ((keyBits % 8 != 0) ? 1 : 0);
 
-				int subtotal = algorithmLength + uriLength + keyBytes;
+				if (fingerprintLength <= 0) throw new FormatException("Cannot link to nothing");
+
+				int subtotal = fingerprintLength + algorithmLength + keyBytes;
 				if (bodyLength != subtotal)
 				{
 					throw new FormatException(
@@ -92,22 +90,25 @@ public class Link implements FootlightsPrimitive
 						+ subtotal + ")");
 				}
 
+				byte[] bytes = new byte[fingerprintLength];
+				b.get(bytes);
+				fingerprint = Fingerprint.decode(new String(bytes));
+
+				String algorithm = "";
 				if (algorithmLength > 0)
 				{
-					byte[] bytes = new byte[algorithmLength];
+					bytes = new byte[algorithmLength];
 					b.get(bytes);
 					algorithm = new String(bytes);
 				}
 
-				if (uriLength > 0)
-				{
-					byte[] bytes = new byte[uriLength];
-					b.get(bytes);
-					uri = URI.create(new String(bytes));
-				}
+				byte[] encodedKey = new byte[keyBytes];
+				b.get(encodedKey);
 
-				key = new byte[keyBytes];
-				b.get(key);
+				key = SecretKey.newGenerator()
+					.setAlgorithm(algorithm)
+					.setBytes(encodedKey)
+					.generate();
 			}
 			catch (java.nio.BufferUnderflowException e)
 			{
@@ -118,31 +119,23 @@ public class Link implements FootlightsPrimitive
 			return this;
 		}
 
-		public Link build()
-		{
-			return new Link(
-				algorithm != null ? algorithm : "",
-				uri,
-				key != null ? key : new byte[0]);
-		}
+		public Link build() { return new Link(fingerprint, key); }
 
-		private String algorithm;
-		private URI uri;
-		private byte[] key;
+		private Fingerprint fingerprint;
+		private SecretKey key;
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** Shorthand for {@link Builder#parse().build()}. */
-	public static Link parse(ByteBuffer buffer) throws FormatException
+	public static Link parse(ByteBuffer buffer) throws FormatException, NoSuchAlgorithmException
 	{
 		return newBuilder().parse(buffer).build();
 	}
 
 
-	public String algorithm() { return algorithms; }
-	public URI uri() { return uri; }
-	public byte[] key() { return Arrays.copyOf(key, key.length); }
+	public Fingerprint fingerprint() { return fingerprint; }
+	SecretKey key() { return key; }
 
 
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException
@@ -150,16 +143,8 @@ public class Link implements FootlightsPrimitive
 		if (ciphertext.remaining() == 0)
 			throw new GeneralSecurityException("Nothing to decrypt!");
 
-		if (algorithms.isEmpty())
-			throw new GeneralSecurityException("Cannot decrypt with algorithm ''");
-
 		if (cipher == null)
-			cipher = SecretKey.newGenerator()
-				.setAlgorithm(algorithms.split("/")[0])
-				.setBytes(key)
-				.generate()
-				.newCipherBuilder()
-				.parseAlgorithm(algorithms)
+			cipher = key.newCipherBuilder()
 				.setOperation(Operation.DECRYPT)
 				.build();
 
@@ -187,41 +172,39 @@ public class Link implements FootlightsPrimitive
 	 *
 	 * @throws IllegalArgumentException if uri is null
 	 */
-	private Link(String algorithm, URI uri, byte[] key)
+	private Link(Fingerprint fingerprint, SecretKey key)
 	{
-		Preconditions.notNull(algorithm, uri, key);
+		Preconditions.notNull(fingerprint, key);
 
-		if (uri.toString().length() == 0)
-			throw new IllegalArgumentException("Link has no URI");
-
-		this.algorithms = algorithm;
-		this.uri = uri;
+		this.fingerprint = fingerprint;
 		this.key = key;
 	}
 
 
 	private ByteBuffer generateRawBytes()
 	{
-		final short bodyLength = (short)
-			(algorithms.length()
-			 + uri.toString().length()
-			 + key.length);
+		final String name = fingerprint.encode();
+		final String encryptionAlgorithm = key.getAlgorithm();
+		final byte[] keyBytes = key.getKey().getEncoded();
 
-		final short totalLength = (short) (MAGIC.length + 8 + bodyLength);
+		final short bodyLength = (short)
+			(name.length() + encryptionAlgorithm.length() + keyBytes.length);
+
+		final short totalLength = (short) (minimumLength() + bodyLength);
 
 		ByteBuffer buffer = ByteBuffer.allocate(totalLength);
 		Util.setByteOrder(buffer);
 		buffer.put(MAGIC);
 		buffer.putShort(bodyLength);
-		buffer.putShort((short) algorithms.length());
-		buffer.putShort((short) uri.toString().length());
-		buffer.putShort((short) (8 * key.length));  // TODO: finer-grained lengths
+		buffer.putShort((short) name.length());
+		buffer.putShort((short) encryptionAlgorithm.length());
+		buffer.putShort((short) (8 * keyBytes.length));  // TODO: finer-grained lengths
 
 		try
 		{
-			buffer.put(algorithms.getBytes(ASCII));
-			buffer.put(uri.toString().getBytes(ASCII));
-			buffer.put(key);
+			buffer.put(name.getBytes(ASCII));
+			buffer.put(encryptionAlgorithm.getBytes(ASCII));
+			buffer.put(keyBytes);
 		}
 		catch (UnsupportedEncodingException e)
 		{
@@ -250,14 +233,15 @@ public class Link implements FootlightsPrimitive
 		return result;
 	}
 
+	static int minimumLength() { return MAGIC.length + 8; }
+
+
 	// Object overrides
 	@Override public String toString()
 	{
 		StringBuffer buf = new StringBuffer();
-		buf.append("Link { alg: '");
-		buf.append(algorithms);
-		buf.append("', uri: '");
-		buf.append(uri);
+		buf.append("Link { fingerprint: '");
+		buf.append(fingerprint);
 		buf.append("', key: ");
 		buf.append((key == null) ? "<null>" : "<key>");
 		buf.append(" }");
@@ -267,26 +251,19 @@ public class Link implements FootlightsPrimitive
 
 	@Override public boolean equals(Object o)
 	{
-		try
-		{
-			Link other = (Link) o;
-			if ((other.uri == null) ^ (uri == null)) return false;
-			if ((uri != null) && !other.uri.equals(other.uri)) return false;
-			
-			if ((other.algorithms == null) ^ (algorithms == null)) return false;
-			if ((algorithms != null) && !algorithms.equals(other.algorithms))
-				return false;
+		if (!(o instanceof Link)) return false;
+		Link other = (Link) o;
 
-			if ((other.key == null) ^ (key == null)) return false;
-			if ((key != null) && (other.key.length != key.length)) return false;
+		if (!fingerprint.equals(other.fingerprint)) return false;
+		if (!key.getAlgorithm().equals(other.key.getAlgorithm())) return false;
 
-			int len = (key == null) ? 0 : key.length;
-			for (int i = 0; i < len; i++)
-				if (other.key[i] != key[i]) return false;
-			
-			return true;
-		}
-		catch(ClassCastException e) { return false; }
+		byte[] myBytes = key.getKey().getEncoded();
+		byte[] otherBytes = other.key.getKey().getEncoded();
+		if (myBytes.length != otherBytes.length) return false;
+		for (int i = 0; i < myBytes.length; i++)
+			if (myBytes[i] != otherBytes[i]) return false;
+
+		return true;
 	}
 
 
@@ -296,15 +273,11 @@ public class Link implements FootlightsPrimitive
 	/** Character set used for byte<->String translation. */
 	private static final String ASCII = "ascii";
 
-
-	/** URI of the linked block (often just a Base64-encoded hash) */
-	private final URI uri;
-
-	/** Algorithm used to decrypt the linked block (or null) */
-	private final String algorithms;
+	/** Name of the block. */
+	private final Fingerprint fingerprint;
 
 	/** Key to decrypt the linked block (or null) */
-	private final byte[] key;
+	private final SecretKey key;
 
 	/** Cipher used to decrypt the linked block. */
 	private Cipher cipher;

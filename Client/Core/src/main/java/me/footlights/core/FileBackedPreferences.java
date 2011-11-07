@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+import me.footlights.plugin.ModifiablePreferences;
+import me.footlights.plugin.Preferences;
+
 import com.google.common.collect.Maps;
 
 
@@ -34,7 +37,9 @@ import com.google.common.collect.Maps;
  *
  * Some platforms (e.g. Android) may prefer platform-specific mechanisms.
  */
-public final class FileBackedPreferences extends PreferenceStorageEngine
+public final class FileBackedPreferences
+	extends PreferenceStorageEngine
+	implements ModifiablePreferences
 {
 	/** The key used to store the cache directory in Preferences. */
 	public static final String CACHE_DIR_KEY = "footlights.cachedir";
@@ -106,13 +111,18 @@ public final class FileBackedPreferences extends PreferenceStorageEngine
 		return String.copyValueOf(value.toCharArray());
 	}
 
+	// ModifiablePreferences implementation
 	/** Set a configuration value */
-	protected synchronized void set(String name, String value)
+	@Override public synchronized FileBackedPreferences set(String name, String value)
 	{
 		properties.setProperty(name, value);
 		dirty = true;
+		return this;
 	}
 
+	@Override public Preferences set(String k, boolean v) { return set(k, Boolean.toString(v)); }
+	@Override public Preferences set(String k, int v) { return set(k, Integer.toString(v)); }
+	@Override public Preferences set(String k, float v) { return set(k, Float.toString(v)); }
 
 	/** Singleton constructor */
 	private FileBackedPreferences(Properties properties, File file)

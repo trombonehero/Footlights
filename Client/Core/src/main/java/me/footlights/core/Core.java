@@ -107,7 +107,7 @@ public class Core implements Footlights
 
 			Method init = c.getMethod("init",
 				KernelInterface.class,
-				me.footlights.plugin.Preferences.class,
+				me.footlights.plugin.ModifiablePreferences.class,
 				Logger.class);
 
 			plugin = (Plugin) init.invoke(null,

@@ -36,7 +36,7 @@ object TicTacToePlugin extends Plugin
 /** Builder used by Footlights to find and initialize the plugin. */
 object TicTacToe
 {
-	def init(kernel:KernelInterface, prefs:Preferences, log:Logger) = {
+	def init(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) = {
 		log.warning("starting scala-based plugin")
 		TicTacToePlugin
 	}

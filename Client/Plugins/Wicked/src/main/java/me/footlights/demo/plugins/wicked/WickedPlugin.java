@@ -16,15 +16,15 @@
 package me.footlights.demo.plugins.wicked;
 
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 import me.footlights.plugin.AjaxHandler;
 import me.footlights.plugin.KernelInterface;
+import me.footlights.plugin.ModifiablePreferences;
 
 
 public class WickedPlugin implements me.footlights.plugin.Plugin
 {
-	public static WickedPlugin init(KernelInterface kernel, Preferences prefs, Logger log)
+	public static WickedPlugin init(KernelInterface kernel, ModifiablePreferences prefs, Logger log)
 	{
 		return new WickedPlugin(new EvilAjaxHandler(kernel, log));
 	}

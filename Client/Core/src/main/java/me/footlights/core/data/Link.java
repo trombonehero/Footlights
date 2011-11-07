@@ -134,6 +134,8 @@ public class Link implements FootlightsPrimitive
 	}
 
 
+	public void saveTo(Keychain keychain) { keychain.store(fingerprint, key); }
+
 	public Fingerprint fingerprint() { return fingerprint; }
 	SecretKey key() { return key; }
 

@@ -68,7 +68,7 @@ public class MasterServer implements Runnable
 				if (rawRequest == null) continue;
 
 				Request request = Request.parse(rawRequest);
-				log.info("Request: " + request.toString());
+				log.fine("Request: " + request.toString());
 
 				Response response = service(request);
 				log.fine("Response: " + response);

@@ -59,6 +59,11 @@ public class Keychain
 		secretKeys.put(key.getFingerprint(), key);
 	}
 
+	public void store(Fingerprint fingerprint, SecretKey key)
+	{
+		secretKeys.put(fingerprint, key);
+	}
+
 	public Link getLink(Fingerprint fingerprint) throws NoSuchElementException
 	{
 		SecretKey key = secretKeys.get(fingerprint);

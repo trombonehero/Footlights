@@ -257,20 +257,20 @@ public class Core implements Footlights
 	private static Logger log = Logger.getLogger(Core.class.getCanonicalName());
 
 	/** User preferences. */
-	private FileBackedPreferences prefs;
+	private final FileBackedPreferences prefs;
 
 	/** Our keychain */
-	private Keychain keychain;
+	private final Keychain keychain;
 
 	/** {@link ClassLoader} used to load {@link Plugin}s. */
 	private final ClassLoader pluginLoader;
 
 	/** Loaded plugins */
-	private Map<URI,PluginWrapper> plugins;
+	private final Map<URI,PluginWrapper> plugins;
 
 	/** UIs which might like to be informed of events */
-	private List<UI> uis;
+	private final List<UI> uis;
 
 	/** Where we are storing user data. */
-	private Store store;
+	private final Store store;
 }

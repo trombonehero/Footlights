@@ -271,7 +271,7 @@ public class Block implements FootlightsPrimitive
 		rawBytes.putInt(content.limit());
 
 		// Write links
-		for (Link link : links) rawBytes.put(link.getBytes());
+		for (Link link : links) rawBytes.put(link.getBytes().asReadOnlyBuffer());
 
 		// The 'content' buffer can share the 'bytes' backing array
 		this.content = rawBytes.slice().asReadOnlyBuffer();

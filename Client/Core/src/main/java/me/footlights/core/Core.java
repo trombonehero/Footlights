@@ -15,9 +15,11 @@
  */
 package me.footlights.core;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -28,6 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +47,7 @@ import me.footlights.core.data.store.Store;
 import me.footlights.core.plugin.PluginLoadException;
 import me.footlights.core.plugin.PluginWrapper;
 import me.footlights.plugin.KernelInterface;
+import me.footlights.plugin.ModifiablePreferences;
 import me.footlights.plugin.Plugin;
 
 
@@ -94,7 +98,7 @@ public class Core implements Footlights
 	{
 		if (plugins.containsKey(uri)) return plugins.get(uri);
 
-		Preferences pluginPreferences = openPreferences("plugin.prefs." + name);
+		ModifiablePreferences pluginPreferences = openPreferences(name);
 
 		final Plugin plugin;
 		try
@@ -192,29 +196,60 @@ public class Core implements Footlights
 	}
 
 
-
-	private Preferences openPreferences(String filename)
+	private ModifiablePreferences openPreferences(final String plugin)
 	{
-		if ((filename == null) || filename.isEmpty()) return Preferences.create(null);
+		final HashMap<String,String> toSave = Maps.newHashMap();
 
 		try
 		{
+			final String filename = prefs.getString("plugin.prefs." + plugin);
 			File file = open(filename);
 			Object o = new ObjectInputStream(file.getInputStream()).readObject();
-			HashMap<?,?> h = ((HashMap<?,?>) o);
+			HashMap<?,?> loaded = ((HashMap<?,?>) o);
 
 			// Explicitly convert objects of whatever form into Strings.
-			HashMap<String,String> prefs = Maps.newHashMap();
-			for (Map.Entry<?,?> entry : h.entrySet())
-				prefs.put(entry.getKey().toString(), entry.getValue().toString());
-
-			return Preferences.wrap(prefs);
+			for (Map.Entry<?,?> entry : loaded.entrySet())
+				toSave.put(entry.getKey().toString(), entry.getValue().toString());
+		}
+		catch (NoSuchElementException e)
+		{
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Error opening preferences from '" + filename + "'", e);
-			return Preferences.create(null);
+			log.log(Level.WARNING, "Error opening preferences for " + plugin);
 		}
+
+		final PreferenceStorageEngine reader = PreferenceStorageEngine.wrap(toSave);
+		return new ModifiableStorageEngine()
+		{
+			private File savePrefs() throws IOException
+			{
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				new ObjectOutputStream(out).writeObject(toSave);
+				return save(ByteBuffer.wrap(out.toByteArray()));
+			}
+
+			@Override public ModifiableStorageEngine set(String key, String value)
+			{
+				toSave.put(key, value);
+
+				try
+				{
+					File saved = savePrefs();
+					saved.link().saveTo(keychain);
+					prefs.set("plugin.prefs." + plugin, saved.link().toString());
+				}
+				catch (IOException e) { log.log(Level.WARNING, "Unable to save prefs", e); }
+
+				return this;
+			}
+
+			@Override protected Map<String, ?> getAll() { return reader.getAll(); }
+			@Override protected String getRaw(String key) throws NoSuchElementException
+			{
+				return reader.getRaw(key);
+			}
+		};
 	}
 
 	/** Name of the Core {@link Logger}. */

@@ -53,7 +53,7 @@ public class Core implements Footlights
 	{
 		this.pluginLoader = pluginLoader;
 
-		try { prefs = Preferences.loadFromDefaultLocation(); }
+		try { prefs = FileBackedPreferences.loadFromDefaultLocation(); }
 		catch (IOException e)
 		{
 			log.severe("Unable to load Footlights preferences");
@@ -77,7 +77,7 @@ public class Core implements Footlights
 		uis              = Lists.newArrayList();
 		store            =
 			DiskStore.newBuilder()
-				.setPreferences(prefs)
+				.setPreferences(Preferences.create(prefs))
 				.setDefaultDirectory()
 				.build();
 	}
@@ -222,7 +222,7 @@ public class Core implements Footlights
 	private static Logger log = Logger.getLogger(Core.class.getCanonicalName());
 
 	/** User preferences. */
-	private Preferences prefs;
+	private FileBackedPreferences prefs;
 
 	/** Our keychain */
 	private Keychain keychain;

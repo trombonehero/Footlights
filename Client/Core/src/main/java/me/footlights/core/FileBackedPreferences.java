@@ -18,6 +18,7 @@ package me.footlights.core;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,7 +40,7 @@ import com.google.common.collect.Maps;
  */
 public final class FileBackedPreferences
 	extends PreferenceStorageEngine
-	implements ModifiablePreferences
+	implements Flushable, ModifiablePreferences
 {
 	/** The key used to store the cache directory in Preferences. */
 	public static final String CACHE_DIR_KEY = "footlights.cachedir";
@@ -135,13 +136,13 @@ public final class FileBackedPreferences
 	/** Clean up */
 	public void finalize() throws Throwable
 	{
-		saveConfig();
+		flush();
 		super.finalize();
 	}
 
 
 	/** Save the config file */
-	protected synchronized void saveConfig() throws IOException
+	public synchronized void flush() throws IOException
 	{
 		if (!dirty) return;
 

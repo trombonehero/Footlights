@@ -31,7 +31,7 @@ import me.footlights.core.data.NoSuchBlockException;
 
 
 /** Stores content blocks */
-public abstract class Store
+public abstract class Store implements java.io.Flushable
 {
 	/** Low-level method to put a block on disk, the network, etc. */
 	protected abstract void put(String name, ByteBuffer bytes)

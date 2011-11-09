@@ -15,7 +15,8 @@
  */
 package me.footlights.demo.tictactoe;
 
-import _root_.me.footlights.plugin.{KernelInterface,Plugin,Preferences}
+import _root_.me.footlights.plugin.{KernelInterface,Plugin,ModifiablePreferences}
+import _root_.java.util.NoSuchElementException
 import _root_.java.util.logging.Logger
 
 
@@ -23,13 +24,12 @@ import _root_.java.util.logging.Logger
  * A demo plugin for playing Tic-Tac-Toe against human or computer opponents.
  * @author Jonathan Anderson <jon@footlights.me>
  */
-object TicTacToePlugin extends Plugin
+class TicTacToePlugin(playCounter:()=>Int) extends Plugin
 {
-	def ajaxHandler = Ajax
+	def ajaxHandler = new Ajax(this)
 
 	var game = new Game
-
-	def startNewGame = { game = new Game }
+	def startNewGame = { println("play count: " + playCounter()); game = new Game }
 }
 
 
@@ -38,6 +38,17 @@ object TicTacToe
 {
 	def init(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) = {
 		log.warning("starting scala-based plugin")
-		TicTacToePlugin
+
+		def counter():Int = {
+			var playCount = -1
+			try { playCount = prefs.getInt("playCount") + 1 }
+			catch { case e:NoSuchElementException => playCount = 0 }
+
+			prefs.set("playCount", playCount)
+
+			playCount
+		}
+
+		new TicTacToePlugin(counter)
 	}
 }

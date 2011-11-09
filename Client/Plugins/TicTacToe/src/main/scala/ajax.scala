@@ -19,14 +19,14 @@ import _root_.me.footlights.plugin.{AjaxHandler,JavaScript,WebRequest}
 
 
 /** Translates Ajax events to/from model events. */
-object Ajax extends AjaxHandler
+class Ajax(plugin:TicTacToePlugin) extends AjaxHandler
 {
 	def service(request:WebRequest) =
 	{
 		request.path() match
 		{
 			case "init" | "new_game" => {
-				TicTacToePlugin.startNewGame
+				plugin.startNewGame
 				new JavaScript()
 					.append("context.root.clear();")
 					.append("context.log('starting new game...');")
@@ -34,19 +34,19 @@ object Ajax extends AjaxHandler
 			}
 
 			case ClickCoordinates(x,y) => {
-				val placed = TicTacToePlugin.game.place(x.toInt, y.toInt)
+				val placed = plugin.game.place(x.toInt, y.toInt)
 
 				val response = new JavaScript()
 
 				if (placed != null)
 					response
 						.append(place(placed, x.toInt, y.toInt))
-						.append(changeNextBox(TicTacToePlugin.game.next))
+						.append(changeNextBox(plugin.game.next))
 
-				if (TicTacToePlugin.game.isOver())
+				if (plugin.game.isOver())
 					response
 						.append("context.log('Game over! Result: ")
-						.appendText(TicTacToePlugin.game.state().toString())
+						.appendText(plugin.game.state().toString())
 						.append("');")
 
 				response

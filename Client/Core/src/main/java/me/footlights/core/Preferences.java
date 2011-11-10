@@ -27,15 +27,11 @@ import java.util.NoSuchElementException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import com.google.common.collect.Maps;
 
 
 public class Preferences implements me.footlights.plugin.Preferences
 {
-	static { Security.addProvider(new BouncyCastleProvider()); }
-
 	/** Create a Preferences instance with auto-detected default settings. */
 	public static Preferences getDefaultPreferences()
 	{

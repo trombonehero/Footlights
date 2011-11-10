@@ -26,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import com.google.common.collect.Sets;
 
 
@@ -73,6 +75,9 @@ class Bootstrapper
 					bootPath, corePaths);
 
 		FootlightsClassLoader classLoader = new FootlightsClassLoader(coreClasspaths);
+
+		// Install crypto provider.
+		Security.addProvider(new BouncyCastleProvider());
 
 
 		// Load the Footlights class.

@@ -145,9 +145,9 @@ public class Keychain
 	void exportKeystoreFile(OutputStream out)
 		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
 		       UnrecoverableEntryException
-   {
+	{
 		exportKeystoreFile(out, PREFERENCES.getString("crypto.keystore.type"));
-   }
+	}
 
 	private Keychain() {}
 

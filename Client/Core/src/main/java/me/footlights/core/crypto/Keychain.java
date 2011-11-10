@@ -39,6 +39,8 @@ import me.footlights.core.data.Link;
 /** Stores crypto keys. */
 public class Keychain
 {
+	public static Keychain create() { return new Keychain(); }
+
 	public void store(Fingerprint fingerprint, SigningIdentity identity)
 	{
 		if (privateKeys.containsKey(fingerprint))
@@ -146,6 +148,8 @@ public class Keychain
    {
 		exportKeystoreFile(out, PREFERENCES.getString("crypto.keystore.type"));
    }
+
+	private Keychain() {}
 
 	/** Save a Keychain to a KeyStore file. */
 	void exportKeystoreFile(OutputStream out, String type)

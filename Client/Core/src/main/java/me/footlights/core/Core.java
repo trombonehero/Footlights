@@ -56,14 +56,12 @@ public class Core implements Footlights
 	public static Core init(ClassLoader pluginLoader) throws IOException
 	{
 		FileBackedPreferences prefs = FileBackedPreferences.loadFromDefaultLocation();
-		Keychain keychain = new Keychain();
-		try
-		{
-			keychain.importKeystoreFile(
-				new FileInputStream(
-					new java.io.File(prefs.getString(FileBackedPreferences.KEYCHAIN_KEY))));
-		}
-		catch (Exception e)
+		final Keychain keychain = Keychain.create();
+		final java.io.File keychainFile =
+			new java.io.File(prefs.getString(FileBackedPreferences.KEYCHAIN_KEY));
+
+		if (keychainFile.exists())
+			keychain.importKeystoreFile(new FileInputStream(keychainFile));
 		{
 			Logger.getLogger(Core.class.getName())
 				.warning("Unable to open keychain: " + e.getLocalizedMessage());

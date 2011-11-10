@@ -149,6 +149,14 @@ public class Keychain
 		exportKeystoreFile(out, PREFERENCES.getString("crypto.keystore.type"));
 	}
 
+	/**
+	 * Get a private key.
+	 *
+	 * TODO: figure out an API that is less stupid (i.e. doesn't involve passing keys around).
+	 */
+	SigningIdentity getPrivateKey(Fingerprint fingerprint) { return privateKeys.get(fingerprint); }
+
+
 	private Keychain() {}
 
 	/** Save a Keychain to a KeyStore file. */

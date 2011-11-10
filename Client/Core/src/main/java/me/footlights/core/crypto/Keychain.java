@@ -66,7 +66,7 @@ public class Keychain
 	{
 		SecretKey key = secretKeys.get(fingerprint);
 		if (key == null)
-			throw new NoSuchElementException("We have no key for '" + fingerprint + "'");
+			throw new NoSuchElementException("Symmetric key for '" + fingerprint + "'");
 
 		return key.createLinkBuilder()
 			.setFingerprint(fingerprint)

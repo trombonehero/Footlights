@@ -17,29 +17,48 @@ package me.footlights.core.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
+
+import me.footlights.core.data.Link;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class KeychainTest
 {
-	@Before public void setUp() throws Throwable
+	@Before public void setUp() throws Throwable { keychain = Keychain.create(); }
+
+	@Test public void storePrivateKey() throws Throwable
 	{
-		keychain = new Keychain();
-		keychain.store(fingerprint,
-				SigningIdentity.newGenerator()
-					.setPrincipalName("test user")
-					.generate());
+		Fingerprint fingerprint = mock(Fingerprint.class);
+		SigningIdentity privateKey = mock(SigningIdentity.class);
+
+		keychain.store(fingerprint, privateKey);
+
+		assertEquals(privateKey, keychain.getPrivateKey(fingerprint));
 	}
 
-	@Test public void testGenerate() throws Throwable
+	@Test public void storeSymmetricKey() throws Throwable
 	{
-		// TODO: test en/decryption
+		Fingerprint fingerprint = mock(Fingerprint.class);
+		SecretKey secretKey = mock(SecretKey.class);
+
+		Link.Builder linkBuilder = mock(Link.Builder.class);
+		Link link = mock(Link.class);
+
+		when(secretKey.createLinkBuilder()).thenReturn(linkBuilder);
+		when(linkBuilder.setFingerprint(eq(fingerprint))).thenReturn(linkBuilder);
+		when(linkBuilder.build()).thenReturn(link);
+
+		keychain.store(fingerprint, secretKey);
+
+		assertEquals(link, keychain.getLink(fingerprint));
 	}
 
 	@Test public void testExportImport() throws Throwable
@@ -47,7 +66,7 @@ public class KeychainTest
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		keychain.exportKeystoreFile(out);
 
-		Keychain copy = new Keychain();
+		Keychain copy = Keychain.create();
 		copy.importKeystoreFile(new ByteArrayInputStream(out.toByteArray()));
 
 		assertEquals(keychain, copy);
@@ -85,17 +104,4 @@ public class KeychainTest
 */
 
 	private Keychain keychain;
-
-	private static final KeyPair keyPair;
-	private static final Fingerprint fingerprint;
-
-	static
-	{
-		try { keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair(); }
-		catch (NoSuchAlgorithmException e) { throw new Error(e); }
-
-		fingerprint = Fingerprint.newBuilder()
-			.setContent(keyPair.getPublic().getEncoded())
-			.build();
-	}
 }

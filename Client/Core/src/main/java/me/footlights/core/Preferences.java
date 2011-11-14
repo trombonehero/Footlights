@@ -27,6 +27,8 @@ import java.util.NoSuchElementException;
 
 import javax.crypto.NoSuchPaddingException;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import com.google.common.collect.Maps;
 
 
@@ -117,7 +119,14 @@ public class Preferences implements me.footlights.plugin.Preferences
 		{
 			// Provide some sane default for crypto settings and storage locations.
 			final Map<String,String> defaultPrefs = Maps.newHashMap();
-			defaultPrefs.putAll(cryptoDefaults(Security.getProvider("BC")));
+			Provider provider = Security.getProvider("BC");
+			if (provider == null)
+			{
+				// If we haven't already installed BouncyCastle as the crypto provider, we must be
+				// running in a special environment such as a unit test.
+				provider = new BouncyCastleProvider();
+			}
+			defaultPrefs.putAll(cryptoDefaults(provider));
 
 			// OS-specific home directory.
 			String homeDir = System.getProperty("user.home") + System.getProperty("path.separator");

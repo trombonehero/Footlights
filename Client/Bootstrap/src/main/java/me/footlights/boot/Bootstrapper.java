@@ -82,6 +82,12 @@ class Bootstrapper
 		// Install crypto provider.
 		Security.addProvider(new BouncyCastleProvider());
 
+		// Set up our security policy and start enforcing it.
+		Policy.setPolicy(new RestrictivePolicy());
+		System.setSecurityManager(new SecurityManager());
+
+		// Ensure that Bootstrapper, as the most privileged code around, can still do anything.
+		AccessController.checkPermission(new AllPermission());
 
 		// Load the Footlights class.
 		Class<?> footlightsClass = classLoader.loadClass("me.footlights.core.Footlights");
@@ -105,12 +111,6 @@ class Bootstrapper
 		}
 
 		for (Thread thread : uiThreads) thread.start();
-
-
-		// now set up our security policy and start enforcing it
-		Policy.setPolicy(new RestrictivePolicy());
-		System.setSecurityManager(new SecurityManager());
-
 
 		// wait for the UI(s) to exit
 		for (Thread thread : uiThreads) 

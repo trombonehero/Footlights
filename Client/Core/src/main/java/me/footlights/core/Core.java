@@ -218,7 +218,7 @@ public class Core implements Footlights
 		}
 		catch (Exception e)
 		{
-			log.log(Level.WARNING, "Error opening preferences for " + plugin);
+			log.log(Level.WARNING, "Error opening preferences for " + plugin, e);
 		}
 
 		final PreferenceStorageEngine reader = PreferenceStorageEngine.wrap(toSave);

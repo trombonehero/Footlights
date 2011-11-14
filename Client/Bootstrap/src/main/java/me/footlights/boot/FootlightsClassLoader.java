@@ -18,8 +18,6 @@ package me.footlights.boot;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AllPermission;
-import java.security.Permissions;
 import java.util.Map;
 
 import com.google.common.collect.Iterables;
@@ -35,10 +33,6 @@ class FootlightsClassLoader extends ClassLoader
 	{
 		this.classpaths = Iterables.unmodifiableIterable(classpaths);
 		this.knownPackages = Maps.newLinkedHashMap();
-
-		corePermissions = new Permissions();
-		corePermissions.add(new AllPermission());
-		corePermissions.setReadOnly();
 	}
 
 
@@ -118,9 +112,6 @@ class FootlightsClassLoader extends ClassLoader
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
 	}
 
-
-	/** Cached permissions given to core classes. */
-	private final Permissions corePermissions;
 
 	/** Where we can find core classes. */
 	private final Iterable<URL> classpaths;

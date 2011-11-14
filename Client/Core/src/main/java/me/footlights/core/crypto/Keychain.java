@@ -15,9 +15,11 @@
  */
 package me.footlights.core.crypto;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -32,12 +34,13 @@ import java.util.NoSuchElementException;
 
 import com.google.common.collect.Maps;
 
+import me.footlights.core.HasBytes;
 import me.footlights.core.Preferences;
 import me.footlights.core.data.Link;
 
 
 /** Stores crypto keys. */
-public class Keychain
+public class Keychain implements HasBytes
 {
 	public static Keychain create() { return new Keychain(); }
 
@@ -141,14 +144,6 @@ public class Keychain
 	}
 
 
-	/** Save a Keychain to a KeyStore file. */
-	void exportKeystoreFile(OutputStream out)
-		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
-		       UnrecoverableEntryException
-	{
-		exportKeystoreFile(out, PREFERENCES.getString("crypto.keystore.type"));
-	}
-
 	/**
 	 * Get a private key.
 	 *
@@ -157,40 +152,38 @@ public class Keychain
 	SigningIdentity getPrivateKey(Fingerprint fingerprint) { return privateKeys.get(fingerprint); }
 
 
-	private Keychain() {}
-
-	/** Save a Keychain to a KeyStore file. */
-	void exportKeystoreFile(OutputStream out, String type)
-		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
-		       UnrecoverableEntryException
+	@Override public ByteBuffer getBytes()
 	{
 		final String password = getPassword();
-
-		KeyStore store = KeyStore.getInstance(type);
-		store.load(null, password.toCharArray());
-
-		final KeyStore.ProtectionParameter protection =
-			new KeyStore.PasswordProtection(password.toCharArray());
-
-		for (Fingerprint fingerprint : privateKeys.keySet())
+		final KeyStore store;
+		try
 		{
-			SigningIdentity identity = privateKeys.get(fingerprint);
-			PrivateKey key = identity.getPrivateKey();
-			Certificate certChain[] = { identity.getCertificate() };
-
-			store.setEntry(
-					"private:" + fingerprint.encode(),
-					new KeyStore.PrivateKeyEntry(key, certChain),
-					protection);
+			store = buildExternalizableKeyStore(
+					PREFERENCES.getString("crypto.keystore.type"), password);
+		}
+		catch (Exception e)
+		{
+			// Perhaps we've tried to create an invalid KeyStore type? This is a config error.
+			throw new RuntimeException("Error creating KeyStore", e);
 		}
 
-		for (final SecretKey secret : secretKeys.values())
-			store.setEntry(
-					"secret:" + secret.getFingerprint().encode(),
-					new KeyStore.SecretKeyEntry(secret.keySpec),
-					protection);
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		try { store.store(bytes, password.toCharArray()); }
+		catch (GeneralSecurityException e)
+		{
+			// This is a problem: the KeyStore doesn't want to store something which the
+			// Keychain thought was ok. This is a failure of preconditions.
+			//
+			// TODO: create a PreconditionFailedException
+			throw new RuntimeException("Attempting to store an invalid certificate", e);
+		}
+		catch (IOException e)
+		{
+			// This should not happen: we are storing bytes in memory, not on a disk or wire.
+			throw new RuntimeException("Unexpected IOException storing Keychain", e);
+		}
 
-		store.store(out, password.toCharArray());
+		return ByteBuffer.wrap(bytes.toByteArray());
 	}
 
 
@@ -222,6 +215,48 @@ public class Keychain
 		}
 
 		return true;
+	}
+
+
+	private Keychain() {}
+
+	private KeyStore buildExternalizableKeyStore(String keyStoreType, String password)
+		throws KeyStoreException
+	{
+		KeyStore.ProtectionParameter protection =
+				new KeyStore.PasswordProtection(password.toCharArray());
+
+		final KeyStore store;
+		try
+		{
+			store = KeyStore.getInstance(keyStoreType);
+			store.load(null, password.toCharArray());
+		}
+		catch (Exception e)
+		{
+			// Perhaps we've tried to create an invalid KeyStore type? This is a config error.
+			throw new RuntimeException("Error creating KeyStore", e);
+		}
+
+		for (Fingerprint fingerprint : privateKeys.keySet())
+		{
+			SigningIdentity identity = privateKeys.get(fingerprint);
+			PrivateKey key = identity.getPrivateKey();
+			Certificate certChain[] = { identity.getCertificate() };
+
+			store.setEntry(
+					"private:" + fingerprint.encode(),
+					new KeyStore.PrivateKeyEntry(key, certChain),
+					protection);
+		}
+
+		for (final SecretKey secret : secretKeys.values())
+			store.setEntry(
+					"secret:" + secret.getFingerprint().encode(),
+					new KeyStore.SecretKeyEntry(secret.keySpec),
+					protection);
+
+		return store;
 	}
 
 

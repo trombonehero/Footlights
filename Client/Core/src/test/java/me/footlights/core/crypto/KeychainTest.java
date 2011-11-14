@@ -16,7 +16,7 @@
 package me.footlights.core.crypto;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 
 import me.footlights.core.data.Link;
 
@@ -63,11 +63,10 @@ public class KeychainTest
 
 	@Test public void testExportImport() throws Throwable
 	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		keychain.exportKeystoreFile(out);
+		ByteBuffer bytes = keychain.getBytes();
 
 		Keychain copy = Keychain.create();
-		copy.importKeystoreFile(new ByteArrayInputStream(out.toByteArray()));
+		copy.importKeystoreFile(new ByteArrayInputStream(bytes.array()));
 
 		assertEquals(keychain, copy);
 	}

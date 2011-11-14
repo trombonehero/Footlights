@@ -65,11 +65,8 @@ public class Core implements Footlights
 			new java.io.File(prefs.getString(FileBackedPreferences.KEYCHAIN_KEY));
 
 		if (keychainFile.exists())
-			keychain.importKeystoreFile(new FileInputStream(keychainFile));
-		{
-			Logger.getLogger(Core.class.getName())
-				.warning("Unable to open keychain: " + e.getLocalizedMessage());
-		}
+			try { keychain.importKeystoreFile(new FileInputStream(keychainFile)); }
+			catch (IOException e) { log.log(Level.SEVERE, "Error loading keychain", e); }
 
 		Map<URI,PluginWrapper> plugins = Maps.newHashMap();
 		List<UI> uis = Lists.newArrayList();

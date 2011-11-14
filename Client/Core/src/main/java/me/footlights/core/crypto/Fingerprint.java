@@ -24,7 +24,7 @@ import org.apache.commons.codec.binary.Hex;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import me.footlights.HasBytes;
+import me.footlights.core.HasBytes;
 import me.footlights.core.Preconditions;
 import me.footlights.core.Preferences;
 import me.footlights.core.ConfigurationError;

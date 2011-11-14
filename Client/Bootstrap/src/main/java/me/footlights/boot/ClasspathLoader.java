@@ -134,6 +134,8 @@ class ClasspathLoader extends ClassLoader
 		sb.append(basePackage);
 		sb.append("', url = '");
 		sb.append(classpath.toExternalForm());
+		sb.append("', permissions = ");
+		sb.append(permissions);
 		sb.append("' }");
 
 		return sb.toString();

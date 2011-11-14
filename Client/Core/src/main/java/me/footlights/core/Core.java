@@ -201,10 +201,11 @@ public class Core implements Footlights
 	private ModifiablePreferences openPreferences(final String plugin)
 	{
 		final HashMap<String,String> toSave = Maps.newHashMap();
+		final String pluginKey = "plugin.prefs." + plugin;
 
 		try
 		{
-			final String filename = prefs.getString("plugin.prefs." + plugin);
+			final String filename = prefs.getString(pluginKey);
 			File file = open(filename);
 			Object o = new ObjectInputStream(file.getInputStream()).readObject();
 			HashMap<?,?> loaded = ((HashMap<?,?>) o);
@@ -239,7 +240,7 @@ public class Core implements Footlights
 				{
 					File saved = savePrefs();
 					saved.link().saveTo(keychain);
-					prefs.set("plugin.prefs." + plugin, saved.link().toString());
+					prefs.set(pluginKey, saved.link().fingerprint().encode());
 				}
 				catch (IOException e) { log.log(Level.WARNING, "Unable to save prefs", e); }
 

@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
+import java.security.AllPermission;
 import java.security.GeneralSecurityException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
@@ -53,8 +54,11 @@ import me.footlights.plugin.Plugin;
 
 public class Core implements Footlights
 {
-	public static Core init(ClassLoader pluginLoader) throws IOException
+	public static Core init(ClassLoader pluginLoader) throws Exception
 	{
+		// This is the Footlights core, the security kernel; ensure that we can do anything.
+		AccessController.checkPermission(new AllPermission());
+
 		FileBackedPreferences prefs = FileBackedPreferences.loadFromDefaultLocation();
 		final Keychain keychain = Keychain.create();
 		final java.io.File keychainFile =

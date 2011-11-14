@@ -20,6 +20,8 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.AllPermission;
 import java.security.Policy;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

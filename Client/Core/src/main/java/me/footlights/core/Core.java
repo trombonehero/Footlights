@@ -60,6 +60,8 @@ public class Core implements Footlights
 		AccessController.checkPermission(new AllPermission());
 
 		FileBackedPreferences prefs = FileBackedPreferences.loadFromDefaultLocation();
+		Flusher.newBuilder(prefs).build().start();
+
 		final Keychain keychain = Keychain.create();
 		final java.io.File keychainFile =
 			new java.io.File(prefs.getString(FileBackedPreferences.KEYCHAIN_KEY));
@@ -67,6 +69,8 @@ public class Core implements Footlights
 		if (keychainFile.exists())
 			try { keychain.importKeystoreFile(new FileInputStream(keychainFile)); }
 			catch (IOException e) { log.log(Level.SEVERE, "Error loading keychain", e); }
+
+		Flusher.newBuilder(keychain, keychainFile).build().start();
 
 		Map<URI,PluginWrapper> plugins = Maps.newHashMap();
 		List<UI> uis = Lists.newArrayList();

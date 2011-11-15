@@ -153,7 +153,7 @@ public class Preferences implements me.footlights.plugin.Preferences
 			{ "crypto.prng", "SHA1PRNG" },
 			{ "crypto.sym.keylen", "256" },
 			{ "crypto.sig.algorithm", "SHA256withRSA" },
-			{ "crypto.keystore.type", "JCEKS" },
+			{ "crypto.keystore.type", "UBER" },
 			{ "crypto.cert.validity", Integer.toString(60 * 60 * 24 * 3650) },
 		};
 

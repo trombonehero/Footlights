@@ -137,6 +137,7 @@ public class Keychain implements HasBytes
 						(javax.crypto.SecretKey) store.getKey(alias, password);
 
 					store(
+						fingerprint,
 						SecretKey.newGenerator()
 							.setAlgorithm(secretKey.getAlgorithm())
 							.setFingerprintAlgorithm(fingerprintAlgorithm)
@@ -261,10 +262,10 @@ public class Keychain implements HasBytes
 					protection);
 		}
 
-		for (final SecretKey secret : secretKeys.values())
+		for (Map.Entry<Fingerprint,SecretKey> secret : secretKeys.entrySet())
 			store.setEntry(
-					"secret:" + secret.getFingerprint().encode(),
-					new KeyStore.SecretKeyEntry(secret.keySpec),
+					"secret:" + secret.getKey(),
+					new KeyStore.SecretKeyEntry(secret.getValue().keySpec),
 					protection);
 
 		return store;

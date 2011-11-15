@@ -73,12 +73,11 @@ public abstract class Store implements java.io.Flushable
 	/** Retrieve a stored block (returns null if no such block is found) */
 	public final ByteBuffer retrieve(String name) throws IOException, NoSuchBlockException
 	{
-		ByteBuffer buffer = null;
+		if (cache != null)
+			try { return cache.retrieve(name).asReadOnlyBuffer(); }
+			catch (NoSuchBlockException e) {}
 
-		if (cache != null) buffer = cache.retrieve(name);
-		if (buffer == null) buffer = get(name);
-
-		return buffer.asReadOnlyBuffer();
+		return get(name).asReadOnlyBuffer();
 	}
 
 

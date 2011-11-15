@@ -61,7 +61,7 @@ public class Keychain implements HasBytes
 					key.keySpec.getEncoded(),
 					secretKeys.get(key.getFingerprint()).keySpec.getEncoded());
 
-		secretKeys.put(key.getFingerprint(), key);
+		store(key.getFingerprint(), key);
 	}
 
 	public synchronized void store(Fingerprint fingerprint, SecretKey key)

@@ -125,6 +125,7 @@ public class Preferences implements me.footlights.plugin.Preferences
 				// If we haven't already installed BouncyCastle as the crypto provider, we must be
 				// running in a special environment such as a unit test.
 				provider = new BouncyCastleProvider();
+				Security.addProvider(provider);
 			}
 			defaultPrefs.putAll(cryptoDefaults(provider));
 

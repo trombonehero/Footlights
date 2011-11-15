@@ -78,6 +78,7 @@ public class Core implements Footlights
 				.setPreferences(Preferences.create(prefs))
 				.setDefaultDirectory()
 				.build();
+		Flusher.apply(store).start();
 
 		return new Core(pluginLoader, prefs, keychain, plugins, uis, store);
 	}

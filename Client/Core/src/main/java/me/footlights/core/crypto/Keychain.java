@@ -50,6 +50,7 @@ public class Keychain implements HasBytes
 			assert identity.equals(privateKeys.get(fingerprint));
 
 		privateKeys.put(fingerprint, identity);
+		dirty = true;
 		notifyAll();
 	}
 
@@ -66,6 +67,7 @@ public class Keychain implements HasBytes
 	public synchronized void store(Fingerprint fingerprint, SecretKey key)
 	{
 		secretKeys.put(fingerprint, key);
+		dirty = true;
 		notifyAll();
 	}
 
@@ -143,6 +145,8 @@ public class Keychain implements HasBytes
 					break;
 			}
 		}
+
+		dirty = true;
 		notifyAll();
 	}
 
@@ -155,8 +159,10 @@ public class Keychain implements HasBytes
 	SigningIdentity getPrivateKey(Fingerprint fingerprint) { return privateKeys.get(fingerprint); }
 
 
-	@Override public ByteBuffer getBytes()
+	@Override public synchronized ByteBuffer getBytes()
 	{
+		if (!dirty) return bytes;
+
 		final String password = getPassword();
 		final KeyStore store;
 		try
@@ -186,7 +192,9 @@ public class Keychain implements HasBytes
 			throw new RuntimeException("Unexpected IOException storing Keychain", e);
 		}
 
-		return ByteBuffer.wrap(bytes.toByteArray());
+		this.bytes = ByteBuffer.wrap(bytes.toByteArray());
+		dirty = false;
+		return this.bytes;
 	}
 
 
@@ -292,4 +300,8 @@ public class Keychain implements HasBytes
 
 	/** Secret keys for decrypting blocks */
 	private final Map<Fingerprint, SecretKey> secretKeys = Maps.newHashMap();
+
+	/** Byte-level representation (mutable, tied to {@link #dirty}). */
+	private ByteBuffer bytes = ByteBuffer.allocate(0);
+	private boolean dirty;
 }

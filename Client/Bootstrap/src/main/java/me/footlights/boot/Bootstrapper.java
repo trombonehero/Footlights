@@ -29,6 +29,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static java.lang.String.format;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.google.common.collect.Sets;
@@ -102,6 +104,7 @@ class Bootstrapper
 		for (final UI ui : uis)
 		{
 			final String className = ui.packageName + "." + ui.className;
+			log.info(format("Loading UI '%s' (%s/%s)", ui.name, ui.sourceDirectory, className));
 
 			Class<?> uiClass = classLoader.loadClass(className);
 			Method init = uiClass.getMethod("init", footlightsClass);

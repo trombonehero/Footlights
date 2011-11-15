@@ -131,6 +131,7 @@ public final class FileBackedPreferences
 	{
 		this.properties = properties;
 		this.configFile = file;
+		this.dirty = true;
 	}
 
 

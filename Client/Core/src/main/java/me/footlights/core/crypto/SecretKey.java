@@ -149,7 +149,13 @@ public class SecretKey
 		private String padding = preferences.getString("crypto.sym.padding");
 	}
 
-	
+
+	// Object override.
+	@Override public String toString()
+	{
+		return SecretKey.class.getSimpleName() + " { " + fingerprint + " }";
+	}
+
 
 	private SecretKey(SecretKeySpec key, Fingerprint fingerprint)
 	{

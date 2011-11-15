@@ -147,7 +147,7 @@ public abstract class Store implements java.io.Flushable
 	 * This method should not block for I/O; to ensure that the block has
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
-	private final void store(String name, ByteBuffer bytes) throws IOException
+	private final synchronized void store(String name, ByteBuffer bytes) throws IOException
 	{
 		if (name == null) throw new NullPointerException("Expected block name, not null");
 
@@ -156,6 +156,7 @@ public abstract class Store implements java.io.Flushable
 		{
 			cache.store(name, bytes.asReadOnlyBuffer());
 			journal.add(name);
+			notifyAll();
 		}
 	}
 

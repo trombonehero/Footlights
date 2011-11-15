@@ -9,32 +9,38 @@ import _root_.java.util.logging.{Level,Logger}
 
 
 /** An object which periodically writes data to disk, the network, etc. */
-class Flusher(flusher:()=>Any, timeout:Int, log:java.util.logging.Logger) extends Thread
+class Flusher(name:String, flush:()=>Unit, wait:()=>Unit, log:java.util.logging.Logger)
+	extends Thread(name)
 {
 	override def run() =
 		try {
 			while (true) {
-				flusher()
-				Thread.sleep(timeout)
+				flush()
+				wait()
 			}
 		} catch {
-			case e:Exception => log.log(Level.WARNING, "Error flushing " + flusher, e)
+			case e:Exception => log.log(Level.WARNING, "Error flushing " + name, e)
 		}
 }
 
 /** Companion object which helps us build new Flusher instances. */
 object Flusher
 {
-	def newBuilder(f:Flushable) = new Builder(() => f.flush())
-	def newBuilder(o:HasBytes, filename:java.io.File) =
-		new Builder(() => new FileOutputStream(filename).getChannel().write(o.getBytes()))
-}
+	private val log = java.util.logging.Logger.getLogger(Flusher.getClass().getCanonicalName())
 
-/** Intermediate builder which accepts optional parameters. */
-class Builder(flushFunction:()=>Any)
-{
-	var timeout:Int = 2000
-	var log = java.util.logging.Logger.getLogger(Flusher.getClass().getCanonicalName())
+	def apply(f:Flushable) = new Flusher(
+			f.getClass().getSimpleName(),
+			() => f.flush(),
+			() => f.synchronized { f.wait() },
+			log)
 
-	def build() = new Flusher(flushFunction, timeout, log)
+	def apply(o:HasBytes, filename:java.io.File) = new Flusher(
+			o.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
+			() => {
+				val s = new FileOutputStream(filename)
+				s.getChannel().write(o.getBytes())
+				s.close()
+			},
+			() => o.synchronized { o.wait() },
+			log)
 }

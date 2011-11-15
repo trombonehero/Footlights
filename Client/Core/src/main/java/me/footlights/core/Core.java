@@ -60,7 +60,7 @@ public class Core implements Footlights
 		AccessController.checkPermission(new AllPermission());
 
 		FileBackedPreferences prefs = FileBackedPreferences.loadFromDefaultLocation();
-		Flusher.newBuilder(prefs).build().start();
+		Flusher.apply(prefs).start();
 
 		final Keychain keychain = Keychain.create();
 		final java.io.File keychainFile =
@@ -70,7 +70,7 @@ public class Core implements Footlights
 			try { keychain.importKeystoreFile(new FileInputStream(keychainFile)); }
 			catch (IOException e) { log.log(Level.SEVERE, "Error loading keychain", e); }
 
-		Flusher.newBuilder(keychain, keychainFile).build().start();
+		Flusher.apply(keychain, keychainFile).start();
 
 		Map<URI,PluginWrapper> plugins = Maps.newHashMap();
 		List<UI> uis = Lists.newArrayList();
@@ -237,7 +237,7 @@ public class Core implements Footlights
 				return save(ByteBuffer.wrap(out.toByteArray()));
 			}
 
-			@Override public ModifiableStorageEngine set(String key, String value)
+			@Override public synchronized ModifiableStorageEngine set(String key, String value)
 			{
 				toSave.put(key, value);
 
@@ -249,6 +249,7 @@ public class Core implements Footlights
 				}
 				catch (IOException e) { log.log(Level.WARNING, "Unable to save prefs", e); }
 
+				notifyAll();
 				return this;
 			}
 

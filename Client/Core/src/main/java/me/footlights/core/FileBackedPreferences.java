@@ -118,6 +118,7 @@ public final class FileBackedPreferences
 	{
 		properties.setProperty(name, value);
 		dirty = true;
+		notifyAll();
 		return this;
 	}
 

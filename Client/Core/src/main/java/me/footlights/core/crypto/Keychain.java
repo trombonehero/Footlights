@@ -44,12 +44,13 @@ public class Keychain implements HasBytes
 {
 	public static Keychain create() { return new Keychain(); }
 
-	public void store(Fingerprint fingerprint, SigningIdentity identity)
+	public synchronized void store(Fingerprint fingerprint, SigningIdentity identity)
 	{
 		if (privateKeys.containsKey(fingerprint))
 			assert identity.equals(privateKeys.get(fingerprint));
 
 		privateKeys.put(fingerprint, identity);
+		notifyAll();
 	}
 
 	public void store(SecretKey key)
@@ -62,9 +63,10 @@ public class Keychain implements HasBytes
 		secretKeys.put(key.getFingerprint(), key);
 	}
 
-	public void store(Fingerprint fingerprint, SecretKey key)
+	public synchronized void store(Fingerprint fingerprint, SecretKey key)
 	{
 		secretKeys.put(fingerprint, key);
+		notifyAll();
 	}
 
 	public Link getLink(Fingerprint fingerprint) throws NoSuchElementException
@@ -88,7 +90,7 @@ public class Keychain implements HasBytes
 	}
 
 	/** Merge a KeyStore file into this Keychain. */
-	public void importKeystoreFile(InputStream input, String type)
+	public synchronized void importKeystoreFile(InputStream input, String type)
 		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException,
 		       UnrecoverableEntryException
 	{
@@ -141,6 +143,7 @@ public class Keychain implements HasBytes
 					break;
 			}
 		}
+		notifyAll();
 	}
 
 

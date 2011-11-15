@@ -18,8 +18,8 @@ package me.footlights.core.data.store;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import com.google.common.collect.Lists;
 
@@ -46,7 +46,7 @@ public abstract class Store implements java.io.Flushable
 	public Store(Store cache)
 	{
 		this.cache = cache;
-		this.journal = new LinkedList<String>();
+		this.journal = Lists.newLinkedList();
 	}
 
 
@@ -115,35 +115,26 @@ public abstract class Store implements java.io.Flushable
 	 */
 	public void flush() throws IOException
 	{
-		while (true)
+		while (!journal.isEmpty())
 		{
-			// ensure that we are the only thread consuming the journal
-			// (it's fine for other threads to append concurrently)
-			synchronized(journal)
-			{
-				if (journal.size() == 0) break;
+			String name = journal.poll();
 
-				String name = journal.get(0);
-				
-				try
-				{
-					ByteBuffer buffer = cache.get(name);
-					put(name, buffer);
-				}
-				catch(NoSuchBlockException e)
-				{
-					throw new IOException("Cache inconsistency: block '" + name
-						+ "' not in cache '" + cache + "'");
-				}
-	
-				journal.remove(0);
+			try
+			{
+				ByteBuffer buffer = cache.get(name);
+				put(name, buffer);
+			}
+			catch(NoSuchBlockException e)
+			{
+				throw new IOException("Cache inconsistency: block '" + name
+					+ "' not in cache '" + cache + "'");
 			}
 		}
 	}
 
 
 	/**
-	 * This method should not block for I/O; to ensure that the block has
+	 * If we have a cache, this method should not block for I/O. To ensure that the block has
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
 	private final synchronized void store(String name, ByteBuffer bytes) throws IOException
@@ -164,5 +155,5 @@ public abstract class Store implements java.io.Flushable
 	private Store cache;
 
 	/** A list of blocks stored in cache */
-	private List<String> journal;
+	private Queue<String> journal;
 }

@@ -120,10 +120,10 @@ class Game
 		return pieces;
 	}
 
-	private Iterable<Piece> col(int row)
+	private Iterable<Piece> col(int col)
 	{
 		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
-		for (int i = 0; i < size; i++) pieces.add(board[row][i]);
+		for (int i = 0; i < size; i++) pieces.add(board[i][col]);
 		return pieces;
 	}
 

@@ -86,12 +86,6 @@ buttons.innerHTML='';""")
 
 					.append(button("Reset", JavaScript.ajax("reset")))
 
-					.append(JavaScript.ajax("load_plugin/" + TICTACTOE))
-					/*
-					.append(ajax("load_plugin/" + GOOD_PLUGIN))
-					.append(ajax("load_plugin/" + WICKED_PLUGIN))
-					 */
-
 					.append("console.log('UI Initialized');")
 			}
 

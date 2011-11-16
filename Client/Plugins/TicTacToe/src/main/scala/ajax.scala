@@ -15,7 +15,7 @@
  */
 package me.footlights.demo.tictactoe;
 
-import _root_.me.footlights.plugin.{AjaxHandler,JavaScript,WebRequest}
+import _root_.me.footlights.plugin.{AjaxHandler,JavaScript,Preferences,WebRequest}
 
 
 /** Translates Ajax events to/from model events. */
@@ -33,6 +33,8 @@ class Ajax(plugin:TicTacToePlugin) extends AjaxHandler
 					.append("context.load('init.js');")
 			}
 
+			case "update_stats" => new JavaScript().append(updateStats(plugin.prefs))
+
 			case ClickCoordinates(x,y) => {
 				val placed = plugin.game.place(x.toInt, y.toInt)
 
@@ -42,6 +44,7 @@ class Ajax(plugin:TicTacToePlugin) extends AjaxHandler
 					response
 						.append(place(placed, x.toInt, y.toInt))
 						.append(changeNextBox(plugin.game.next))
+						.append(updateStats(plugin.prefs))
 
 				if (plugin.game.isOver())
 					response
@@ -74,4 +77,13 @@ class Ajax(plugin:TicTacToePlugin) extends AjaxHandler
 				""".format(0 - piece.offset, 0 - piece.offset)
 			).asFunction()
 		)
+
+	private def updateStats(prefs:Preferences) = stats map { setStat(_) } reduce { _ +	_ }
+	private def setStat(name:String) = """
+			context.globals.%s.clear();
+			context.globals.%s.appendText('%d');
+			""".format(name, name, plugin.getCounter(name))
+
+	/** The statistics that we keep track of via {@link Preferences}. */
+	private val stats = List("playCount", "wins", "losses")
 }

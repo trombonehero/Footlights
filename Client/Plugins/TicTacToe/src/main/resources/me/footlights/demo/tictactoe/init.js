@@ -46,6 +46,34 @@ next.onload = function()
 
 next.src = 'cross.png';
 
+var stats = context.root.appendElement('div');
+stats.style.position = 'relative';
+stats.style.left = 350;
+stats.style.top = 16;
+
+var tab = stats.appendElement('table');
+tab.style.color = 'black';
+
+var thead = tab.appendElement('thead');
+var head = thead.appendElement('tr');
+head.appendElement('th').appendText('Variable');
+head.appendElement('th').appendText('Value');
+var tbody = tab.appendElement('tbody');
+var rows = [[ 'Play Count', 'playCount'], ['Wins', 'wins'], ['Losses', 'losses' ]];
+for (i in rows)
+{
+	var row = tbody.appendElement('tr');
+	var label = rows[i][0];
+	var id = rows[i][1];
+
+	row.appendElement('td').appendText(label);
+	var value = row.appendElement('td');
+	value.id = id;
+	context.globals[id] = value;
+}
+
+context.ajax("update_stats")
+
 
 function place(filename, x, y, offset)
 {

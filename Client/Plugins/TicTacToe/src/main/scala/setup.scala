@@ -29,14 +29,18 @@ class TicTacToePlugin(val prefs:ModifiablePreferences) extends Plugin
 	def ajaxHandler = new Ajax(this)
 
 	var game = new Game
-	def startNewGame = {
-		println("played " + incrementCounter("playCount") + " games")
-		game.state match {
-			case Game.Status.WON => println(incrementCounter("wins") + " wins")
-			case Game.Status.LOST => println(incrementCounter("losses") + " losses")
-			case Game.Status.PLAYING =>
-		}
 
+	def gameOver = {
+		game.state match {
+			case Game.Status.WON => incrementCounter("wins")
+			case Game.Status.LOST => incrementCounter("losses")
+			case _ =>
+				throw new IllegalArgumentException("Invalid game state: " + game.state)
+		}
+	}
+
+	def startNewGame = {
+		incrementCounter("playCount")
 		game = new Game
 	}
 

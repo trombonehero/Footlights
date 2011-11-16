@@ -44,15 +44,16 @@ class Ajax(plugin:TicTacToePlugin) extends AjaxHandler
 					response
 						.append(place(placed, x.toInt, y.toInt))
 						.append(changeNextBox(plugin.game.next))
-						.append(updateStats(plugin.prefs))
 
-				if (plugin.game.isOver())
+				if (plugin.game.isOver()) {
+					plugin.gameOver
 					response
 						.append("context.log('Game over! Result: ")
 						.appendText(plugin.game.state().toString())
 						.append("');")
+				}
 
-				response
+				response.append(updateStats(plugin.prefs))
 			}
 		}
 	}

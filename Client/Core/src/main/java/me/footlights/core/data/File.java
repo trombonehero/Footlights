@@ -120,18 +120,23 @@ public class File implements me.footlights.plugin.File
 				if (blockIndex >= plaintext.size()) return -1;
 
 				int pos = offset;
-				while (pos < len)
+				while (pos < (offset + len))
 				{
 					ByteBuffer next = buffers[blockIndex];
-					if (next.remaining() > 0)
+					if (next.remaining() > len)
+					{
+						next.get(buffer, pos, len);
+						pos += len;
+					}
+					else if (next.remaining() > 0)
 					{
 						int bytes = next.remaining();
 						next.get(buffer, pos, bytes);
 						pos += bytes;
+						blockIndex++;
 					}
 
 					if (pos == offset) return -1;
-					else blockIndex++;
 				}
 
 				return (pos - offset);

@@ -304,5 +304,5 @@ public class Keychain implements HasBytes
 
 	/** Byte-level representation (mutable, tied to {@link #dirty}). */
 	private ByteBuffer bytes = ByteBuffer.allocate(0);
-	private boolean dirty;
+	private boolean dirty = true;
 }

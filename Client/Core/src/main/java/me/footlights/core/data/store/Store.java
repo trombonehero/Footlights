@@ -117,7 +117,9 @@ public abstract class Store implements java.io.Flushable
 	{
 		while (!journal.isEmpty())
 		{
-			String name = journal.poll();
+			// Ensure that only one thread polls from the queue at a time.
+			final String name;
+			synchronized(journal) { name = journal.poll(); }
 
 			try
 			{

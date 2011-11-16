@@ -28,6 +28,7 @@ function proxy(node, context)
 
 			switch (type)
 			{
+				case 'iframe':
 				case 'script':
 					throw 'Sandboxed script attempted to create a ' + type + ' element';
 

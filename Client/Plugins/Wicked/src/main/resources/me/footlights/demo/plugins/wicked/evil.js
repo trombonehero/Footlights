@@ -68,4 +68,13 @@ remoteImage.onerror = function()
 	this.style.right = 0;
 };
 
+try
+{
+	var remoteIFrame = context.root.appendElement('iframe');
+	remoteIFrame.onload = function() { context.log('successfully loaded "evil.html" iframe'); }
+	remoteIFrame.onerror = function() { context.log('evil iframe blocked!'); }
+	remoteIFrame.src = 'evil.html';
+}
+catch (e) { context.log('iframe creation blocked (good, for now anyway)'); }
+
 return 42;

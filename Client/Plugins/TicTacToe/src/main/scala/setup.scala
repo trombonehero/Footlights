@@ -24,12 +24,31 @@ import _root_.java.util.logging.Logger
  * A demo plugin for playing Tic-Tac-Toe against human or computer opponents.
  * @author Jonathan Anderson <jon@footlights.me>
  */
-class TicTacToePlugin(playCounter:()=>Int) extends Plugin
+class TicTacToePlugin(val prefs:ModifiablePreferences) extends Plugin
 {
 	def ajaxHandler = new Ajax(this)
 
 	var game = new Game
-	def startNewGame = { println("play count: " + playCounter()); game = new Game }
+	def startNewGame = {
+		println("played " + incrementCounter("playCount") + " games")
+		game.state match {
+			case Game.Status.WON => println(incrementCounter("wins") + " wins")
+			case Game.Status.LOST => println(incrementCounter("losses") + " losses")
+			case Game.Status.PLAYING =>
+		}
+
+		game = new Game
+	}
+
+	def getCounter(name:String) =
+		try { prefs.getInt(name) }
+		catch { case e:NoSuchElementException => 0 }
+
+	private def incrementCounter(name:String) = {
+		var count = getCounter(name) + 1
+		prefs.set(name, count)
+		count
+	}
 }
 
 
@@ -39,16 +58,6 @@ object TicTacToe
 	def init(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) = {
 		log.warning("starting scala-based plugin")
 
-		def counter():Int = {
-			var playCount = -1
-			try { playCount = prefs.getInt("playCount") + 1 }
-			catch { case e:NoSuchElementException => playCount = 0 }
-
-			prefs.set("playCount", playCount)
-
-			playCount
-		}
-
-		new TicTacToePlugin(counter)
+		new TicTacToePlugin(prefs)
 	}
 }

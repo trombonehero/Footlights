@@ -2,6 +2,10 @@ package me.footlights.demo.tictactoe;
 
 import static me.footlights.demo.tictactoe.Game.Piece.*;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 
 /**
  * Model of the game itself.
@@ -36,9 +40,10 @@ class Game
 
 	Game()
 	{
-		board = new Piece[3][];
+		size = 3;
+		board = new Piece[size][];
 		for (int i = 0; i < board.length; i++)
-			board[i] = new Piece[3];
+			board[i] = new Piece[size];
 
 		nextTurn = CROSS;
 	}
@@ -57,9 +62,13 @@ class Game
 		Piece placed = nextTurn;
 		board[x][y] = placed;
 
-		if ((x == 2) && (placed == CROSS)) endGame(Status.WON);
+		Status result = result(Piece.CROSS);
+		switch (result)
+		{
+			case PLAYING: nextTurn = ((nextTurn == CROSS) ? NOUGHT : CROSS); break;
+			default: endGame(result);
+		}
 
-		nextTurn = ((nextTurn == CROSS) ? NOUGHT : CROSS);
 		return placed;
 	}
 
@@ -71,9 +80,68 @@ class Game
 		this.state = status;
 	}
 
+	private Status result(Piece mySide)
+	{
+		List<Iterable<Piece>> sequences = Lists.newLinkedList();
+		for (int i = 0; i < size; i++)
+		{
+			sequences.add(row(i));
+			sequences.add(col(i));
+		}
+		sequences.add(diagonal(true));
+		sequences.add(diagonal(false));
+
+		for (Iterable<Piece> sequence : sequences)
+		{
+			Piece winner = checkForWinner(sequence);
+			if (winner == null) continue;
+			else if (winner == mySide) return Status.WON;
+			else return Status.LOST;
+		}
+
+		return Status.PLAYING;
+	}
+
+	private Piece checkForWinner(Iterable<Piece> spaces)
+	{
+		Piece winner = null;
+		for (Piece space : spaces)
+			if (space == null) return null;
+			else if (winner == null) winner = space;
+			else if (space != winner) return null;
+
+		return winner;
+	}
+
+	private Iterable<Piece> row(int row)
+	{
+		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
+		for (int i = 0; i < size; i++) pieces.add(board[row][i]);
+		return pieces;
+	}
+
+	private Iterable<Piece> col(int row)
+	{
+		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
+		for (int i = 0; i < size; i++) pieces.add(board[row][i]);
+		return pieces;
+	}
+
+	private Iterable<Piece> diagonal(boolean positive)
+	{
+		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
+		for (int i = 0; i < size; i++)
+		{
+			int j = positive ? i : size - i - 1;
+			pieces.add(board[i][j]);
+		}
+		return pieces;
+	}
+
 
 	private Status state = Status.PLAYING;
 	private Piece nextTurn;
 
+	private final int size;
 	private final Piece[][] board;
 }

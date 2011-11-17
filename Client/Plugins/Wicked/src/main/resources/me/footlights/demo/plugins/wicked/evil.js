@@ -5,42 +5,62 @@
 // Expects a context to be defined:
 //   context: { name: string, log: function(message), root: proxiedNodeFromDOM }
 
-try { document.write('EVIL HACKERY'); }
-catch (e) { context.log('document.write() not allowed (good!)'); }
+function log(message)
+{
+	var div = context.root.appendElement('div');
+	div.appendText(message);
 
+	return { append: function(message) { div.appendText(message); return this; } }
+}
+context.globals.log = log;
+
+var tmp = log('Attempting to use document.write()... ');
+try { document.write('EVIL HACKERY'); }
+catch (e) { tmp.append('denied.'); }
+
+tmp = log('Calling global alert()... ')
 try { alert('EVIL HACKERY - your browser must not support ES5 Strict'); }
-catch (e) { context.log('alert() not allowed (good!)'); }
+catch (e) { tmp.append('denied.'); }
 
 if (context.root.parentNode)
-	context.log('security error: context.root.parentNode != null');
+	log('security error: context.root.parentNode != null');
 
-try { context.name = 'HACKED ' + context.name; }
-catch (e) { context.log('modifying context.name not allowed (good!)'); }
+tmp = log('Attempting to modify context.name... ');
+try
+{
+	context.name = 'HACKED ' + context.name;
+	tmp.append('SUCCEEDED!');
+}
+catch (e) { tmp.append('denied.'); }
 
 var div = context.root.appendElement('div');
 div.innerHTML = '<script type="text/javascript" src="evil.js"></script>';
 
+tmp = log('Creating a <script/> element... ');
 try
 {
 	var s = context.root.appendElement('script');
 	s.src = 'http://www.google.com/';
-	context.log('Script created a <script/> element (bad!)');
+	tmp.append('SUCCEEDED!');
 }
-catch (e) { context.log('Creating <script/> element not allowed (good!)'); }
+catch (e) { tmp.append('denied.'); }
+
+
+// Use context.globals here, since we might want to log from an event handler.
+context.globals.tmp = log('Creating an <iframe/>... ');
+try
+{
+	var remoteIFrame = context.root.appendElement('iframe');
+	remoteIFrame.onload = function() { tmp.append('SUCCESSFUL!'); }
+	remoteIFrame.onerror = function() { tmp.append('denied.'); }
+	remoteIFrame.src = 'evil.html';
+}
+catch (e) { context.globals.tmp.append('denied.'); }
 
 var imageSize = 256;
 
-try
-{
-	var remoteImage = context.root.appendElement('img');
-	remoteImage.src = 'http://www.google.com/images/logos/ps_logo2.png';
-	remoteImage.height = imageSize;
-	remoteImage.width = imageSize;
-}
-catch (e) { context.log('Failed to load remote image (good!)'); }
-
 var remoteImage = context.root.appendElement('img');
-remoteImage.src = 'www.google.com/images/logos/ps_logo2.png';
+remoteImage.src = 'http://www.google.com/images/logos/ps_logo2.png';
 remoteImage.alt = 'Should be blank, but CLICK ME!';
 remoteImage.height = imageSize;
 remoteImage.width = imageSize;
@@ -51,13 +71,14 @@ remoteImage.onclick = function()
 };
 
 context.globals.errors = 0;
+context.globals.tmp = log('Attemping various wicked things from an event handler... ')
 remoteImage.onerror = function()
 {
 	try { rootContext.log('logged VIA ROOT CONTEXT!!!!'); }
-	catch (e) { context.log('Failed to log to rootContext (good!)'); }
+	catch (e) { tmp.append('rootContext denied, '); }
 
-	if (this.parentNode) context.log('got img PARENT NODE: ' + this.parentNode);
-	else context.log('Failed to access parent node (good!)');
+	if (this.parentNode) tmp.append('got img PARENT NODE: ' + this.parentNode);
+	else tmp.append('parent node denied.');
 
 	if (context.globals.errors < 10) this.src = 'missing.png';
 	context.globals.errors++;
@@ -67,14 +88,5 @@ remoteImage.onerror = function()
 	this.style.top = 0;
 	this.style.right = 0;
 };
-
-try
-{
-	var remoteIFrame = context.root.appendElement('iframe');
-	remoteIFrame.onload = function() { context.log('successfully loaded "evil.html" iframe'); }
-	remoteIFrame.onerror = function() { context.log('evil iframe blocked!'); }
-	remoteIFrame.src = 'evil.html';
-}
-catch (e) { context.log('iframe creation blocked (good, for now anyway)'); }
 
 return 42;

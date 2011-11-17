@@ -135,7 +135,7 @@ class Response
 			while (true)
 			{
 				int bytes = content.read(data);
-				
+
 				if (bytes <= 0) break;
 				else out.write(data, 0, bytes);
 			}

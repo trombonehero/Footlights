@@ -15,13 +15,11 @@
  */
 package me.footlights.boot;
 
-import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.Policy;
 import java.security.ProtectionDomain;
-import java.util.regex.Pattern;
 
 
 /** A very restrictive Java security policy. */
@@ -29,24 +27,7 @@ class RestrictivePolicy extends Policy
 {
 	@Override public PermissionCollection getPermissions(CodeSource codesource)
 	{
-		Permissions p = new Permissions();
-
-		// give system libraries all permissions
-		String url = codesource.getLocation().toString();
-
-		if (Pattern.matches("file:/System/Library/Frameworks/Java.*\\.jar", url))
-			p.add(new AllPermission());
-
-		// TODO: temporary!
-		else if (Pattern.matches("file:/.*bootstrap/", url)
-			|| Pattern.matches("file:/.*bootstrap.jar", url))
-			p.add(new AllPermission());
-
-		else
-			System.out.println("Code source: " + codesource.getLocation());
-
-		// otherwise, give *no* static permissions (e.g. sockets)
-		return p;
+		return new Permissions();
 	}
 
 	@Override public PermissionCollection getPermissions(ProtectionDomain domain)

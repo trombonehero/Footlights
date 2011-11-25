@@ -46,7 +46,7 @@ function proxy(node, context)
 		set src(uri)        { node.src = '/static/' + context.name + '/' + uri; },
 
 		set alt(text)       { node.alt = text; },
-		set class(name)     { node.class = name; },
+		set class(name)     { node.setAttribute("class", name); },
 		set height(x)       { node.height = x; },
 		set width(x)        { node.width = x; },
 

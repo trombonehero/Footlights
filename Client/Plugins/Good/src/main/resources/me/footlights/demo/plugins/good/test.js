@@ -13,6 +13,11 @@ var p = context.root.appendElement('p');
 p.appendText(text);
 context.globals.p = p;
 
+var hello = context.root.appendElement('p');
+hello.appendText('Hello, ');
+hello.appendPlaceholder('user.name');
+hello.appendText('!');
+
 var imageSize = 256;
 
 var localImage = context.root.appendElement('img');

@@ -138,6 +138,11 @@ iframe
 	font-size: smaller;
 }
 
+.placeholder
+{
+	background: orange;
+}
+
 h1.main
 {
 	float: right;

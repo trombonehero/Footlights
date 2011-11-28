@@ -9,3 +9,4 @@ target
 META-INF
 bin
 .scala_dependencies
+.cache

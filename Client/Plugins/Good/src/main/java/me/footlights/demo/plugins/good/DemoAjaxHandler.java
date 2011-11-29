@@ -28,6 +28,7 @@ class DemoAjaxHandler extends Context
 		CONTENT,
 		ALL_DONE,
 		CLICKED,
+		OPEN_FILE,
 	}
 
 	DemoAjaxHandler(final KernelInterface kernel, final Logger log)
@@ -122,6 +123,21 @@ class DemoAjaxHandler extends Context
 			{
 				return new JavaScript()
 					.append("context.log('Clicked \\'" + request.shift().path() + "\\'');");
+			}
+		});
+
+		register(OPEN_FILE.name().toLowerCase(), new AjaxHandler()
+		{
+			@Override public JavaScript service(WebRequest request)
+				throws FileNotFoundException, SecurityException, Throwable
+			{
+				File file = kernel.openLocalFile();
+				if (file == null)
+					return new JavaScript()
+						.append("context.log('User cancelled file dialog');");
+
+				return new JavaScript()
+					.append(makeDiv("Opened " + file.getInputStream().available() + " B file"));
 			}
 		});
 	}

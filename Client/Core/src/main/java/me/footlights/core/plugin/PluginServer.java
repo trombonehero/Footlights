@@ -45,6 +45,7 @@ public class PluginServer implements KernelInterface
 	}
 
 	@Override public File open(String name) throws IOException { return kernel.open(name); }
+	@Override public File openLocalFile() throws IOException { return kernel.openLocalFile(); }
 
 
 	/** The system core */

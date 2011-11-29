@@ -33,4 +33,7 @@ public interface KernelInterface
 
 	/** Open a named file. */
 	public File open(String name) throws IOException;
+
+	/** Open a file on the local machine (e.g. a photo to upload). */
+	public File openLocalFile() throws IOException;
 }

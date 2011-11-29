@@ -66,4 +66,9 @@ localImage.onerror = function()
 
 localImage.src = 'images/local.png';
 
+var b = context.root.appendElement('input');
+b.type = 'button';
+b.value = 'Open a File';
+b.onclick = function() { context.ajax('open_file'); }
+
 return 42;

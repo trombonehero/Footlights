@@ -23,9 +23,12 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.security.AccessController;
 import java.security.AllPermission;
 import java.security.GeneralSecurityException;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +38,8 @@ import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JFileChooser;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -193,6 +198,30 @@ public class Core implements Footlights
 	}
 
 
+	@Override public File openLocalFile() throws IOException
+	{
+		try
+		{
+			return AccessController.doPrivileged(new PrivilegedExceptionAction<File>()
+				{
+					@Override public File run() throws GeneralSecurityException, IOException
+					{
+						JFileChooser chooser = new JFileChooser();
+						if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
+						{
+							log.fine("User cancelled file open dialog");
+							return null;
+						}
+
+						ByteBuffer buffer = read(chooser.getSelectedFile());
+						return File.newBuilder().setContent(buffer).freeze();
+					}
+				});
+		}
+		catch (PrivilegedActionException e) { throw new IOException(e); }
+	}
+
+
 	private Core(ClassLoader pluginLoader, FileBackedPreferences prefs, Keychain keychain,
 			Map<URI,PluginWrapper> plugins, List<UI> uis, Store store)
 	{
@@ -202,6 +231,27 @@ public class Core implements Footlights
 		this.plugins = plugins;
 		this.uis = uis;
 		this.store = store;
+	}
+
+	private ByteBuffer read(java.io.File f) throws IOException
+	{
+		if ((f == null) || !f.exists()) return null;
+		FileChannel channel = new FileInputStream(f).getChannel();
+
+		long l = f.length();
+		if (l > Integer.MAX_VALUE)
+			throw new IOException("File too big (" + l + " B)");
+		int len = (int) f.length();
+
+		// TODO: hide this implementation detail somewhere.
+		if (len > 10000) return channel.map(MapMode.READ_ONLY, 0, f.length());
+		else
+		{
+			ByteBuffer buffer = ByteBuffer.allocateDirect(len);
+			channel.read(buffer);
+			buffer.flip();
+			return buffer;
+		}
 	}
 
 	private ModifiablePreferences openPreferences(final String plugin)

@@ -70,6 +70,8 @@ function proxy(node, context)
 
 		set alt(text)       { node.alt = text; },
 		set class(name)     { node.setAttribute("class", name); },
+		set type(t)         { node.type = t; },
+		set value(v)        { node.value = v; },
 		set height(x)       { node.height = x; },
 		set width(x)        { node.width = x; },
 

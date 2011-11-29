@@ -312,8 +312,6 @@ public class Core implements Footlights
 		};
 	}
 
-	/** Name of the Core {@link Logger}. */
-	public static final String CORE_LOG_NAME = "me.footlights.core";
 	private static Logger log = Logger.getLogger(Core.class.getCanonicalName());
 
 	/** User preferences. */

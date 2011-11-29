@@ -47,6 +47,12 @@ public class File implements me.footlights.plugin.File
 	public static MutableFile newBuilder() { return new MutableFile(); }
 	public static final class MutableFile
 	{
+		public MutableFile setContent(ByteBuffer content)
+		{
+			this.content = ImmutableList.of(content);
+			return this;
+		}
+
 		public MutableFile setContent(Collection<ByteBuffer> content)
 		{
 			this.content = ImmutableList.copyOf(content);

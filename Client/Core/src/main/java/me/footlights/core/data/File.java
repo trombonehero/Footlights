@@ -114,6 +114,15 @@ public class File implements me.footlights.plugin.File
 
 		return new InputStream()
 		{
+			@Override public int available()
+			{
+				int total = 0;
+				for (int i = blockIndex; i < buffers.length; i++)
+					total += buffers[i].remaining();
+
+				return total;
+			}
+
 			@Override public int read(byte[] buffer, int offset, int len)
 			{
 				if (len == 0) return 0;

@@ -16,7 +16,7 @@
 package me.footlights.core;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
 
 import me.footlights.core.plugin.*;
 import me.footlights.plugin.KernelInterface;

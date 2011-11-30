@@ -15,9 +15,11 @@
  */
 package me.footlights.boot;
 
-import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 
 import com.google.common.collect.Iterables;
@@ -57,7 +59,7 @@ class FootlightsClassLoader extends ClassLoader
 			if (tokens.length != 2)
 				throw new ClassNotFoundException("Invalid class name: '" + name + "'");
 
-			URL classpath;
+			final URL classpath;
 			try
 			{
 				if (tokens[0].startsWith("jar")) classpath = new URL(tokens[0] + "!/");
@@ -68,14 +70,22 @@ class FootlightsClassLoader extends ClassLoader
 				throw new ClassNotFoundException("Invalid classpath: " + tokens[0], e);
 			}
 
-			String className = tokens[1];
-			String packageName = className.substring(0, className.lastIndexOf("."));
+			final String className = tokens[1];
+			final String packageName = className.substring(0, className.lastIndexOf("."));
 
 			try
 			{
-				return ClasspathLoader.create(this, classpath, packageName).loadClass(className);
+				return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>()
+					{
+						@Override public Class<?> run() throws Exception
+						{
+							return ClasspathLoader.create(
+									FootlightsClassLoader.this, classpath, packageName)
+								.loadClass(className);
+						}
+					});
 			}
-			catch (FileNotFoundException e)
+			catch (PrivilegedActionException e)
 			{
 				throw new ClassNotFoundException("Invalid classpath: " + classpath, e);
 			}

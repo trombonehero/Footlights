@@ -15,11 +15,8 @@
  */
 package me.footlights.core;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -31,7 +28,6 @@ import java.security.GeneralSecurityException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -256,19 +252,14 @@ public class Core implements Footlights
 
 	private ModifiablePreferences openPreferences(final String plugin)
 	{
-		final HashMap<String,String> toSave = Maps.newHashMap();
 		final String pluginKey = "plugin.prefs." + plugin;
 
+		final Map<String,String> map = Maps.newHashMap();
 		try
 		{
 			final String filename = prefs.getString(pluginKey);
 			File file = open(filename);
-			Object o = new ObjectInputStream(file.getInputStream()).readObject();
-			HashMap<?,?> loaded = ((HashMap<?,?>) o);
-
-			// Explicitly convert objects of whatever form into Strings.
-			for (Map.Entry<?,?> entry : loaded.entrySet())
-				toSave.put(entry.getKey().toString(), entry.getValue().toString());
+			map.putAll(Preferences.parse(file.getContents()));
 		}
 		catch (NoSuchElementException e)
 		{
@@ -278,23 +269,16 @@ public class Core implements Footlights
 			log.log(Level.WARNING, "Error opening preferences for " + plugin, e);
 		}
 
-		final PreferenceStorageEngine reader = PreferenceStorageEngine.wrap(toSave);
+		final PreferenceStorageEngine reader = PreferenceStorageEngine.wrap(map);
 		return new ModifiableStorageEngine()
 		{
-			private File savePrefs() throws IOException
-			{
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				new ObjectOutputStream(out).writeObject(toSave);
-				return save(ByteBuffer.wrap(out.toByteArray()));
-			}
-
 			@Override public synchronized ModifiableStorageEngine set(String key, String value)
 			{
-				toSave.put(key, value);
+				map.put(key, value);
 
 				try
 				{
-					File saved = savePrefs();
+					File saved = save(Preferences.encode(map));
 					saved.link().saveTo(keychain);
 					prefs.set(pluginKey, saved.link().fingerprint().encode());
 				}

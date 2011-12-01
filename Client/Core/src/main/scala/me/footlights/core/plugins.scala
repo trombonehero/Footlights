@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import java.io.{ByteArrayOutputStream, IOException, ObjectInputStream, ObjectOutputStream}
+import java.io.{ByteArrayOutputStream, IOException}
 import java.nio.ByteBuffer
 import java.net.URI
 import java.util.logging.{Level, Logger}
@@ -83,22 +83,16 @@ trait Plugins extends Footlights {
 	 */
 	private def pluginPreferences(pluginName:String) = {
 		val pluginKey = "plugin.prefs." + pluginName
-		val filename =
-			try Some(prefs.getString(pluginKey))
-			catch { case e:NoSuchElementException => None }
+		val map = new HashMap[String,String]
 
-		// Deserialize HashMap and explicitly convert its contents to strings.
-		val loaded:Option[_root_.java.util.HashMap[_,_]] =
-			filename map { f => new ObjectInputStream(open(f) getInputStream) readObject } flatMap {
-				case i:_root_.java.util.HashMap[_,_] => Some(i)
-				case o:Object => { log.severe("Stored prefs not a HashMap: " + o); None }
-			}
-
-		val toSave = new HashMap[String,String]
-		loaded foreach { _ foreach { kv => toSave += ((kv._1 toString, kv._2 toString)) } }
+		try open(prefs getString pluginKey) match {
+			case f:data.File => map ++= Preferences.parse(f.getContents())
+			case _ => None
+		}
+		catch { case e:NoSuchElementException => None }
 
 		// Create an anonymous mutable version which can save itself
-		val reader = PreferenceStorageEngine.wrap(toSave)
+		val reader = PreferenceStorageEngine.wrap(map)
 
 		new ModifiableStorageEngine {
 			override def getAll = reader.getAll
@@ -107,18 +101,12 @@ trait Plugins extends Footlights {
 			override def set(key:String, value:String) = synchronized
 			{
 				// Update the preferences.
-				toSave.put(key, value)
+				map.put(key, value)
 
 				// Save updated preferences to the Store.
-				val out = new ByteArrayOutputStream
-				new ObjectOutputStream(out) writeObject toSave
-
-				val saved = try Some {
-					save(ByteBuffer.wrap(out.toByteArray())) match {
-						case f:data.File => f
-					}
-				}
-				catch { case e:IOException =>
+				val saved = try save(Preferences.encode(map)) match {
+					case f:data.File => Some(f)
+				} catch { case e:IOException =>
 					log.log(Level.WARNING, "Error saving preferences for '" + pluginName + "'", e)
 					None
 				}

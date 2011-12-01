@@ -144,7 +144,7 @@ public class Preferences implements me.footlights.plugin.Preferences, HasBytes
 	}
 
 	/** Parse raw bytes into {@link Preferences}. */
-	static Map<String,String> parse(ByteBuffer bytes) throws IOException
+	public static Map<String,String> parse(ByteBuffer bytes) throws IOException
 	{
 		byte[] magic = new byte[MAGIC.length];
 		bytes.get(magic);

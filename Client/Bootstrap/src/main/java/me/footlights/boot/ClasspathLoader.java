@@ -36,7 +36,7 @@ import com.google.common.collect.Maps;
 class ClasspathLoader extends ClassLoader
 {
 	static ClasspathLoader create(ClassLoader parent, URL classpath, String basePackage)
-		throws FileNotFoundException
+		throws FileNotFoundException, MalformedURLException
 	{
 		// Only grant privileges to code Footlights code.
 		final PermissionCollection permissions;
@@ -56,6 +56,9 @@ class ClasspathLoader extends ClassLoader
 			if (!file.exists())
 				throw new FileNotFoundException("No such classpath '" + classpath + "'");
 		}
+		if (!classpath.getProtocol().startsWith("jar:") && classpath.getPath().endsWith(".jar"))
+			classpath = new URL("jar:" + classpath + "!/");
+
 		return new ClasspathLoader(parent, classpath, basePackage, permissions);
 	}
 

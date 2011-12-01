@@ -16,6 +16,7 @@
 package me.footlights.core;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -32,7 +33,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.google.common.collect.Maps;
 
 
-public class Preferences implements me.footlights.plugin.Preferences
+public class Preferences implements me.footlights.plugin.Preferences, HasBytes
 {
 	/** Create a Preferences instance with auto-detected default settings. */
 	public static Preferences getDefaultPreferences()
@@ -107,6 +108,65 @@ public class Preferences implements me.footlights.plugin.Preferences
 			catch (NoSuchElementException e) {}
 
 		return defaults.getFloat(key);
+	}
+
+
+	// HasBytes implementation
+	@Override public ByteBuffer getBytes()
+	{
+		return encode(getAll());
+	}
+
+	static ByteBuffer encode(Map<String,?> snapshot)
+	{
+		int len = MAGIC.length + 4;  // Minimum length is magic + length representation (4B)
+		for (Map.Entry<String,?> e : snapshot.entrySet())
+			len += (8 + e.getKey().length() + e.getValue().toString().length());
+
+		ByteBuffer encoded = ByteBuffer.allocate(len);
+		encoded.put(MAGIC);
+		encoded.putInt(snapshot.size());
+
+		for (Map.Entry<String,?> e : snapshot.entrySet())
+		{
+			String key = e.getKey();
+			String value = e.getValue().toString();
+
+			encoded.putInt(key.length());
+			encoded.put(key.getBytes());
+
+			encoded.putInt(value.length());
+			encoded.put(value.getBytes());
+		}
+
+		encoded.flip();
+		return encoded;
+	}
+
+	/** Parse raw bytes into {@link Preferences}. */
+	static Map<String,String> parse(ByteBuffer bytes) throws IOException
+	{
+		byte[] magic = new byte[MAGIC.length];
+		bytes.get(magic);
+		if (!Arrays.equals(MAGIC, magic)) throw new IOException("Incorrect Preferences magic");
+
+		int entries = bytes.getInt();
+
+		Map<String,String> values = Maps.newHashMap();
+		for (int i = 0; i < entries; i++)
+		{
+			int keylen = bytes.getInt();
+			byte[] key = new byte[keylen];
+			bytes.get(key);
+
+			int valuelen = bytes.getInt();
+			byte[] value = new byte[valuelen];
+			bytes.get(value);
+
+			values.put(new String(key), new String(value));
+		}
+
+		return values;
 	}
 
 
@@ -242,6 +302,9 @@ public class Preferences implements me.footlights.plugin.Preferences
 		return defaults;
 	}
 
+
+	/** Magic bytes used to identify encoded {@link Preferences}: "FOOTOPTS" => "F0070475". */
+	private static final byte[] MAGIC = new byte[] { (byte) 0xF0, 0x07, 0x04, 0x75 };
 
 	/** The preferences you get if you aren't specific (the first ones created). */
 	private static Preferences defaultPreferences;

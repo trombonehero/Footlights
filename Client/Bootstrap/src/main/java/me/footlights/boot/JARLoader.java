@@ -43,7 +43,7 @@ class JARLoader
 
 		JarFile jar = new JAROpener().open(url);
 		if (jar.getManifest() == null)
-			throw new SecurityException("The jar file is not signed");
+			throw new SecurityException("The jar file has no manifest (thus, cannot be signed)");
 
 		return new JARLoader(jar, url);
 	}

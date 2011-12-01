@@ -110,6 +110,27 @@ public class File implements me.footlights.plugin.File
 
 
 	/**
+	 * The content of the file, as one big {@link ByteBuffer}.
+	 *
+	 * Note that, depending on how big the {@link File} is, it might be very silly to actually
+	 * call this method.
+	 */
+	public ByteBuffer getContents() throws IOException
+	{
+		int len = 0;
+		for (Block b : plaintext) len += b.content().remaining();
+
+		ByteBuffer buffer = ByteBuffer.allocateDirect(len);
+
+		for (Block b : plaintext)
+			buffer.put(b.content().asReadOnlyBuffer());
+
+		buffer.flip();
+		return buffer;
+	}
+
+
+	/**
 	 * The content of the file, transformed into an {@link InputStream}.
 	 */
 	public InputStream getInputStream()

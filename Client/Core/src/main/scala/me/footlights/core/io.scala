@@ -22,6 +22,8 @@ import java.util.logging.Logger
 
 package me.footlights.core {
 
+import security.Privilege
+
 /** Provides efficient low-level I/O. */
 object IO {
 	/**

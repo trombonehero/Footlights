@@ -1,10 +1,10 @@
-package me.footlights.core
+import java.security.{AccessController, PrivilegedActionException, PrivilegedExceptionAction}
+import java.nio.ByteBuffer
 
-import _root_.java.security.{AccessController, PrivilegedActionException, PrivilegedExceptionAction}
-import _root_.java.nio.ByteBuffer
+import me.footlights.core.Kernel
+import me.footlights.plugin.KernelInterface
 
-import _root_.me.footlights.plugin.KernelInterface
-
+package me.footlights.core.security {
 
 /**
  * A trait which invokes kernel operations (syscalls) with JVM privilege.
@@ -44,4 +44,6 @@ object Privilege {
 		catch {
 			case e:PrivilegedActionException => throw e getCause
 		}
+}
+
 }

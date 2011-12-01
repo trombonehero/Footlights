@@ -101,7 +101,7 @@ object Kernel {
 
 		new Kernel(pluginLoader, prefs, keychain, plugins, uis, store)
 			with SwingPowerboxes
-			with KernelPrivilege
+			with security.KernelPrivilege
 	}
 
 	private val log = Logger getLogger { classOf[Kernel].getCanonicalName }

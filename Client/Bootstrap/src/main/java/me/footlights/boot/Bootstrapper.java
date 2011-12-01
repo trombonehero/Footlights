@@ -93,7 +93,7 @@ class Bootstrapper
 
 		// Load the Footlights class.
 		Class<?> footlightsClass = classLoader.loadClass("me.footlights.core.Footlights");
-		Class<?> coreClass = classLoader.loadClass("me.footlights.core.Core");
+		Class<?> coreClass = classLoader.loadClass("me.footlights.core.Kernel");
 
 		Object footlights = coreClass
 			.getMethod("init", ClassLoader.class)

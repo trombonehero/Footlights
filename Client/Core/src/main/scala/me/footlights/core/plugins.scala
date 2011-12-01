@@ -118,7 +118,6 @@ trait Plugins extends Footlights {
 					}
 				}
 
-				this.notifyAll()
 				this
 			}
 		}

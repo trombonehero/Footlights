@@ -110,16 +110,19 @@ public abstract class Store implements java.io.Flushable
 
 
 	/**
-	 * Flush any stored blocks to disk/network, optionally blocking until all
-	 * I/O is complete.
+	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
 	 */
 	public void flush() throws IOException
 	{
-		while (!journal.isEmpty())
+		while (true)
 		{
 			// Ensure that only one thread polls from the queue at a time.
 			final String name;
-			synchronized(journal) { name = journal.poll(); }
+			synchronized(journal)
+			{
+				if (journal.isEmpty()) break;
+				name = journal.poll();
+			}
 
 			try
 			{

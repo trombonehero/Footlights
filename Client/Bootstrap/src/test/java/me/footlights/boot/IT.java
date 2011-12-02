@@ -12,7 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
-import me.footlights.core.Core;
+import me.footlights.core.Kernel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -158,7 +158,7 @@ public class IT
 		catch (FileNotFoundException e) { /* expected result */ }
 
 		// Try to load core Footlights code.
-		String className = Core.class.getCanonicalName();
+		String className = Kernel.class.getCanonicalName();
 		url = wickedLoader.getResource(className);
 		try
 		{

@@ -60,8 +60,7 @@ class TicTacToePlugin(val prefs:ModifiablePreferences) extends Plugin
 object TicTacToe
 {
 	def init(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) = {
-		log.warning("starting scala-based plugin")
-
+		log.info("Starting Tic-Tac-Toe plugin")
 		new TicTacToePlugin(prefs)
 	}
 }

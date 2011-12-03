@@ -24,7 +24,7 @@ function ajax(url, context)
 	try
 	{
 		xhr.open('GET', url);
-		xhr.onreadystatechange = function() { handleAjax(xhr, url, context); };
+		xhr.onreadystatechange = function() { forwardAjaxResponse(xhr, url, context); };
 
 		xhr.open('GET', 'http://localhost:4567/' + url, true);
 		xhr.send(null);
@@ -33,7 +33,8 @@ function ajax(url, context)
 }
 
 
-function handleAjax(xhr, request, context)
+/** Forwards Ajax responses to the correct execution context. */
+function forwardAjaxResponse(xhr, request, context)
 {
 	if(xhr.readyState == 4)
 	{

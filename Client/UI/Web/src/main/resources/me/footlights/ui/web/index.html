@@ -50,7 +50,7 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	// The global context.
 	var rootContext =
 	{
-		ajax: function(request) { ajax('/ajax/global/' + request, this); },
+		ajax: function(request, callback) { ajax('/ajax/global/' + request, this, callback); },
 		exec: function(code) { eval(code); },
 		log:  function(message) { status.log(message); },
 		name: 'global',

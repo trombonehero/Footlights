@@ -21,9 +21,6 @@
 //   appendElement(type)           returns a proxied Node
 //
 
-placeholders = {}
-max_placeholder_id = 0
-
 function proxy(node, context)
 {
 	var theProxy =
@@ -67,11 +64,6 @@ function proxy(node, context)
 			// since we want to set the 'id' attribute (which is a privileged operation).
 			var span = document.createElement('span');
 			node.appendChild(span);
-
-			// Set a unique ID so that we can come along later and fill in the placeholder.
-			max_placeholder_id += 1
-			var id = max_placeholder_id
-			span.setAttribute('id', 'placeholder_' + id);
 
 			// Now we can start using the unprivileged proxy for the <span/>.
 			var subproxy = proxy(span, context);

@@ -36,23 +36,21 @@ function ajax(url, context)
 /** Forwards Ajax responses to the correct execution context. */
 function forwardAjaxResponse(xhr, request, context)
 {
-	if(xhr.readyState == 4)
+	if(xhr.readyState != 4) return;
+	if(xhr.status != 200)
 	{
-		if(xhr.status != 200)
-		{
-			context.log('Error serving Ajax request "' + request + '": HTTP status ' + xhr.status);
+		context.log('Error serving Ajax request "' + request + '": HTTP status ' + xhr.status);
+		return;
+	}
+
+	switch (xhr.getResponseHeader('Content-Type'))
+	{
+		case 'text/javascript':
+			context.exec(xhr.responseText);
 			return;
-		}
 
-		switch (xhr.getResponseHeader('Content-Type'))
-		{
-			case 'text/javascript':
-				context.exec(xhr.responseText);
-				return;
-
-			default:
-				context.log('unknown XHR response type: ' + xhr.getResponseHeader('Content-Type'));
-				return;
-		}
+		default:
+			context.log('unknown XHR response type: ' + xhr.getResponseHeader('Content-Type'));
+			return;
 	}
 }

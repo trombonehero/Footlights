@@ -52,7 +52,7 @@ public class SecretKeyTest
 			String algorithm = v[i++];
 			String mode = v[i++];
 			byte[] secret = Hex.decodeHex(v[i++].toCharArray());
-			short ivLength = (short) (4 * v[i++].length());
+			i++;  // We don't actually use the IV.
 
 			byte[] plaintext = Hex.decodeHex(v[i++].toCharArray());
 			ByteBuffer plainbuf = ByteBuffer.wrap(Arrays.copyOf(plaintext, plaintext.length));

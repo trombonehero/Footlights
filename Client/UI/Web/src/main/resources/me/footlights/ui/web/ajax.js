@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-function ajax(url, context)
+function ajax(url, context, callback)
 {
 	var xhr = false;
 
@@ -24,7 +24,7 @@ function ajax(url, context)
 	try
 	{
 		xhr.open('GET', url);
-		xhr.onreadystatechange = function() { forwardAjaxResponse(xhr, url, context); };
+		xhr.onreadystatechange = function() { forwardAjaxResponse(xhr, url, context, callback); };
 
 		xhr.open('GET', 'http://localhost:4567/' + url, true);
 		xhr.send(null);
@@ -34,7 +34,7 @@ function ajax(url, context)
 
 
 /** Forwards Ajax responses to the correct execution context. */
-function forwardAjaxResponse(xhr, request, context)
+function forwardAjaxResponse(xhr, request, context, callback)
 {
 	if(xhr.readyState != 4) return;
 	if(xhr.status != 200)
@@ -43,14 +43,11 @@ function forwardAjaxResponse(xhr, request, context)
 		return;
 	}
 
-	switch (xhr.getResponseHeader('Content-Type'))
-	{
-		case 'text/javascript':
-			context.exec(xhr.responseText);
-			return;
+	// The response might be an XML object or just plain text.
+	var contentType = xhr.getResponseHeader('Content-Type');
+	var response = (contentType == 'text/xml') ? xhr.responseXML : xhr.responseText;
 
-		default:
-			context.log('unknown XHR response type: ' + xhr.getResponseHeader('Content-Type'));
-			return;
-	}
+	// If no callback has been specified, just assume the response is code to be executed.
+	if (callback == undefined) callback = function(code) { context.exec(code); }
+	callback(response);
 }

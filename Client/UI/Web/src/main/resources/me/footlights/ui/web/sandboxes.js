@@ -47,7 +47,7 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 
 	var sandbox =
 		{
-			ajax: function(request) { ajax('/ajax/' + name + '/' + request, this); },
+			ajax: function(request, callback) { ajax('/ajax/' + name + '/' + request, this, callback); },
 			compile: function(code) { return cajaVM.compileModule('return ' + code); },
 			exec: function(code) { cajaVM.compileModule(code)({ 'context': this }); },
 			load: function(filename) { ajax('static/' + this.name + '/' + filename, this); },

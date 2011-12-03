@@ -29,6 +29,7 @@ class DemoAjaxHandler extends Context
 		ALL_DONE,
 		CLICKED,
 		OPEN_FILE,
+		LOG,
 	}
 
 	DemoAjaxHandler(final KernelInterface kernel, final Logger log)
@@ -138,6 +139,15 @@ class DemoAjaxHandler extends Context
 
 				return new JavaScript()
 					.append(makeDiv("Opened " + file.getInputStream().available() + " B file"));
+			}
+		});
+
+		register(LOG.name().toLowerCase(), new AjaxHandler()
+		{
+			@Override public JavaScript service(WebRequest request)
+				throws FileNotFoundException, SecurityException, Throwable
+			{
+				return new JavaScript().append("this is a message to log");
 			}
 		});
 	}

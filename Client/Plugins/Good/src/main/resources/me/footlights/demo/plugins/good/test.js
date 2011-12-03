@@ -71,4 +71,6 @@ b.type = 'button';
 b.value = 'Open a File';
 b.onclick = function() { context.ajax('open_file'); }
 
+context.ajax('log', function(response) { context.log(response); });
+
 return 42;

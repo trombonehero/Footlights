@@ -15,8 +15,6 @@ package me.footlights.core.security {
  * Obviously, the privileged {@link Kernel} must be carefully implemented to avoid abuse. 
  */
 trait KernelPrivilege extends Kernel {
-	abstract override def generateUUID             = Privilege.sudo { () => super.generateUUID }
-
 	abstract override def open(name:String)        = Privilege.sudo { () => super.open(name) }
 	abstract override def openLocalFile()          = Privilege.sudo { () => super.openLocalFile() }
 	abstract override def save(data:ByteBuffer)    = Privilege.sudo { () => super.save(data) }

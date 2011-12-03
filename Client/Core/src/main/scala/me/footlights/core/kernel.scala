@@ -60,9 +60,6 @@ abstract class Kernel(
 	val pluginLoader = loader
 	val prefs = p
 	val uis = u
-
-	/** This is a trivial operation which demonstrates what a syscall might look like. */
-	def generateUUID() = _root_.java.util.UUID.randomUUID
 }
 
 

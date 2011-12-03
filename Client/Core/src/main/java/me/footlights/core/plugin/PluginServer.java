@@ -33,12 +33,6 @@ public class PluginServer implements KernelInterface
 
 
 	// KernelInterface implementation
-	public java.util.UUID generateUUID()
-	{
-		// no security, this is just a silly demo of syscall functionality
-		return kernel.generateUUID();
-	}
-
 	@Override public File save(ByteBuffer data) throws IOException
 	{
 		return kernel.save(data);

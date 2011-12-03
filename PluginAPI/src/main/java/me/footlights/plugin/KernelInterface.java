@@ -23,9 +23,6 @@ import java.nio.ByteBuffer;
 /** A plugin's interface to the Footlights core. */
 public interface KernelInterface
 {
-	/** A silly example of a syscall. */
-	public java.util.UUID generateUUID();
-
 	/**
 	 * Save data to a logical file.
 	 */

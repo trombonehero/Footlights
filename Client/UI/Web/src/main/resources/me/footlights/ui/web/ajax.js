@@ -49,16 +49,6 @@ function handleAjax(xhr, request, context)
 				context.exec(xhr.responseText);
 				return;
 
-			case 'text/xml':
-				var doc = xhr.responseXML.documentElement;
-				var type = doc.getElementsByTagName('type')[0].childNodes[0].nodeValue;
-				var content = doc.getElementsByTagName('content')[0].childNodes[0].nodeValue;
-
-				if(type == "error") showError(context, content);
-				else showAjaxResponse(type, content);
-
-				return;
-
 			default:
 				context.log('unknown XHR response type: ' + xhr.getResponseHeader('Content-Type'));
 				return;

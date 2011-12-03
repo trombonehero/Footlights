@@ -118,9 +118,15 @@ var sb = sandboxes.create('plugin/""")
 
 sb.ajax('init');""")
 			}
+
+			case FillPlaceholder(name) => {
+				new JavaScript()
+					.appendText("placeholder value for '" + name + "'")
+			}
 		}
 	}
 
+	private val FillPlaceholder = """fill_placeholder/(.*)""".r
 	private val LoadPlugin = """load_plugin/(.*)""".r
 
 	private def button(label:String, onClick:JavaScript) = new JavaScript()

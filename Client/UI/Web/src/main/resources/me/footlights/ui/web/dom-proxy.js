@@ -76,7 +76,8 @@ function proxy(node, context)
 			// Now we can start using the unprivileged proxy for the <span/>.
 			var subproxy = proxy(span, context);
 			subproxy.class = 'placeholder';
-			subproxy.appendText('${' + name + '}');
+
+			sandboxes['global'].ajax('fill_placeholder/' + name, function(s) { subproxy.appendText(s) });
 			return subproxy;
 		},
 

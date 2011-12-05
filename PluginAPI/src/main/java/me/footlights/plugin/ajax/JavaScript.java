@@ -79,12 +79,7 @@ public class JavaScript implements AjaxResponse
 	private String code()
 	{
 		// TODO(jon): sanitization?
-		if (frozen == null)
-			frozen = builder.toString()
-				.replaceAll("\\{", "{\n")
-				.replaceAll("\\}", "\n}")
-				.replaceAll(";", ";\n");
-
+		if (frozen == null) frozen = builder.toString();
 		return frozen;
 	}
 

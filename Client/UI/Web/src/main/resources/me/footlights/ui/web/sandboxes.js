@@ -27,27 +27,30 @@ sandboxes.getOrCreate = function(name, parent, log, x, y, width, height)
 
 sandboxes.create = function(name, parent, log, x, y, width, height)
 {
-	var container = document.createElement('div');
-
-	var label = document.createElement('div');
-	container.appendChild(label);
-	label.className = 'sandboxlabel';
-	label.innerHTML = 'Sandbox: ' + name;
-
-	var content = document.createElement('div');
-	container.appendChild(content);
-
-	content.className = 'sandbox';
-	content.style.background = '#ffc';
+	var container = parent.appendElement('div');
+	container.class = 'sandbox';
+	container.style.background = '#ffc';
 	// TODO: (x,y)
-	content.width = width;
-	content.height = height;
+	container.width = width;
+	container.height = height;
 
-	parent.root.appendChild(container);
-	return this.wrap(name, content, log);
+	var label = container.appendElement('div');
+	label.class = 'sandboxlabel';
+	label.appendText('Sandbox: ' + name);
+
+	var sandbox = this.wrap(name, log);
+
+	var content = container.chroot(sandbox);
+	content.appendText('foo');
+
+	sandbox.root = content;
+	sandbox = Object.freeze(sandbox);
+
+	sandboxes[name] = sandbox;
+	return sandbox;
 }
 
-sandboxes.wrap = function(name, content, log)
+sandboxes.wrap = function(name, log)
 {
 	var sandbox =
 		{
@@ -71,9 +74,6 @@ sandboxes.wrap = function(name, content, log)
 	//
 	// an_image.onload = function() { custom_name_for_foo.run(); }
 	sandbox.globals = { context: sandbox };
-	sandbox.root = proxy(content, sandbox);
-	sandbox = Object.freeze(sandbox);
 
-	sandboxes[name] = sandbox;		
 	return sandbox;
 };

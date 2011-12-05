@@ -21,7 +21,7 @@
 			<div id="status"></div>
 
 			<div id="content">
-				<div id="buttons">Loading buttons...</div>
+				<div class="buttons">Loading buttons...</div>
 			</div>
 		</div>
 
@@ -46,16 +46,15 @@ initSES(window, whitelist, atLeastFreeVarNames);
 		update.appendChild(document.createTextNode(t));
 	};
 
-	// The global context.
-	var rootContext =
-	{
-		ajax: function(request, callback) { ajax('/ajax/global/' + request, this, callback); },
-		exec: function(code) { eval(code); },
-		log:  function(message) { status.log(message); },
-		name: 'global',
-		root: document.getElementById('content'),
-	};
-	sandboxes['global'] = rootContext;
+	function log(message) { status.log(message); }
+	var rootContext = sandboxes.wrap('global', log);
+
+	// What makes the root context special is what we pass into it.
+	rootContext.root = proxy(document.getElementById('content'), rootContext);
+	rootContext.globals['sandboxes'] = sandboxes;
+	rootContext.globals['window'] = window;
+
+	sandboxes['global'] = Object.freeze(rootContext);
 
 	rootContext.ajax('init');
 })();

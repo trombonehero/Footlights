@@ -77,8 +77,8 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 
 				new JavaScript()
 					.append("""
-var buttons = document.getElementById('buttons');
-buttons.innerHTML='';""")
+var buttons = context.root.getChild(function(node) { return node.class == 'buttons'; });
+buttons.clear();""")
 
 					.append(button("Good Plugin", JavaScript.ajax("load_plugin/" + GOOD_PLUGIN)))
 					.append(button("Wicked Plugin", JavaScript.ajax("load_plugin/" + WICKED_PLUGIN)))
@@ -86,7 +86,7 @@ buttons.innerHTML='';""")
 
 					.append(button("Reset", JavaScript.ajax("reset")))
 
-					.append("console.log('UI Initialized');")
+					.append("context.log('UI Initialized');")
 			}
 
 			case "reset" => {
@@ -95,7 +95,7 @@ buttons.innerHTML='';""")
 						footlights.plugins().iterator().next());
 
 				server.reset
-				new JavaScript().append("window.location.reload()")
+				new JavaScript().append("context.globals['window'].location.reload()")
 			}
 
 			case LoadPlugin(path) => {
@@ -107,14 +107,11 @@ buttons.innerHTML='';""")
 
 				new JavaScript()
 					.append("""
-rootContext.log('loaded plugin \'""" + name.substring(name.lastIndexOf('.') + 1) + """');
+context.log('loaded plugin \'""" + name.substring(name.lastIndexOf('.') + 1) + """\'');
 
-console.log('"""").appendText(plugin.getPluginName())
-	.append("""" loaded as """").appendText(name).append(""""');
-
-var sb = sandboxes.create('plugin/""")
+var sb = context.globals['sandboxes'].create('plugin/""")
 	.appendText(plugin.getPluginName())
-	.append("""', rootContext, rootContext.log, 0, 0, 200, 200);
+	.append("""', context.root, context.log, 0, 0, 200, 200);
 
 sb.ajax('init');""")
 			}
@@ -132,13 +129,11 @@ sb.ajax('init');""")
 
 	private def button(label:String, onClick:JavaScript) = new JavaScript()
 		.append("""
-var button = document.createElement('button');
-button.type = 'button';
+var button = buttons.appendElement('button');
+button.appendText('""").appendText(label).append("""');
 
-button.appendChild(document.createTextNode('""").appendText(label).append("""'));
 button.onclick = function() { """).append(onClick).append("""};
-
-buttons.appendChild(button);""")
+""")
 
 
 

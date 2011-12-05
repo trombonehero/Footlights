@@ -15,6 +15,8 @@
  */
 package me.footlights.ui.web;
 
+import me.footlights.plugin.WebRequest;
+import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 
 import _root_.me.footlights.core.Footlights;
@@ -118,8 +120,9 @@ sb.ajax('init');""")
 			}
 
 			case FillPlaceholder(name) => {
-				new JavaScript()
-					.appendText("placeholder value for '" + name + "'")
+				me.footlights.plugin.ajax.JSON.newBuilder()
+					.put("name", "the user's name")
+					.build()
 			}
 		}
 	}

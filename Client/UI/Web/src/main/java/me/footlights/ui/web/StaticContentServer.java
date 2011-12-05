@@ -24,20 +24,20 @@ import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
 
-import me.footlights.core.plugin.PluginWrapper;
-import me.footlights.plugin.WebRequest;
+import me.footlights.api.WebRequest;
+import me.footlights.core.apps.AppWrapper;
 
 
-/** Code to serve static plugin content. */
+/** Code to serve static content. */
 class StaticContentServer implements WebServer
 {
-	StaticContentServer(Map<String,PluginWrapper> plugins)
+	StaticContentServer(Map<String,AppWrapper> apps)
 	{
 		paths = Maps.newHashMap();
-		this.plugins = plugins;
+		this.apps = apps;
 
-		for (Map.Entry<String,PluginWrapper> plugin : plugins.entrySet())
-			paths.put(plugin.getKey(), plugin.getValue().getClass());
+		for (Map.Entry<String,AppWrapper> app : apps.entrySet())
+			paths.put(app.getKey(), app.getValue().getClass());
 
 		// TODO: this is a temporary cheat for testing.
 		paths.put("sandbox", getClass());
@@ -59,14 +59,14 @@ class StaticContentServer implements WebServer
 				.build();
 
 		final Class<?> resourceLoader;
-		if (request.prefix().equals("plugin"))
+		if (request.prefix().equals("app"))
 		{
 			request = request.shift();
-			PluginWrapper plugin = plugins.get(request.prefix());
-			if (plugin == null)
-				throw new FileNotFoundException("No such plugin " + request.prefix());
+			AppWrapper app = apps.get(request.prefix());
+			if (app == null)
+				throw new FileNotFoundException("No such app " + request.prefix());
 
-			resourceLoader = plugin.getWrappedPlugin().getClass();
+			resourceLoader = app.getApp().getClass();
 		}
 		else if (request.prefix().equals("footlights"))
 		{
@@ -75,7 +75,7 @@ class StaticContentServer implements WebServer
 				throw new FileNotFoundException("No such directory '" + request.prefix() + "'");
 		}
 		else throw new FileNotFoundException(
-			"Static content filename must start with either 'footlights' or 'plugin'");
+			"Static content filename must start with either 'app' or 'footlights'");
 
 		String path = request.shift().path();
 		URL url = resourceLoader.getResource(path);
@@ -114,5 +114,5 @@ class StaticContentServer implements WebServer
 	}
 
 	private final Map<String,Class<?>> paths;
-	private final Map<String, PluginWrapper> plugins;
+	private final Map<String, AppWrapper> apps;
 }

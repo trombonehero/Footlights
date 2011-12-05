@@ -23,20 +23,20 @@ import javax.swing.JFileChooser
 
 import scala.collection.mutable.{HashMap,HashSet,LinkedList,Map,Set}
 
-import me.footlights.plugin.KernelInterface
+import me.footlights.api.KernelInterface
 
 
 package me.footlights.core {
 
+import apps.AppWrapper
 import crypto.Keychain
 import data.store.{DiskStore, Store}
-import plugin.PluginWrapper
 
 
 /**
  * The Footlights kernel, composed of:
  *  - a filesystem
- *  - plugin management
+ *  - application management
  *  - a UI manager (for dispatching events to the web UI, swing UI, etc.)
  *
  * It is abstract, since it does not implement:
@@ -47,25 +47,25 @@ import plugin.PluginWrapper
  */
 abstract class Kernel(
 		loader:ClassLoader, p:FileBackedPreferences, k:Keychain,
-		plugins:HashMap[URI,PluginWrapper], u:Set[UI], s:Store)
+		apps:HashMap[URI,AppWrapper], u:Set[UI], s:Store)
 
 	extends Footlights
 		with Filesystem
-		with Plugins
+		with Applications
 		with UIManager
 {
 	val keychain = k
 	val store = s
-	val loadedPlugins = plugins
-	val pluginLoader = loader
+	val loadedApps = apps
+	val appLoader = loader
 	val prefs = p
 	val uis = u
 }
 
 
 object Kernel {
-	/** Create a Footlights kernel which uses a given ClassLoader to load plugins. */
-	def init(pluginLoader:ClassLoader) = {
+	/** Create a Footlights kernel which uses a given ClassLoader to load applications. */
+	def init(appLoader:ClassLoader) = {
 		// This is the Footlights core, the security kernel; ensure that we can do anything.
 		AccessController checkPermission { new AllPermission() }
 
@@ -85,7 +85,7 @@ object Kernel {
 
 		Flusher(keychain, keychainFile) start
 
-		val plugins = new HashMap[URI,PluginWrapper]
+		val apps = new HashMap[URI,AppWrapper]
 		val uis = new HashSet[UI]
 
 		val store =
@@ -96,7 +96,7 @@ object Kernel {
 
 		Flusher(store) start
 
-		new Kernel(pluginLoader, prefs, keychain, plugins, uis, store)
+		new Kernel(appLoader, prefs, keychain, apps, uis, store)
 			with SwingPowerboxes
 			with security.KernelPrivilege
 	}

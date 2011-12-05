@@ -4,11 +4,11 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>me.footlights</groupId>
-    <artifactId>Client</artifactId>
-    <version>HEAD</version>
-  </parent>
+	<parent>
+		<groupId>me.footlights</groupId>
+		<artifactId>Client</artifactId>
+		<version>HEAD</version>
+	</parent>
 
 	<artifactId>footlights-desktop-ui</artifactId>
 	<name>Desktop UIs</name>
@@ -28,7 +28,7 @@
 		</dependency>
 		<dependency>
 			<groupId>me.footlights</groupId>
-			<artifactId>plugin-api</artifactId>
+			<artifactId>api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

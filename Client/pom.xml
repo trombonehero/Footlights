@@ -19,7 +19,7 @@
 		<module>Android</module>
 		<module>Bootstrap</module>
 		<module>Core</module>
-		<module>Plugins</module>
+		<module>Demos</module>
 		<module>UI</module>
 	</modules>
 </project>

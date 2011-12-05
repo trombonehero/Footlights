@@ -13,8 +13,8 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>API</module>
 		<module>Client</module>
-		<module>PluginAPI</module>
 		<module>Server</module>
 	</modules>
 

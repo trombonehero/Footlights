@@ -21,7 +21,7 @@ import java.io.*;
 import javax.swing.*;
 
 import me.footlights.core.Footlights;
-import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.core.apps.AppWrapper;
 
 
 public class SwingUI extends me.footlights.core.UI
@@ -40,8 +40,8 @@ public class SwingUI extends me.footlights.core.UI
 		frame = new JFrame(name);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		pluginList = new PluginList(footlights);
-		frame.getContentPane().add(pluginList, java.awt.BorderLayout.LINE_START);
+		appList = new ApplicationList(footlights);
+		frame.getContentPane().add(appList, java.awt.BorderLayout.LINE_START);
 
 		textArea = new JTextArea();
 		textArea.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -69,23 +69,14 @@ public class SwingUI extends me.footlights.core.UI
 		System.setErr(printStream);
 	}
 
-
-	@Override public void pluginLoaded(PluginWrapper plugin)
-	{
-		pluginList.pluginLoaded(plugin);
-	}
-
-	@Override public void pluginUnloading(PluginWrapper plugin)
-	{
-		pluginList.pluginUnloading(plugin);
-	}
-
+	@Override public void applicationLoaded(AppWrapper app) { appList.applicationLoaded(app); }
+	@Override public void applicationUnloading(AppWrapper app) { appList.applicationLoaded(app); }
 
 	@Override public void run() { printStream.println("Swing UI started."); }
 
 
 	private JFrame frame;
-	private PluginList pluginList;
+	private ApplicationList appList;
 	private JTextArea textArea;
 	private PrintStream printStream;
 }

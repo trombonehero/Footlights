@@ -22,13 +22,13 @@ import javax.swing.JFileChooser
 
 import scala.collection.mutable.Set
 
-import me.footlights.plugin.KernelInterface
+import me.footlights.api.KernelInterface
 
 
 package me.footlights.core {
 
+import apps.AppWrapper
 import data.File
-import plugin.PluginWrapper
 
 
 /** Manages interaction with UIs (e.g. the Swing UI, the Web UI, ...). */
@@ -38,21 +38,21 @@ trait UIManager extends Footlights {
 	def registerUI(ui:UI):Unit = uis.add(ui)
 	def deregisterUI(ui:UI):Unit = uis.remove(ui)
 
-	abstract override def loadPlugin(name:String, uri:URI) = {
-		val wrapper = super.loadPlugin(name, uri)
-		uis foreach { _.pluginLoaded(wrapper) }
+	abstract override def loadApplication(name:String, uri:URI) = {
+		val wrapper = super.loadApplication(name, uri)
+		uis foreach { _.applicationLoaded(wrapper) }
 		wrapper
 	}
 
-	abstract override def unloadPlugin(plugin:PluginWrapper) = {
-		uis foreach { _.pluginUnloading(plugin) }
-		super.unloadPlugin(plugin)
+	abstract override def unloadApplication(app:AppWrapper) = {
+		uis foreach { _.applicationUnloading(app) }
+		super.unloadApplication(app)
 	}
 }
 
 /** Provides Swing-based powerboxes for prompting users (e.g. "which file?", "which friend?"). */
 trait SwingPowerboxes extends Kernel {
-	override def openLocalFile():_root_.me.footlights.plugin.File = open getOrElse { null }
+	override def openLocalFile():_root_.me.footlights.api.File = open getOrElse { null }
 
 
 	private def open() = {

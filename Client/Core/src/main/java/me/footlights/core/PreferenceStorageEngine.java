@@ -18,7 +18,7 @@ package me.footlights.core;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import me.footlights.plugin.ModifiablePreferences;
+import me.footlights.api.ModifiablePreferences;
 
 
 /**
@@ -26,7 +26,7 @@ import me.footlights.plugin.ModifiablePreferences;
  *
  * @author Jonathan Anderson <jon@footlights.me>
  */
-public abstract class PreferenceStorageEngine implements me.footlights.plugin.Preferences
+public abstract class PreferenceStorageEngine implements me.footlights.api.Preferences
 {
 	protected abstract Map<String,?> getAll();
 

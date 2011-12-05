@@ -34,7 +34,7 @@ import com.google.common.collect.Lists;
  *
  * Files are immutable; to modify a file, you must create and freeze a {@link MutableFile}.
  */
-public class File implements me.footlights.plugin.File
+public class File implements me.footlights.api.File
 {
 	public static File from(EncryptedBlock header, Collection<EncryptedBlock> ciphertext)
 	{

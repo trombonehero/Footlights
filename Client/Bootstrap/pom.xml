@@ -2,17 +2,24 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>me.footlights</groupId>
-    <artifactId>Client</artifactId>
-    <version>HEAD</version>
-  </parent>
+	<parent>
+		<groupId>me.footlights</groupId>
+		<artifactId>Client</artifactId>
+		<version>HEAD</version>
+	</parent>
 
 	<artifactId>footlights-bootstrap</artifactId>
 	<name>Desktop Bootstrapper</name>
 
 	<packaging>jar</packaging>
 	<dependencies>
+		<!-- Crypto provider. -->
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcprov-jdk16</artifactId>
+			<version>140</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
@@ -33,19 +40,19 @@
 		</dependency>
 		<dependency>
 			<groupId>me.footlights</groupId>
-			<artifactId>good-plugin</artifactId>
+			<artifactId>basic-demo</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>me.footlights</groupId>
-			<artifactId>wicked-plugin</artifactId>
+			<artifactId>wicked-app</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>me.footlights</groupId>
-			<artifactId>plugin-api</artifactId>
+			<artifactId>api</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -18,9 +18,8 @@ package me.footlights.core;
 import java.net.URI;
 import java.util.Collection;
 
-import me.footlights.core.plugin.*;
-import me.footlights.plugin.KernelInterface;
-
+import me.footlights.api.KernelInterface;
+import me.footlights.core.apps.*;
 
 
 /** Interface to the software core */
@@ -30,7 +29,7 @@ public interface Footlights extends KernelInterface
 	public void deregisterUI(UI ui);
 
 
-	public Collection<PluginWrapper> plugins();
-	public PluginWrapper loadPlugin(String name, URI uri) throws PluginLoadException;
-	public void unloadPlugin(PluginWrapper plugin);
+	public Collection<AppWrapper> runningApplications();
+	public AppWrapper loadApplication(String name, URI uri) throws AppStartupException;
+	public void unloadApplication(AppWrapper plugin);
 }

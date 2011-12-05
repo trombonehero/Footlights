@@ -40,8 +40,8 @@ public abstract class Store implements java.io.Flushable
 	/** Low-level method to get a block from the disk, network, etc. */
 	protected abstract ByteBuffer get(String name)
 		throws IOException, NoSuchBlockException;
-	
-	
+
+
 	/** Constructor */
 	public Store(Store cache)
 	{

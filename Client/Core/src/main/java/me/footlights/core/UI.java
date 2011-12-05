@@ -15,12 +15,11 @@
  */
 package me.footlights.core;
 
-
-import me.footlights.core.plugin.*;
+import me.footlights.core.apps.AppWatcher;
 
 
 /** A User Interface */
-public abstract class UI extends Thread implements PluginWatcher
+public abstract class UI extends Thread implements AppWatcher
 {
 	/**
 	 * Default constructor.
@@ -32,8 +31,4 @@ public abstract class UI extends Thread implements PluginWatcher
 		super("Footlights UI: '" + name + "'");
 		footlights.registerUI(this);
 	}
-
-
-	public void pluginLoaded(PluginWrapper plugin) {}
-	public void pluginUnloading(PluginWrapper plugin) {}
 }

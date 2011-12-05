@@ -38,7 +38,7 @@ trait Filesystem {
 	def open(name:String) = store.fetch(keychain.getLink(Fingerprint.decode(name)))
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
-	def save(data:ByteBuffer):_root_.me.footlights.plugin.File = {
+	def save(data:ByteBuffer):_root_.me.footlights.api.File = {
 			val f = File.newBuilder.setContent(data).freeze
 			store.store(f.toSave())
 			f

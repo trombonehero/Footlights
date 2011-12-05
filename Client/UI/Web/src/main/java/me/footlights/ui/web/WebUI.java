@@ -21,7 +21,8 @@ import java.util.logging.Logger;
 import com.google.common.collect.Maps;
 
 import me.footlights.core.Footlights;
-import me.footlights.core.plugin.PluginWrapper;
+import me.footlights.core.Preconditions;
+import me.footlights.core.apps.AppWrapper;
 
 import static me.footlights.ui.web.Constants.*;
 
@@ -30,23 +31,25 @@ public class WebUI extends me.footlights.core.UI
 {
 	public static WebUI init(Footlights footlights)
 	{
+		Preconditions.notNull(footlights);
+
 		int port = WEB_PORT;
 		log.info("Using TCP port " + port);
 
-		Map<String, PluginWrapper> plugins = Maps.newLinkedHashMap();
+		Map<String, AppWrapper> apps = Maps.newLinkedHashMap();
 
 		AjaxServer ajax = new AjaxServer(footlights);
-		StaticContentServer staticContent = new StaticContentServer(plugins);
+		StaticContentServer staticContent = new StaticContentServer(apps);
 		MasterServer master = new MasterServer(port, footlights, ajax, staticContent);
 
-		return new WebUI(footlights, master, plugins);
+		return new WebUI(footlights, master, apps);
 	}
 
-	private WebUI(Footlights footlights, MasterServer server, Map<String, PluginWrapper> plugins)
+	private WebUI(Footlights footlights, MasterServer server, Map<String, AppWrapper> apps)
 	{
 		super("Web UI", footlights);
 
-		this.plugins = plugins;
+		this.apps = apps;
 		this.server = server;
 	}
 
@@ -57,17 +60,8 @@ public class WebUI extends me.footlights.core.UI
 	}
 
 
-	@Override public void pluginLoaded(PluginWrapper plugin)
-	{
-		plugins.put(plugin.getPluginName(), plugin);
-//		ui.setStatus("Loaded plugin '" + plugin.getName() + "'.");
-	}
-
-	@Override public void pluginUnloading(PluginWrapper plugin)
-	{
-		plugins.remove(plugin.getPluginName());
-//		ui.setStatus("Unloading plugin '" + plugin.getName() + "'.");
-	}
+	@Override public void applicationLoaded(AppWrapper app) { apps.put(app.getName(), app); }
+	@Override public void applicationUnloading(AppWrapper app) { apps.remove(app.getName()); }
 
 
 	/** Log. */
@@ -76,6 +70,6 @@ public class WebUI extends me.footlights.core.UI
 	/** The main web server */
 	private MasterServer server;
 
-	/** Currently-loaded plugins. */
-	private final Map<String, PluginWrapper> plugins;
+	/** Currently-loaded applications. */
+	private final Map<String, AppWrapper> apps;
 }

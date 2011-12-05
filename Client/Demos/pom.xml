@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>me.footlights</groupId>
+		<artifactId>Client</artifactId>
+		<version>HEAD</version>
+	</parent>
+
+	<artifactId>footlights-demos</artifactId>
+	<name>Demos</name>
+
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>Basic</module>
+		<module>BlockStoreClient</module>
+		<module>TicTacToe</module>
+		<module>Wicked</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+</project>

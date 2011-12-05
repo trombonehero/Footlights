@@ -15,7 +15,7 @@
  */
 package me.footlights.ui.web;
 
-import me.footlights.plugin.WebRequest;
+import me.footlights.api.WebRequest;
 
 
 public interface WebServer

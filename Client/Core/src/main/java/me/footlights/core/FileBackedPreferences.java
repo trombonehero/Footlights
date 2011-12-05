@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import me.footlights.plugin.ModifiablePreferences;
-import me.footlights.plugin.Preferences;
+import me.footlights.api.ModifiablePreferences;
+import me.footlights.api.Preferences;
 
 import com.google.common.collect.Maps;
 

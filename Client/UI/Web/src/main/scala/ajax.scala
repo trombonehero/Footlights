@@ -15,20 +15,24 @@
  */
 package me.footlights.ui.web;
 
-import me.footlights.plugin.WebRequest;
+import me.footlights.api.WebRequest;
+import me.footlights.api.ajax.AjaxHandler;
+import me.footlights.api.ajax.AjaxResponse;
+import me.footlights.api.ajax.JavaScript;
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 
 import _root_.me.footlights.core.Footlights;
-import _root_.me.footlights.plugin.WebRequest;
-import _root_.me.footlights.plugin.ajax.{AjaxHandler,JavaScript}
+import _root_.me.footlights.api.WebRequest;
+import _root_.me.footlights.api.ajax.{AjaxHandler,JavaScript}
 
 
 
 /** Acts as an Ajax server for the JavaScript client */
 class AjaxServer(footlights:Footlights) extends WebServer
 {
-	val pluginAjaxHandlers = new HashMap[String, AjaxHandler]
+	val appAjaxHandlers = new HashMap[String, AjaxHandler]
 	val globalContext = new GlobalContext(footlights, this)
 
 	override def name:String = "Ajax"
@@ -37,13 +41,13 @@ class AjaxServer(footlights:Footlights) extends WebServer
 		val resp =
 			request.prefix() match {
 				case "global" => globalContext.service(request.shift())
-				case "plugin" => {
-					val pluginRequest = request.shift()
+				case "app" => {
+					val appRequest = request.shift()
 
-					pluginAjaxHandlers.get(pluginRequest.prefix())
+					appAjaxHandlers.get(appRequest.prefix())
 						.getOrElse(throw new IllegalArgumentException(
-							"No such plugin '" + pluginRequest.prefix() + "'"))
-						.service(pluginRequest.shift())
+							"No such app '" + appRequest.prefix() + "'"))
+						.service(appRequest.shift())
 				}
 				case _:String => new JavaScript()
 			}
@@ -54,13 +58,13 @@ class AjaxServer(footlights:Footlights) extends WebServer
 	}
 
 
-	def reset = pluginAjaxHandlers.clear();
-	def register(name:String, pluginHandler:AjaxHandler)
+	def reset = appAjaxHandlers.clear();
+	def register(name:String, appHandler:AjaxHandler)
 	{
-		if (pluginAjaxHandlers.contains(name))
+		if (appAjaxHandlers.contains(name))
 			throw new RuntimeException(name + " already registered");
 
-		pluginAjaxHandlers += name -> pluginHandler
+		appAjaxHandlers += name -> appHandler
 	}
 }
 
@@ -80,9 +84,9 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 var buttons = context.root.getChild(function(node) { return node.class == 'buttons'; });
 buttons.clear();""")
 
-					.append(button("Good Plugin", JavaScript.ajax("load_plugin/" + GOOD_PLUGIN)))
-					.append(button("Wicked Plugin", JavaScript.ajax("load_plugin/" + WICKED_PLUGIN)))
-					.append(button("Tic-Tac-Toe", JavaScript.ajax("load_plugin/" + TICTACTOE)))
+					.append(button("Good App", JavaScript.ajax("load_app/" + GOOD_APP)))
+					.append(button("Wicked App", JavaScript.ajax("load_app/" + WICKED_APP)))
+					.append(button("Tic-Tac-Toe", JavaScript.ajax("load_app/" + TICTACTOE)))
 
 					.append(button("Reset", JavaScript.ajax("reset")))
 
@@ -90,34 +94,34 @@ buttons.clear();""")
 			}
 
 			case "reset" => {
-				while (footlights.plugins().size() > 0)
-					footlights.unloadPlugin(
-						footlights.plugins().iterator().next());
+				while (footlights.runningApplications().size() > 0)
+					footlights.unloadApplication(
+						footlights.runningApplications().iterator().next());
 
 				server.reset
 				new JavaScript().append("context.globals['window'].location.reload()")
 			}
 
-			case LoadPlugin(path) => {
+			case LoadApplication(path) => {
 				val name = path.substring(path.lastIndexOf('/') + 1);
 				val uri = new java.net.URI(request.shift().path())
-				val plugin = footlights.loadPlugin(name, uri)
+				val app = footlights.loadApplication(name, uri)
 
-				server.register(name, plugin.getWrappedPlugin.ajaxHandler)
+				server.register(name, app.getApp.ajaxHandler)
 
 				new JavaScript()
 					.append("""
-context.log('loaded plugin \'""" + name.substring(name.lastIndexOf('.') + 1) + """\'');
+context.log('loaded app \'""" + name.substring(name.lastIndexOf('.') + 1) + """\'');
 
-var sb = context.globals['sandboxes'].create('plugin/""")
-	.appendText(plugin.getPluginName())
+var sb = context.globals['sandboxes'].create('app/""")
+	.appendText(app.getName())
 	.append("""', context.root, context.log, 0, 0, 200, 200);
 
 sb.ajax('init');""")
 			}
 
 			case FillPlaceholder(name) => {
-				me.footlights.plugin.ajax.JSON.newBuilder()
+				me.footlights.api.ajax.JSON.newBuilder()
 					.put("key", name)
 					.put("value", "the user's name")
 					.build()
@@ -126,7 +130,7 @@ sb.ajax('init');""")
 	}
 
 	private val FillPlaceholder = """fill_placeholder/(.*)""".r
-	private val LoadPlugin = """load_plugin/(.*)""".r
+	private val LoadApplication = """load_app/(.*)""".r
 
 	private def button(label:String, onClick:JavaScript) = new JavaScript()
 		.append("""
@@ -138,16 +142,16 @@ button.onclick = function() { """).append(onClick).append("""};
 
 
 
-	// Hardcode plugin paths for now, just to demonstrate that they work.
+	// Hardcode demo app paths for now, just to demonstrate that they work.
 	private val CORE_PATH = System.getProperty("java.class.path").split(":")(0)
-	private val PLUGIN_PATH = "file:" + CORE_PATH.replaceFirst("Bootstrap/.*", "Plugins/")
+	private val APP_PATH = "file:" + CORE_PATH.replaceFirst("Bootstrap/.*", "Demos/")
 
-	private val GOOD_PLUGIN = PLUGIN_PATH +
-		"Good/target/classes!/me.footlights.demo.plugins.good.GoodPlugin"
+	private val GOOD_APP = APP_PATH +
+		"Basic/target/classes!/me.footlights.demos.good.GoodApp"
 
-	private val WICKED_PLUGIN = "jar:" + PLUGIN_PATH +
-		"Wicked/target/wicked-plugin-HEAD.jar!/me.footlights.demo.plugins.wicked.WickedPlugin"
+	private val WICKED_APP = "jar:" + APP_PATH +
+		"Wicked/target/wicked-app-HEAD.jar!/me.footlights.demos.wicked.WickedApp"
 
-	private val TICTACTOE = PLUGIN_PATH +
-		"TicTacToe/target/classes!/me.footlights.demo.tictactoe.TicTacToe"
+	private val TICTACTOE = APP_PATH +
+		"TicTacToe/target/classes!/me.footlights.demos.tictactoe.TicTacToe"
 }

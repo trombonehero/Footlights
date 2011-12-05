@@ -2,7 +2,8 @@ import java.security.{AccessController, PrivilegedActionException, PrivilegedExc
 import java.nio.ByteBuffer
 
 import me.footlights.core.Kernel
-import me.footlights.plugin.KernelInterface
+import me.footlights.api.KernelInterface
+
 
 package me.footlights.core.security {
 

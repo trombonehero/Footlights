@@ -18,7 +18,7 @@ package me.footlights.ui.web;
 import java.util.Collections;
 import java.util.Map;
 
-import me.footlights.plugin.WebRequest;
+import me.footlights.api.WebRequest;
 
 import com.google.common.collect.Maps;
 

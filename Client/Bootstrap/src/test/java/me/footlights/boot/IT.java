@@ -71,10 +71,10 @@ public class IT
 		assertTrue(permissions.implies(new AllPermission()));
 	}
 
-	@Test public void testGoodPlugin() throws Exception
+	@Test public void testGoodApplication() throws Exception
 	{
 
-		Class<?> c = loader.loadClass(GOOD_PLUGIN);
+		Class<?> c = loader.loadClass(GOOD_APPLICATION);
 
 		assertNotNull(c);
 		assertEquals(GOOD_CLASSNAME, c.getCanonicalName());
@@ -104,29 +104,29 @@ public class IT
 		}
 
 		if (init == null)
-			fail("Unable to find static init() method in plugin " + c.getCanonicalName());
+			fail("Unable to find static init() method in app " + c.getCanonicalName());
 
-		Object plugin = init.invoke(null, null, logger);
-		assertNotNull(plugin);
+		Object app = init.invoke(null, null, logger);
+		assertNotNull(app);
 
 		verify(logger, atLeastOnce()).info(anyString());
 	}
 
-	/** Make sure that we can load a plugin and then re-load it. */
+	/** Make sure that we can load an app and then re-load it. */
 	@Test public void testReload() throws Exception
 	{
-		Class<?> c1 = loader.loadClass(GOOD_PLUGIN);
-		Class<?> c2 = loader.loadClass(GOOD_PLUGIN);
+		Class<?> c1 = loader.loadClass(GOOD_APPLICATION);
+		Class<?> c2 = loader.loadClass(GOOD_APPLICATION);
 		assertNotSame(c1.getClassLoader(), c2.getClassLoader());
 	}
 
 	/** Make sure that we can load resource from a JAR file. */
 	@Test public void testResources() throws Exception
 	{
-		Class<?> c = loader.loadClass(GOOD_PLUGIN);
+		Class<?> c = loader.loadClass(GOOD_APPLICATION);
 		ClassLoader loader = c.getClassLoader();
 
-		// Read the .class file for the plugin's entry point.
+		// Read the .class file for the app's entry point.
 		URL classFileUrl = loader.getResource(GOOD_CLASS_FILE);
 		InputStream in = classFileUrl.openStream();
 		assertNotNull(in);
@@ -143,17 +143,17 @@ public class IT
 	/** Make sure that we can only load our own resources. */
 	@Test public void testLoadUnauthorizedResources() throws Exception
 	{
-		loader.loadClass(GOOD_PLUGIN);
-		Class<?> wicked = loader.loadClass(WICKED_PLUGIN);
+		loader.loadClass(GOOD_APPLICATION);
+		Class<?> wicked = loader.loadClass(WICKED_APPLICATION);
 
 		ClassLoader wickedLoader = wicked.getClassLoader();
 
-		// Try to load code from the "good" plugin.
+		// Try to load code from the "good" app.
 		URL url = wickedLoader.getResource(GOOD_CLASS_FILE);
 		try
 		{
 			url.openStream();
-			fail("Should not be able to open " + GOOD_CLASS_FILE + " via wicked plugin");
+			fail("Should not be able to open " + GOOD_CLASS_FILE + " via wicked app");
 		}
 		catch (FileNotFoundException e) { /* expected result */ }
 
@@ -163,14 +163,14 @@ public class IT
 		try
 		{
 			url.openStream();
-			fail("Should not be able to open " + className + " via wicked plugin");
+			fail("Should not be able to open " + className + " via wicked app");
 		}
 		catch (FileNotFoundException e) { /* expected result */ }
 	}
 
 
-	/** Build a path to a plugin JAR, based on the current classpath. */
-	private static String pluginUri(String projectDir, String projectName, String pluginClassName)
+	/** Build a path to an application JAR, based on the current classpath. */
+	private static String appUri(String projectDir, String projectName, String appClassName)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("jar:file://");
@@ -181,18 +181,18 @@ public class IT
 		sb.append("/target/");
 		sb.append(projectName);
 		sb.append("-HEAD.jar!/");
-		sb.append(pluginClassName);
+		sb.append(appClassName);
 
 		return sb.toString();
 	}
 
-	private static final String GOOD_CLASSNAME = "me.footlights.demo.plugins.good.GoodPlugin";
+	private static final String GOOD_CLASSNAME = "me.footlights.demos.good.GoodApp";
 	private static final String GOOD_CLASS_FILE = GOOD_CLASSNAME.replaceAll("\\.", "/") + ".class";
-	private static final String GOOD_PLUGIN = pluginUri("Good", "good-plugin", GOOD_CLASSNAME);
+	private static final String GOOD_APPLICATION = appUri("Good", "good-plugin", GOOD_CLASSNAME);
 
-	private static final String WICKED_CLASSNAME = "me.footlights.demo.plugins.wicked.WickedPlugin";
-	private static final String WICKED_PLUGIN =
-		pluginUri("Wicked", "wicked-plugin", WICKED_CLASSNAME);
+	private static final String WICKED_CLASSNAME = "me.footlights.demos.wicked.WickedApp";
+	private static final String WICKED_APPLICATION =
+		appUri("Wicked", "wicked-plugin", WICKED_CLASSNAME);
 
 	private FootlightsClassLoader loader;
 	private Logger logger;

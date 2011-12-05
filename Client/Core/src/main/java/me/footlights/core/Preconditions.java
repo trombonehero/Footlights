@@ -30,8 +30,8 @@ public class Preconditions
 	{
 		for (int i = 0; i < o.length; i++)
 			if (o[i] == null)
-				throw new IllegalArgumentException(
-					"Preconditions failed: argument " + i + " is null");
+				throw new NullPointerException(
+					"Precondition failed: argument " + i + " is null");
 	}
 
 	/** Non-instantiable utility class. */

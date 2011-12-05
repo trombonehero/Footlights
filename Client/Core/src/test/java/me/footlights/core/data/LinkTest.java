@@ -69,7 +69,7 @@ public class LinkTest
 			Link.newBuilder().build();
 			fail("URI-less Link should not build");
 		}
-		catch (IllegalArgumentException e) {}
+		catch (NullPointerException e) {}
 	}
 
 	/** Test parsing a very simple {@link Link}. */

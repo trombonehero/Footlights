@@ -73,6 +73,14 @@ function proxy(node, context)
 			return subproxy;
 		},
 
+		chroot: function(new_context)
+		{
+			var element = document.createElement('div');
+			node.appendChild(element);
+
+			return proxy(element, new_context);
+		},
+
 		getChild: function(predicate)
 		{
 			var children = this.getChildren(predicate);

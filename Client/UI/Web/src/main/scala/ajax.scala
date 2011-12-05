@@ -118,7 +118,8 @@ sb.ajax('init');""")
 
 			case FillPlaceholder(name) => {
 				me.footlights.plugin.ajax.JSON.newBuilder()
-					.put("name", "the user's name")
+					.put("key", name)
+					.put("value", "the user's name")
 					.build()
 			}
 		}

@@ -69,7 +69,8 @@ function proxy(node, context)
 			var subproxy = proxy(span, context);
 			subproxy.class = 'placeholder';
 
-			sandboxes['global'].ajax('fill_placeholder/' + name, function(s) { subproxy.appendText(s) });
+			var callback = function(json) { subproxy.appendText(json['value']) };
+			sandboxes['global'].ajax('fill_placeholder/' + name, callback);
 			return subproxy;
 		},
 

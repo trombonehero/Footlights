@@ -44,7 +44,11 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 	content.height = height;
 
 	parent.root.appendChild(container);
+	return this.wrap(name, content, log);
+}
 
+sandboxes.wrap = function(name, content, log)
+{
 	var sandbox =
 		{
 			ajax: function(request, callback) { ajax('/ajax/' + name + '/' + request, this, callback); },

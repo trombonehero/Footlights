@@ -28,7 +28,7 @@ import android.widget.ListView;
 import roboguice.activity.RoboActivity;
 import roboguice.inject.InjectView;
 
-import me.footlights.core.Core;
+import me.footlights.core.Kernel;
 import me.footlights.core.Preferences;
 
 
@@ -56,14 +56,14 @@ public class FootlightsActivity extends RoboActivity
 			});
 		}
 
-		log.log("Created Footlights core: " + core + "\n");
+		log.log("Created Footlights kernel: " + kernel + "\n");
 
 		Preferences prefs = Preferences.create(PreferenceAdapter.wrap(sharedPrefs));
 		for (Map.Entry<String,?> entry : prefs.getAll().entrySet())
 			log.log(entry.getKey() + ": " + entry.getValue().toString());
 	}
 
-	private @Inject Core core;
+	private @Inject Kernel kernel;
 	private @Inject SharedPreferences sharedPrefs;
 
 	private @InjectView(R.id.buttonA) Button buttonA;

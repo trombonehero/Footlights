@@ -43,9 +43,16 @@ function forwardAjaxResponse(xhr, request, context, callback)
 		return;
 	}
 
-	// The response might be an XML object or just plain text.
+	// Parse the Ajax response.
 	var contentType = xhr.getResponseHeader('Content-Type');
-	var response = (contentType == 'text/xml') ? xhr.responseXML : xhr.responseText;
+	var response = null;
+	switch (contentType)
+	{
+		case 'application/json':     response = JSON.parse(xhr.responseText); break;
+		case 'text/javascript':      response = xhr.responseText; break;
+		case 'text/xml':             response = xhr.responseXML; break;
+	}
+
 	// If no callback has been specified, the response had better be code to be executed.
 	if (callback == undefined)
 		if (contentType == 'text/javascript') callback = function(code) { context.exec(code); }

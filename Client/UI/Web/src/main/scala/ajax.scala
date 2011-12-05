@@ -18,9 +18,8 @@ package me.footlights.ui.web;
 import scala.collection.mutable.HashMap
 
 import _root_.me.footlights.core.Footlights;
-import _root_.me.footlights.plugin.AjaxHandler;
-import _root_.me.footlights.plugin.JavaScript;
 import _root_.me.footlights.plugin.WebRequest;
+import _root_.me.footlights.plugin.ajax.{AjaxHandler,JavaScript}
 
 
 

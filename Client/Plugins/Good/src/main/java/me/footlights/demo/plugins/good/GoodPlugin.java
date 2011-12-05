@@ -17,9 +17,9 @@ package me.footlights.demo.plugins.good;
 
 import java.util.logging.Logger;
 
-import me.footlights.plugin.AjaxHandler;
 import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.ModifiablePreferences;
+import me.footlights.plugin.ajax.AjaxHandler;
 
 
 /**

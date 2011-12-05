@@ -8,11 +8,11 @@ import java.security.AccessControlException;
 import java.security.AccessController;
 import java.util.logging.Logger;
 
-import me.footlights.plugin.AjaxHandler;
-import me.footlights.plugin.Context;
-import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.KernelInterface;
 import me.footlights.plugin.WebRequest;
+import me.footlights.plugin.ajax.AjaxHandler;
+import me.footlights.plugin.ajax.Context;
+import me.footlights.plugin.ajax.JavaScript;
 
 import static me.footlights.demo.plugins.wicked.EvilAjaxHandler.AjaxRequest.*;
 

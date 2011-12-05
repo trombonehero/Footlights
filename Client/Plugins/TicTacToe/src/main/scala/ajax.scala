@@ -15,7 +15,8 @@
  */
 package me.footlights.demo.tictactoe;
 
-import _root_.me.footlights.plugin.{AjaxHandler,JavaScript,Preferences,WebRequest}
+import _root_.me.footlights.plugin.{Preferences,WebRequest}
+import _root_.me.footlights.plugin.ajax.{AjaxHandler,JavaScript}
 
 
 /** Translates Ajax events to/from model events. */

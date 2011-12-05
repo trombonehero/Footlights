@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.plugin;
+package me.footlights.plugin.ajax;
 
 import java.util.Map;
+
+import me.footlights.plugin.WebRequest;
 
 import com.google.common.collect.Maps;
 

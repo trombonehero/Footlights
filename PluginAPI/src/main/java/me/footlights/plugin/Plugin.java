@@ -15,6 +15,8 @@
  */
 package me.footlights.plugin;
 
+import me.footlights.plugin.ajax.AjaxHandler;
+
 
 /**
  * A Footlights plugin.

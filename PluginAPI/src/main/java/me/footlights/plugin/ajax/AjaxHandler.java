@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.plugin;
+package me.footlights.plugin.ajax;
 
-import me.footlights.plugin.JavaScript;
 import me.footlights.plugin.WebRequest;
 
 

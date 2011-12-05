@@ -73,6 +73,27 @@ function proxy(node, context)
 			return subproxy;
 		},
 
+		getChild: function(predicate)
+		{
+			var children = this.getChildren(predicate);
+
+			if (children.length > 1) throw 'More than one child matched the given predicate';
+			else if (children.length == 0) throw 'No child matches the given predicate';
+
+			return children[0];
+		},
+
+		getChildren: function(predicate)
+		{
+			var children = [];
+			for (var i in node.childNodes)
+			{
+				var p = proxy(node.childNodes[i], context);
+				if (predicate(p)) children.push(p);
+			}
+			return children;
+		},
+
 		get class()         { return node.getAttribute ? node.getAttribute("class") : undefined; },
 		get style()         { return node.style; },
 		get tag()           { return node.tagName ? node.tagName.toLowerCase() : undefined; },

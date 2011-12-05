@@ -32,7 +32,7 @@ class AjaxServer(footlights:Footlights) extends WebServer
 	override def name:String = "Ajax"
 
 	override def handle(request:WebRequest) = {
-		val js =
+		val resp =
 			request.prefix() match {
 				case "global" => globalContext.service(request.shift())
 				case "plugin" => {
@@ -47,8 +47,7 @@ class AjaxServer(footlights:Footlights) extends WebServer
 			}
 
 		Response.newBuilder()
-			.setResponse("text/javascript",
-				new java.io.ByteArrayInputStream(js.exec().getBytes()))
+			.setResponse(resp.mimeType, resp.data)
 			.build()
 	}
 

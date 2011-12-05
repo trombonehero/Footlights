@@ -15,22 +15,18 @@
  */
 package me.footlights.plugin.ajax;
 
-import me.footlights.plugin.WebRequest;
 
-
-
-/** An object which can process Ajax requests. */
-public interface AjaxHandler
+/**
+ * An Ajax response (JSON, XML, JavaScript, ...).
+ *
+ * It's best to use the provided Response subclasses. A plugin can always define a new subclass,
+ * but the browser executive won't know what to do with it unless it declares a "known" MIME type. 
+ */
+public interface AjaxResponse
 {
-	/**
-	 * Handle an Ajax {@link WebRequest}.
-	 * 
-	 * @return An {@link AjaxResponse} to be returned to the sandbox
-	 *
-	 * @throws java.io.FileNotFoundException if the request's "path" can never be handled
-	 * @throws SecurityException if TODO
-	 * @throws Throwable as a last resort; this method may throw anything it likes
-	 */
-	public AjaxResponse service(WebRequest request)
-		throws java.io.FileNotFoundException, SecurityException, Throwable;
+	/** Standard MIME type (e.g. "text/javascript"). */
+	public String mimeType();
+
+	/** The data itself (code, XML, raw string data, ...). */
+	public java.io.InputStream data();
 }

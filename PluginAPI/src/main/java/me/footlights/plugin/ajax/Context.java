@@ -39,7 +39,7 @@ public class Context implements AjaxHandler
 	public Context() { this(null); }
 
 	@Override
-	public final JavaScript service(WebRequest request) throws Throwable
+	public final AjaxResponse service(WebRequest request) throws Throwable
 	{
 		String handlerName = request.prefix();
 

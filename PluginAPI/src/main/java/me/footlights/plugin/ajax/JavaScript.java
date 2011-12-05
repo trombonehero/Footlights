@@ -15,10 +15,16 @@
  */
 package me.footlights.plugin.ajax;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 
 /** Some JavaScript code (guarantee closure?). */
-public class JavaScript
+public class JavaScript implements AjaxResponse
 {
+	@Override public String mimeType() { return "text/javascript"; }
+	@Override public InputStream data() { return new ByteArrayInputStream(code().getBytes()); }
+
 	public JavaScript()
 	{
 		builder = new StringBuilder();

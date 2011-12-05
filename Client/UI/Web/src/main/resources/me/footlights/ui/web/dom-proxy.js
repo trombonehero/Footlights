@@ -73,7 +73,9 @@ function proxy(node, context)
 			return subproxy;
 		},
 
-		get style() { return node.style; },
+		get class()         { return node.getAttribute ? node.getAttribute("class") : undefined; },
+		get style()         { return node.style; },
+		get tag()           { return node.tagName ? node.tagName.toLowerCase() : undefined; },
 
 		set src(uri)        { node.src = '/static/' + context.name + '/' + uri; },
 

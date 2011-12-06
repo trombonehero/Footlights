@@ -72,6 +72,24 @@ class FootlightsClassLoader extends ClassLoader
 
 			final String className = tokens[1];
 			final String packageName = className.substring(0, className.lastIndexOf("."));
+			final ClasspathLoader loader;
+
+			try
+			{
+				loader = AccessController.doPrivileged(
+					new PrivilegedExceptionAction<ClasspathLoader>()
+					{
+						@Override public ClasspathLoader run() throws Exception
+						{
+							return ClasspathLoader.create(
+									FootlightsClassLoader.this, classpath, packageName);
+						}
+					});
+			}
+			catch (PrivilegedActionException e)
+			{
+				throw new ClassNotFoundException("Invalid classpath: " + classpath, e);
+			}
 
 			try
 			{
@@ -79,15 +97,13 @@ class FootlightsClassLoader extends ClassLoader
 					{
 						@Override public Class<?> run() throws Exception
 						{
-							return ClasspathLoader.create(
-									FootlightsClassLoader.this, classpath, packageName)
-								.loadClass(className);
+							return loader.loadClass(className);
 						}
 					});
 			}
 			catch (PrivilegedActionException e)
 			{
-				throw new ClassNotFoundException("Invalid classpath: " + classpath, e);
+				throw new ClassNotFoundException("Unable to load " + className, e);
 			}
 		}
 

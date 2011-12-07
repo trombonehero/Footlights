@@ -87,14 +87,17 @@ function proxy(node, context)
 			return proxy(element, new_context);
 		},
 
+		/**
+		 * Find the element's first (proxied) child which satisfies the given predicate.
+		 *
+		 * If no child node satisfies the predicate, undefined is returned.
+		 */
 		getChild: function(predicate)
 		{
 			var children = this.getChildren(predicate);
 
-			if (children.length > 1) throw 'More than one child matched the given predicate';
-			else if (children.length == 0) throw 'No child matches the given predicate';
-
-			return children[0];
+			if (children.length == 0) return undefined;
+			else return children[0];
 		},
 
 		getChildren: function(predicate)

@@ -89,7 +89,11 @@ trait Applications extends Footlights {
 			case f:data.File => map ++= Preferences.parse(f.getContents())
 			case _ => None
 		}
-		catch { case e:NoSuchElementException => None }
+		catch {
+			case e:NoSuchElementException => None
+			case e:data.NoSuchBlockException => None
+			case t:Throwable => throw new ProgrammerError("Uncaught exception", t)
+		}
 
 		// Create an anonymous mutable version which can save itself
 		val reader = PreferenceStorageEngine.wrap(map)

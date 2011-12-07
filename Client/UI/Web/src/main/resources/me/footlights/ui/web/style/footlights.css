@@ -124,6 +124,7 @@ iframe
 
 .sandbox
 {
+	background: #ffc;
 	border: 3px solid orange;
 	position: relative;
 }

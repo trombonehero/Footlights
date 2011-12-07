@@ -29,7 +29,6 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 {
 	var container = parent.appendElement('div');
 	container.class = 'sandbox';
-	container.style.background = '#ffc';
 	// TODO: (x,y)
 	container.width = width;
 	container.height = height;

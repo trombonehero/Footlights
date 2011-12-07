@@ -4,8 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.google.common.collect.Maps;
 
 import me.footlights.api.File;
 import me.footlights.api.KernelInterface;
@@ -122,8 +125,14 @@ class DemoAjaxHandler extends Context
 			@Override public JavaScript service(WebRequest request)
 				throws FileNotFoundException, SecurityException, Throwable
 			{
+				final String name = request.shift().path();
+				int count = clicks.containsKey(name) ? clicks.get(name) + 1 : 1;
+				clicks.put(name, count);
+				if ((count % 5) != 1) return new JavaScript();
+
 				return new JavaScript()
-					.append("context.log('Clicked \\'" + request.shift().path() + "\\'');");
+					.append("context.log('Click #").appendText(Integer.toString(count))
+					.appendText(" for '").appendText(name).appendText("'").append("');");
 			}
 		});
 
@@ -151,6 +160,10 @@ class DemoAjaxHandler extends Context
 			}
 		});
 	}
+
+
+	/** The number of times the user has clicked the 'local' button. */
+	private final Map<String,Integer> clicks = Maps.newHashMap();
 
 
 	private static JavaScript makeDiv(String text)

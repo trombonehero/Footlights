@@ -100,6 +100,7 @@ function proxy(node, context)
 			else return children[0];
 		},
 
+		/** Find all (proxied) children which satisfy a given predicate. */
 		getChildren: function(predicate)
 		{
 			var children = [];

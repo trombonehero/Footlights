@@ -41,8 +41,6 @@ sandboxes.create = function(name, parent, log, x, y, width, height)
 	var sandbox = this.wrap(name, log);
 
 	var content = container.chroot(sandbox);
-	content.appendText('foo');
-
 	sandbox.root = content;
 	sandbox = Object.freeze(sandbox);
 

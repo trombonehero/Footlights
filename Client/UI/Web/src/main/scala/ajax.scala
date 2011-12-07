@@ -115,7 +115,7 @@ context.log('loaded app \'""" + name.substring(name.lastIndexOf('.') + 1) + """\
 
 var sb = context.globals['sandboxes'].create('app/""")
 	.appendText(app.getName())
-	.append("""', context.root, context.log, 0, 0, 200, 200);
+	.append("""', context.root, context.log, { x: 0, y: 0, width: 600, height: 400 });
 
 sb.ajax('init');""")
 			}

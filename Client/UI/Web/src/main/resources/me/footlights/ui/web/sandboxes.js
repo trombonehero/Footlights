@@ -21,17 +21,17 @@ var sandboxes = {};
 
 sandboxes.getOrCreate = function(name, parent, log, x, y, width, height)
 {
+	var style = { 'top': x, 'left': y, 'width': width, 'height': height };
+
 	if (name in sandboxes) return sandboxes[name]
-	else return sandboxes.create(name, parent, log, x, y, width, height)
+	else return sandboxes.create(name, parent, log, style)
 }
 
-sandboxes.create = function(name, parent, log, x, y, width, height)
+sandboxes.create = function(name, parent, log, style)
 {
 	var container = parent.appendElement('div');
 	container.class = 'sandbox';
-	// TODO: (x,y)
-	container.width = width;
-	container.height = height;
+	for (var i in style) container.style[i] = style[i];
 
 	var label = container.appendElement('div');
 	label.class = 'sandboxlabel';

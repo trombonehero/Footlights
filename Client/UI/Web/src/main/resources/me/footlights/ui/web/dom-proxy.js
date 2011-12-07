@@ -74,6 +74,11 @@ function proxy(node, context)
 			return subproxy;
 		},
 
+		/**
+		 * Create a new proxied child (a div) and attach it to a new context.
+		 *
+		 * This allows sandboxed code to create child sandboxes.
+		 */
 		chroot: function(new_context)
 		{
 			var element = document.createElement('div');

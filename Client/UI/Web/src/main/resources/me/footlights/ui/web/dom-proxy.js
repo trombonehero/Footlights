@@ -83,6 +83,7 @@ function proxy(node, context)
 		{
 			var element = document.createElement('div');
 			node.appendChild(element);
+			element.style.position = 'relative';
 
 			return proxy(element, new_context);
 		},

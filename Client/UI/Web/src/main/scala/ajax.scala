@@ -109,15 +109,18 @@ buttons.clear();""")
 
 				server.register(name, app.getApp.ajaxHandler)
 
+				val className = name.substring(name.lastIndexOf('.') + 1)
+				import JavaScript.sanitizeText
+
 				new JavaScript()
 					.append("""
-context.log('loaded app \'""" + name.substring(name.lastIndexOf('.') + 1) + """\'');
+context.log('loaded app \'%s\'');
 
-var sb = context.globals['sandboxes'].create('app/""")
-	.appendText(app.getName())
-	.append("""', context.root, context.log, { x: 0, y: 0, width: '100%', height: 400 });
+var sb = context.globals['sandboxes'].create(
+	'app/%s', context.root, context.log, { x: 0, y: 0, width: '%s', height: 400 });
+sb.ajax('init');
 
-sb.ajax('init');""")
+""" format (className, sanitizeText(app.getName()), "100%"))
 			}
 
 			case FillPlaceholder(name) => {
@@ -135,10 +138,10 @@ sb.ajax('init');""")
 	private def button(label:String, onClick:JavaScript) = new JavaScript()
 		.append("""
 var button = buttons.appendElement('button');
-button.appendText('""").appendText(label).append("""');
+button.appendText('%s');
 
-button.onclick = function() { """).append(onClick).append("""};
-""")
+button.onclick = function() { %s };
+""" format (label, onClick asScript))
 
 
 

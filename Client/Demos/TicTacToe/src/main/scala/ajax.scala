@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.demos.tictactoe;
+import me.footlights.api.{Preferences,WebRequest}
+import me.footlights.api.ajax.{AjaxHandler,JavaScript}
 
-import _root_.me.footlights.api.{Preferences,WebRequest}
-import _root_.me.footlights.api.ajax.{AjaxHandler,JavaScript}
-
+package me.footlights.demos.tictactoe {
 
 /** Translates Ajax events to/from model events. */
 class Ajax(app:TicTacToe) extends AjaxHandler
@@ -88,4 +87,6 @@ class Ajax(app:TicTacToe) extends AjaxHandler
 
 	/** The statistics that we keep track of via {@link Preferences}. */
 	private val stats = List("playCount", "wins", "losses")
+}
+
 }

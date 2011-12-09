@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import _root_.java.nio.ByteBuffer
-
+import java.nio.ByteBuffer
 
 package me.footlights.core {
 

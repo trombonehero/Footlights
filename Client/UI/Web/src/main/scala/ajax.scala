@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.ui.web;
-
-import me.footlights.api.WebRequest;
-import me.footlights.api.ajax.AjaxHandler;
-import me.footlights.api.ajax.AjaxResponse;
-import me.footlights.api.ajax.JavaScript;
-
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 
-import _root_.me.footlights.core.Footlights;
-import _root_.me.footlights.api.WebRequest;
-import _root_.me.footlights.api.ajax.{AjaxHandler,JavaScript}
+import me.footlights.api.WebRequest
+import me.footlights.api.ajax.{AjaxHandler, AjaxResponse, JavaScript}
 
+import me.footlights.core.Footlights
 
+package me.footlights.ui.web {
 
 /** Acts as an Ajax server for the JavaScript client */
 class AjaxServer(footlights:Footlights) extends WebServer
@@ -157,4 +151,6 @@ button.onclick = function() { %s };
 
 	private val TICTACTOE = APP_PATH +
 		"TicTacToe/target/classes!/me.footlights.demos.tictactoe.TicTacToe"
+}
+
 }

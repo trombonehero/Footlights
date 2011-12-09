@@ -1,11 +1,11 @@
-package me.footlights.core
+import java.io.{FileOutputStream,Flushable}
+import java.nio.ByteBuffer
+
+import java.util.logging.{Level,Logger}
+
+package me.footlights.core {
 
 import data.File
-
-import _root_.java.io.{FileOutputStream,Flushable}
-import _root_.java.nio.ByteBuffer
-
-import _root_.java.util.logging.{Level,Logger}
 
 
 /** An object which periodically writes data to disk, the network, etc. */
@@ -43,4 +43,6 @@ object Flusher
 			},
 			() => o.synchronized { o.wait() },
 			log)
+}
+
 }

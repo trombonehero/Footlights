@@ -25,7 +25,6 @@ import scala.collection.mutable.{HashMap,HashSet,LinkedList,Map,Set}
 
 import me.footlights.api.KernelInterface
 
-
 package me.footlights.core {
 
 import apps.AppWrapper

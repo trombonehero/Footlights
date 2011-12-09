@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import java.io.{FileInputStream, IOException}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode
@@ -23,6 +22,7 @@ import java.util.logging.Logger
 package me.footlights.core {
 
 import security.Privilege
+
 
 /** Provides efficient low-level I/O. */
 object IO {

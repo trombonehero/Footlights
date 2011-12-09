@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import java.io.{ByteArrayOutputStream, IOException}
 import java.nio.ByteBuffer
 import java.net.URI
@@ -26,7 +25,6 @@ import me.footlights.api.Application
 import me.footlights.api.File
 import me.footlights.api.KernelInterface
 import me.footlights.api.ModifiablePreferences
-
 
 package me.footlights.core {
 

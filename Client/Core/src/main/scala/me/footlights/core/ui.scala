@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import java.net.URI
 import java.nio.ByteBuffer
 import java.util.logging.Logger
@@ -23,7 +22,6 @@ import javax.swing.JFileChooser
 import scala.collection.mutable.Set
 
 import me.footlights.api.KernelInterface
-
 
 package me.footlights.core {
 

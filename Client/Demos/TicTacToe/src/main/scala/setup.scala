@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.demos.tictactoe;
+import java.util.NoSuchElementException
+import java.util.logging.Logger
 
-import _root_.me.footlights.api.{Application,KernelInterface,ModifiablePreferences}
-import _root_.java.util.NoSuchElementException
-import _root_.java.util.logging.Logger
+import me.footlights.api.{Application,KernelInterface,ModifiablePreferences}
 
+package me.footlights.demos.tictactoe {
 
 /**
  * A demo application for playing Tic-Tac-Toe against human or computer opponents.
@@ -63,4 +63,6 @@ object TicTacToe
 		log.info("Starting Tic-Tac-Toe")
 		new TicTacToe(prefs)
 	}
+}
+
 }

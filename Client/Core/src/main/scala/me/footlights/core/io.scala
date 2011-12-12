@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 import java.io.{FileInputStream, IOException}
-import java.nio.ByteBuffer
+import java.net.URL
+import java.nio.{Buffer,ByteBuffer}
 import java.nio.channels.FileChannel.MapMode
 
 import java.util.logging.Logger
 
+import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
+
 package me.footlights.core {
 
+import data.File
 import security.Privilege
 
 
@@ -77,6 +82,22 @@ object IO {
 				}
 			}
 		} }
+	}
+
+
+	def fetch(url: URL) = {
+		// TODO: use URL.openConnection(Proxy)
+		val in = url.openConnection.getInputStream
+
+		val data = new ListBuffer[Option[ByteBuffer]]
+
+		while (in.available() > 0) {
+			// TODO: use some kind of NIO operation with channels and whatnot
+			data += Some(ByteBuffer.allocate(4096)) map { b =>
+				b.limit(in.read(b.array())) match { case bb:ByteBuffer => bb } }
+		}
+
+		File.newBuilder().setContent(data flatten).freeze()
 	}
 
 	private val log = Logger getLogger { IO getClass() getCanonicalName }

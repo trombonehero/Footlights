@@ -84,6 +84,10 @@ buttons.clear();""")
 
 					.append(button("Reset", JavaScript.ajax("reset")))
 
+					.append("""
+context.globals['sandboxes'].create(
+	'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 100 });
+""")
 					.append("context.log('UI Initialized');")
 			}
 

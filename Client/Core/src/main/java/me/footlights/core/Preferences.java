@@ -57,7 +57,7 @@ public class Preferences implements me.footlights.api.Preferences, HasBytes
 	}
 
 
-	static Preferences wrap(Map<String,?> map)
+	public static Preferences wrap(Map<String,?> map)
 	{
 		return create(PreferenceStorageEngine.wrap(map));
 	}

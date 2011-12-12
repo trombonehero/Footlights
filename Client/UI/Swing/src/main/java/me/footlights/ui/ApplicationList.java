@@ -23,11 +23,10 @@ import java.util.logging.Logger;
 import javax.swing.*;
 
 import me.footlights.core.Footlights;
-import me.footlights.core.apps.AppWatcher;
 import me.footlights.core.apps.AppWrapper;
 
 
-public class ApplicationList extends JPanel implements AppWatcher
+public class ApplicationList extends JPanel
 {
 	public ApplicationList(Footlights footlights)
 	{
@@ -45,8 +44,8 @@ public class ApplicationList extends JPanel implements AppWatcher
 	}
 
 
-	@Override public void applicationLoaded(AppWrapper app) { refresh(); }
-	@Override public void applicationUnloading(AppWrapper app) { refresh(); }
+	public void applicationLoaded(AppWrapper app) { refresh(); }
+	public void applicationUnloading(AppWrapper app) { refresh(); }
 
 
 	void refresh()

@@ -15,12 +15,18 @@
  */
 package me.footlights.core;
 
-import me.footlights.core.apps.AppWatcher;
+import me.footlights.core.apps.AppWrapper;
 
 
 /** A User Interface */
-public abstract class UI extends Thread implements AppWatcher
+public abstract class UI extends Thread
 {
+	/** An application has been loaded. */
+	public abstract void applicationLoaded(AppWrapper plugin);
+
+	/** An application is about to be unloaded. */
+	public abstract void applicationUnloading(AppWrapper plugin);
+
 	/**
 	 * Default constructor.
 	 * @param   name          user-readable name (e.g. "Web UI")

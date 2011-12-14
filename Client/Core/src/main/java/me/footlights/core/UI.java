@@ -15,17 +15,11 @@
  */
 package me.footlights.core;
 
-import me.footlights.core.apps.AppWrapper;
-
 
 /** A User Interface */
 public abstract class UI extends Thread
 {
-	/** An application has been loaded. */
-	public abstract void applicationLoaded(AppWrapper plugin);
-
-	/** An application is about to be unloaded. */
-	public abstract void applicationUnloading(AppWrapper plugin);
+	public abstract void handleEvent(Event event);
 
 	/**
 	 * Default constructor.
@@ -37,4 +31,6 @@ public abstract class UI extends Thread
 		super("Footlights UI: '" + name + "'");
 		footlights.registerUI(this);
 	}
+
+	public interface Event { public String messageFOO(); }
 }

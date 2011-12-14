@@ -38,12 +38,12 @@ trait UIManager extends Footlights {
 
 	abstract override def loadApplication(name:String, uri:URI) = {
 		val wrapper = super.loadApplication(name, uri)
-		uis foreach { _.applicationLoaded(wrapper) }
+		uis foreach { _.handleEvent(new AppLoadedEvent(wrapper)) }
 		wrapper
 	}
 
 	abstract override def unloadApplication(app:AppWrapper) = {
-		uis foreach { _.applicationUnloading(app) }
+		uis foreach { _.handleEvent(new AppUnloadingEvent(app)) }
 		super.unloadApplication(app)
 	}
 }
@@ -64,6 +64,20 @@ trait SwingPowerboxes extends Kernel {
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }
+}
+
+class AppLoadedEvent(a:AppWrapper) extends UI.Event {
+	val app = a
+	override val messageFOO = "Loaded app " + a
+}
+
+class AppUnloadingEvent(a:AppWrapper) extends UI.Event {
+	val app = a
+	override val messageFOO = "Unloading app " + a
+}
+
+class FileSavedEvent(f:File) extends UI.Event {
+	override val messageFOO = "Saved " + f
 }
 
 }

@@ -17,6 +17,7 @@ import java.util.logging.Logger
 
 import scala.collection.JavaConversions._
 
+import me.footlights.core.{AppLoadedEvent,AppUnloadingEvent}
 import me.footlights.core.{Footlights,Preconditions,UI}
 import me.footlights.core.apps.AppWrapper
 
@@ -28,9 +29,10 @@ class WebUI(footlights:Footlights, server:MasterServer, apps:Map[String,AppWrapp
 	extends UI("Web UI", footlights) {
 
 	override def run = new Thread(null, server, "Web Server").run
-
-	override def applicationLoaded(app:AppWrapper) = apps.put(app.getName(), app)
-	override def applicationUnloading(app:AppWrapper) = apps.remove(app.getName())
+	override def handleEvent(e:UI.Event) = e match {
+		case e:AppLoadedEvent => apps.put(e.app.getName, e.app)
+		case e:AppUnloadingEvent => apps.remove(e.app.getName)
+	}
 }
 
 object WebUI {

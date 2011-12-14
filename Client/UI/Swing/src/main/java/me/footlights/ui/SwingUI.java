@@ -15,21 +15,21 @@
  */
 package me.footlights.ui;
 
-
-
 import java.io.*;
 import javax.swing.*;
 
 import me.footlights.core.Footlights;
-import me.footlights.core.apps.AppWrapper;
+import me.footlights.core.UI;
 
 
-public class SwingUI extends me.footlights.core.UI
+public class SwingUI extends UI
 {
 	public static SwingUI init(Footlights footlights)
 	{
 		return new SwingUI(footlights);
 	}
+
+	public void handleEvent(Event event) {}
 
 	private SwingUI(Footlights footlights)
 	{
@@ -68,9 +68,6 @@ public class SwingUI extends me.footlights.core.UI
 		System.setOut(printStream);
 		System.setErr(printStream);
 	}
-
-	@Override public void applicationLoaded(AppWrapper app) { appList.applicationLoaded(app); }
-	@Override public void applicationUnloading(AppWrapper app) { appList.applicationLoaded(app); }
 
 	@Override public void run() { printStream.println("Swing UI started."); }
 

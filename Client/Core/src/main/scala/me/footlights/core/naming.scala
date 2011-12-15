@@ -57,7 +57,7 @@ class Resolver(io:IO, keychain: Keychain)
 			// Decode fingerprint.
 			(json.get("fingerprint") match {
 				case s:String => Some(Fingerprint.decode(s))
-				case a:Any => None
+				case _ => None
 			}) map {
 				// Check for a key.
 				json.get("key") match {

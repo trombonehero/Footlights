@@ -30,7 +30,7 @@ import security.Privilege
 
 
 /** Provides efficient low-level I/O. */
-object IO {
+class IO(proxy:java.net.Proxy) {
 	/**
 	 * Get bytes from a {@link java.io.File}, using whatever underlying mechanism will be most
 	 * efficient for the file's size.
@@ -87,7 +87,7 @@ object IO {
 
 	def fetch(url: URL) = {
 		// TODO: use URL.openConnection(Proxy)
-		val in = url.openConnection.getInputStream
+		val in = url.openConnection(proxy).getInputStream
 
 		val data = new ListBuffer[Option[ByteBuffer]]
 
@@ -100,7 +100,11 @@ object IO {
 		File.newBuilder().setContent(data flatten).freeze()
 	}
 
-	private val log = Logger getLogger { IO getClass() getCanonicalName }
+	private val log = Logger getLogger { this getClass() getCanonicalName }
+}
+
+object IO {
+	def direct = new IO(java.net.Proxy.NO_PROXY)
 }
 
 }

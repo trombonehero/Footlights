@@ -45,7 +45,7 @@ import data.store.{DiskStore, Store}
  * should {@link KernelPrivilege} if running in a privilege-constrained environment.
  */
 abstract class Kernel(
-		loader:ClassLoader, p:FileBackedPreferences, k:Keychain,
+		i:IO, loader:ClassLoader, p:FileBackedPreferences, k:Keychain,
 		apps:HashMap[URI,AppWrapper], u:Set[UI], s:Store)
 
 	extends Footlights
@@ -53,6 +53,7 @@ abstract class Kernel(
 		with Applications
 		with UIManager
 {
+	val io = i
 	val keychain = k
 	val store = s
 	val loadedApps = apps
@@ -70,6 +71,8 @@ object Kernel {
 
 		val prefs = FileBackedPreferences.loadFromDefaultLocation
 		Flusher(prefs) start
+
+		val io = IO.direct
 
 		val keychain = Keychain create
 		val keychainFile =
@@ -95,7 +98,7 @@ object Kernel {
 
 		Flusher(store) start
 
-		new Kernel(appLoader, prefs, keychain, apps, uis, store)
+		new Kernel(io, appLoader, prefs, keychain, apps, uis, store)
 			with SwingPowerboxes
 			with security.KernelPrivilege
 	}

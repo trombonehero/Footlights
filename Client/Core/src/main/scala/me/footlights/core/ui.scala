@@ -50,6 +50,7 @@ trait UIManager extends Footlights {
 
 /** Provides Swing-based powerboxes for prompting users (e.g. "which file?", "which friend?"). */
 trait SwingPowerboxes extends Kernel {
+	def io:IO
 	override def openLocalFile():_root_.me.footlights.api.File = open getOrElse { null }
 
 
@@ -60,7 +61,7 @@ trait SwingPowerboxes extends Kernel {
 			case _ => { log.fine("User cancelled file open dialog"); None }
 		}
 
-		IO.read(filename) map { File.newBuilder().setContent(_).freeze() }
+		io.read(filename) map { File.newBuilder().setContent(_).freeze() }
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }

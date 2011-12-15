@@ -43,22 +43,23 @@ class Resolver(io:IO, keychain: Keychain)
 	 * to already be in our {@link Keychain}.
 	 */
 	def resolve(url: URL):Link = {
-		// Turn the remote content into a {@link String}
+		// Fetch the remote content into a {@link String}
 		Some(io fetch { url } getContents) map { b => {
 				val bytes = new Array[Byte](b.remaining)
 				b.get(bytes)
 				new String(bytes)
 			}
-		// Parse the JSON
+		// Parse JSON.
 		} flatMap { JSON.parseFull(_) } map { _ match {
 			case m:Map[String,Any] => m
 			case a:Any => Map()
 		} } map { json =>
-			// Decode fingerprint
+			// Decode fingerprint.
 			(json.get("fingerprint") match {
 				case s:String => Some(Fingerprint.decode(s))
 				case a:Any => None
 			}) map {
+				// Check for a key.
 				json.get("key") match {
 					// If a key has been explicitly specified, use it.
 					case s:String => {
@@ -78,7 +79,7 @@ class Resolver(io:IO, keychain: Keychain)
 						}
 					}
 
-					// Otherwise, we expect the key to be in the keychain.
+					// No key specified; we expect the key to be in the keychain.
 					case _ => keychain getLink _
 				}
 			} get

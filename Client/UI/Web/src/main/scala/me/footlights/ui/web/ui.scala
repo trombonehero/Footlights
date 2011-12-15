@@ -16,6 +16,7 @@
 import java.util.logging.Logger
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.Map
 
 import me.footlights.core.{AppLoadedEvent,AppUnloadingEvent}
 import me.footlights.core.{Footlights,Preconditions,UI}

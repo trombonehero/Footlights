@@ -51,7 +51,7 @@ class Resolver(io:IO, keychain: Keychain)
 			}
 		// Parse JSON.
 		} flatMap { JSON.parseFull(_) } map { _ match {
-			case m:Map[String,Any] => m
+			case m:Map[_,_] => m
 			case a:Any => Map()
 		} } map { json =>
 			// Decode fingerprint.

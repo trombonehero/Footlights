@@ -1,11 +1,72 @@
 html
 {
+	background: black;
+	color: white;
 	font-family: sans-serif;
 	margin: 0;
 	padding: 0;
 }
 
-h1, h2 { color: #66f; }
+body
+{
+	margin-top: 40px;
+}
+
+h1, h2, h3, h4 { font-family: Federo; }
+h1, h2 { color: #950f0f; }
+
+#logo
+{
+	position: fixed;
+	right: 0;
+	top: 0;
+}
+
+#top-curtain
+{
+        position: fixed;
+        top: -80px;
+        left: 0;
+        height: 129px;
+        width: 2400px;
+
+        z-index: -1;
+
+        background-image: url('images/curtain-top.png');
+        background-repeat: no-repeat;
+        background-position: left;
+}
+
+
+#left-curtain
+{
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 2000px;
+        width: 111px;
+
+        z-index: 0;
+
+        background-image: url('images/curtain-left.png');
+        background-repeat: no-repeat;
+        background-position: left;
+}
+
+#right-curtain
+{
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 2000px;
+        width: 111px;
+
+        z-index: 0;
+
+        background-image: url('images/curtain-right.png');
+        background-repeat: no-repeat;
+        background-position: left;
+}
 
 #status
 {
@@ -42,6 +103,16 @@ h1, h2 { color: #66f; }
 	content: "Content";
 	font-size: smaller;
 	font-weight: bold;
+}
+
+.block
+{
+	background: white;
+	border-radius: .5em;
+	color: black;
+	margin-left: 5em;
+	margin-right: 5em;
+	padding: .25em .5em .25em .5em;
 }
 
 .response, .error
@@ -95,15 +166,14 @@ iframe
 	padding: 0;
 }
 
-h1.main
-{
-	float: right;
-	font-size: 150%;
-	margin-bottom: .25em;
-}
-
 a
 {
+	color: #950f0f;
 	text-decoration: none;
+}
+
+a:hover
+{
+	color: #c37c7c;
 }
 

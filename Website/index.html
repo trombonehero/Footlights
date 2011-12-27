@@ -1,26 +1,42 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="style.css"/>
-		<script type="text/javascript">
-function startReload()
-{
-	setTimeout('reload()', 10000);
-}
-
-function reload()
-{
-	var f = document.getElementById('mainframe');
-	f.src = 'http://localhost:4567';
-}
-</script>
-		
 	</head>
 
 	<body>
-		<h1 class="main">Footlights</h1>
+		<div id="left-curtain"></div>
+		<div id="right-curtain"></div>
+		<div id="top-curtain"></div>
 
-		<iframe src="load.html" id="mainframe"></iframe>
-		<script>startReload()</script>
+		<img src="images/brand.png" style="display: block; margin-left: auto; margin-right: auto"/>
+
+		<div class="block">
+			<h2>Your venue awaits...</h2>
+
+			<p>
+			Some social networks want to be your stage manager: they put your life on display for audiences both intended (e.g. your friends, your family) and unintended (e.g. advertisers and misbehaving applications).
+			</p>
+
+			<p>
+			Footlights is different.
+			</p>
+				
+			<p>
+			Footlights lets you choose how to present yourself to all of the audiences in your life.
+			Share however much&mdash;<i>or however little</i>&mdash;you like, with anybody; this is your show.
+			We've built the venue, but this is your production.
+			</p>
+
+			<p>
+			<i>All the world's a stage</i>... it's time to express yourself.
+			</p>
+
+			<center>
+			<p>
+			<a href="start">Get started now.</a>
+			</p>
+			</center>
+		</div>
 	</body>
 </html>
 

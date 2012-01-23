@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.store.blockstore;
+package me.footlights.core.data.store;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -30,22 +30,6 @@ import me.footlights.core.data.store.Store;
 /** A client for the Footlights BlockStore */
 public final class BlockStoreClient extends Store
 {
-	public BlockStoreClient(URL down, URL up, String key, Store cache)
-		throws MalformedURLException
-	{
-		super(cache);
-
-		this.downloadBase = down;
-		this.uploadHost = up;
-		this.key = key;
-	}
-
-	public BlockStoreClient(URL down, URL up, String key) throws MalformedURLException
-	{
-		this(down, up, key, null);
-	}
-
-
 	@Override
 	public ByteBuffer get(String name) throws IOException, NoSuchBlockException
 	{
@@ -83,6 +67,25 @@ public final class BlockStoreClient extends Store
 		return data.asReadOnlyBuffer();
 	}
 
+
+	public static Builder newBuilder() { return new Builder(); }
+	public static class Builder
+	{
+		public Builder setUploadURL(URL up)     { this.up = up;       return this; }
+		public Builder setDownloadURL(URL down) { this.down = down;   return this; }
+		public Builder setSecretKey(String key) { this.key = key;     return this; }
+		public Builder setCache(Store cache)    { this.cache = cache; return this; }
+
+		public BlockStoreClient build() throws MalformedURLException
+		{
+			return new BlockStoreClient(down, up, key, cache);
+		}
+
+		private URL down;
+		private URL up;
+		private String key;
+		private Store cache;
+	}
 
 	@Override
 	protected void put(String name, ByteBuffer bytes) throws IOException
@@ -153,6 +156,17 @@ public final class BlockStoreClient extends Store
 		String returnedName = reader.readLine();
 		if (!returnedName.equals(name))
 			throw new RuntimeException("Bad name: " + name + " != " + returnedName);
+	}
+
+
+	private BlockStoreClient(URL down, URL up, String key, Store cache)
+		throws MalformedURLException
+	{
+		super(cache);
+
+		this.downloadBase = down;
+		this.uploadHost = up;
+		this.key = key;
 	}
 
 

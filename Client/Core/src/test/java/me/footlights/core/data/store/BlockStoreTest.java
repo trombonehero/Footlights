@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.store.blockstore;
+package me.footlights.core.data.store;
 
 import java.net.ConnectException;
 import java.net.URL;
@@ -44,10 +44,11 @@ public class BlockStoreTest
 	/** Test communication with a local BlockStore instance. */
 	@Test public void testLocalStorage() throws Throwable
 	{
-		Store store = new BlockStoreClient(
-				new URL("http://localhost:8080"),
-				new URL("http://localhost:8080/UploadManager/upload"),
-				sharedSecret);
+		Store store = BlockStoreClient.newBuilder()
+			.setDownloadURL(new URL("http://localhost:8080"))
+			.setUploadURL(new URL("http://localhost:8080/UploadManager/upload"))
+			.setSecretKey(sharedSecret)
+			.build();
 
 		Block b = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }))
@@ -72,10 +73,11 @@ public class BlockStoreTest
 		if (sharedSecret.isEmpty())
 			fail("Blockstore shared secret ('" + SHARED_SECRET_KEY + "') not set");
 
-		Store store = new BlockStoreClient(
-				new URL(BLOCKSTORE_DOWNLOAD_HOST),
-				new URL(BLOCKSTORE_UPLOAD_URL),
-				sharedSecret);
+		Store store = BlockStoreClient.newBuilder()
+			.setDownloadURL(new URL(BLOCKSTORE_DOWNLOAD_HOST))
+			.setUploadURL(new URL(BLOCKSTORE_UPLOAD_URL))
+			.setSecretKey(sharedSecret)
+			.build();
 
 		Block b = Block.newBuilder()
 			.setContent(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4, 5 }))

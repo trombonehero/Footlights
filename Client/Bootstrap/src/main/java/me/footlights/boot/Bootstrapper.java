@@ -27,6 +27,7 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
@@ -95,9 +96,19 @@ class Bootstrapper
 		Class<?> footlightsClass = classLoader.loadClass("me.footlights.core.Footlights");
 		Class<?> coreClass = classLoader.loadClass("me.footlights.core.Kernel");
 
-		Object footlights = coreClass
-			.getMethod("init", ClassLoader.class)
-			.invoke(null,  classLoader);
+		final Object footlights;
+		try
+		{
+			footlights = coreClass
+				.getMethod("init", ClassLoader.class)
+				.invoke(null,  classLoader);
+		}
+		catch (Throwable t)
+		{
+			log.log(Level.SEVERE, "Unable to start Footlights", t);
+			System.exit(1);
+			return;
+		}
 
 		// Load the UI(s).
 		List<Thread> uiThreads = new ArrayList<Thread>();

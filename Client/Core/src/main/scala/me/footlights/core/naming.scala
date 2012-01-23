@@ -42,48 +42,53 @@ class Resolver(io:IO, keychain: Keychain)
 	 * may optionally contain a "key" member as well, but if not, we expect the relevant key
 	 * to already be in our {@link Keychain}.
 	 */
-	def resolve(url: URL):Link = {
+	def resolve(url: URL):Option[Link] = {
 		// Fetch the remote content into a {@link String}
-		Some(io fetch { url } getContents) map { b => {
-				val bytes = new Array[Byte](b.remaining)
-				b.get(bytes)
-				new String(bytes)
-			}
-		// Parse JSON.
-		} flatMap { JSON.parseFull(_) } map { _ match {
-			case m:Map[_,_] => m
-			case a:Any => Map()
-		} } map { json =>
-			// Decode fingerprint.
-			(json.get("fingerprint") match {
-				case s:String => Some(Fingerprint.decode(s))
-				case _ => None
-			}) map {
-				// Check for a key.
-				json.get("key") match {
-					// If a key has been explicitly specified, use it.
-					case s:String => {
-						val tokens = s.split(":")
-						tokens.length match {
-							case 2 =>
-								Link.newBuilder
-									.setFingerprint(_)
-									.setKey(
-										SecretKey.newGenerator
-											.setAlgorithm(tokens(0))
-											.setBytes(Hex.decodeHex(tokens(1).toCharArray()))
-											.generate)
-									.build
+		val json = fetchJSON(url)
 
-							case _ => null
-						}
+		json.get("fingerprint") map {
+			_ match { case s:String => Fingerprint.decode(s) }
+		} map {
+			// Check for a key.
+			json.get("key") match {
+				// If a key has been explicitly specified, use it.
+				case Some(s:String) => {
+					val tokens = s.split(":")
+					tokens.length match {
+						case 2 =>
+							Link.newBuilder
+								.setFingerprint(_)
+								.setKey(
+									SecretKey.newGenerator
+										.setAlgorithm(tokens(0))
+										.setBytes(Hex.decodeHex(tokens(1).toCharArray()))
+										.generate)
+								.build
+
+						case _ => null
 					}
-
-					// No key specified; we expect the key to be in the keychain.
-					case _ => keychain getLink _
 				}
-			} get
-		} getOrElse null
+
+				// No key specified; we expect the key to be in the keychain.
+				case _ => keychain getLink _
+			}
+		}
+	}
+
+	def fetchJSON(url: URL):Map[String,_] = {
+		// Fetch and parse JSON -- this yields an (Any->Any) mapping.
+		val json = Some(io fetch { url }) map { _.getContents } map { buffer => {
+				val bytes = new Array[Byte](buffer.remaining)
+				buffer.get(bytes)
+				JSON.parseFull(new String(bytes)) map {
+					case m:Map[_,_] => m
+					case _ => Map()
+				} getOrElse Map()
+			}
+		}
+
+		// Convert (Any->Any) mapping into (String->Any).
+		for ((k,v) <- json.get) yield (k.toString(), v)
 	}
 }
 

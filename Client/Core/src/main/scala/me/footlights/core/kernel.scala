@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import java.io.FileInputStream
-import java.net.URI
+import java.net.{URI,URL}
 import java.security.{AccessController, AllPermission}
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -22,14 +22,16 @@ import java.util.logging.Logger
 import javax.swing.JFileChooser
 
 import scala.collection.mutable.{HashMap,HashSet,LinkedList,Map,Set}
+import scala.collection.immutable.{Map => ImmutableMap}
 
 import me.footlights.api.KernelInterface
+import me.footlights.core.data.store.BlockStoreClient
 
 package me.footlights.core {
 
 import apps.AppWrapper
 import crypto.Keychain
-import data.store.{DiskStore, Store}
+import data.store.{BlockStoreClient, DiskStore, Store}
 
 
 /**
@@ -69,8 +71,10 @@ object Kernel {
 		// This is the Footlights core, the security kernel; ensure that we can do anything.
 		AccessController checkPermission { new AllPermission() }
 
-		val prefs = FileBackedPreferences.loadFromDefaultLocation
-		Flusher(prefs) start
+		val fileBackedPrefs = FileBackedPreferences.loadFromDefaultLocation
+		Flusher(fileBackedPrefs) start
+
+		val prefs = Preferences.create(fileBackedPrefs)
 
 		val io = IO.direct
 
@@ -90,17 +94,38 @@ object Kernel {
 		val apps = new HashMap[URI,AppWrapper]
 		val uis = new HashSet[UI]
 
-		val store =
+		// Local disk cache for the network-based store.
+		val cache =
 			DiskStore.newBuilder
-				.setPreferences { Preferences create { prefs } }
+				.setPreferences(prefs)
 				.setDefaultDirectory
 				.build
+		Flusher(cache) start
 
-		Flusher(store) start
+		// Where are we storing data?
+		val resolver = new Resolver(io, keychain)
+		val setupData = resolver.fetchJSON(new URL(prefs getString "init.setup"))
+		val up = getStoreLocation("up", prefs, setupData)
+		val down = getStoreLocation("down", prefs, setupData)
 
-		new Kernel(io, appLoader, prefs, keychain, apps, uis, store)
+		val blockBuilder = BlockStoreClient.newBuilder setCache cache
+		up foreach { blockBuilder.setUploadURL }
+		down foreach { blockBuilder.setDownloadURL }
+		val store = blockBuilder.build
+
+		new Kernel(io, appLoader, fileBackedPrefs, keychain, apps, uis, store)
 			with SwingPowerboxes
 			with security.KernelPrivilege
+	}
+
+	private def getStoreLocation(key:String, prefs:Preferences, setupData:ImmutableMap[String,_]) = {
+		(try { Some(prefs getString "blockstore." + key) } catch {
+			case e:NoSuchElementException => None
+		}) orElse {
+			setupData.get(key) match { case Some(s:String) => Some(s); case _ => None }
+		} map {
+			new URL(_)
+		}
 	}
 
 	private val log = Logger getLogger { classOf[Kernel].getCanonicalName }

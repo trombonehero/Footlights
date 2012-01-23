@@ -188,6 +188,7 @@ public class Preferences implements me.footlights.api.Preferences, HasBytes
 				Security.addProvider(provider);
 			}
 			defaultPrefs.putAll(cryptoDefaults(provider));
+			defaultPrefs.put("init.setup", "http://footlights.me/setup.json");
 
 			// OS-specific home directory.
 			String homeDir = System.getProperty("user.home") + System.getProperty("path.separator");

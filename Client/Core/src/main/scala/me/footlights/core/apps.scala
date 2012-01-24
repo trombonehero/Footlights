@@ -38,7 +38,7 @@ trait Applications extends Footlights {
 	def keychain:Keychain
 	def loadedApps:HashMap[URI,AppWrapper]
 	def appLoader:ClassLoader
-	def prefs:FileBackedPreferences
+	def prefs:ModifiablePreferences
 
 	def open(name:String):File
 	def save(bytes:ByteBuffer):File
@@ -83,14 +83,10 @@ trait Applications extends Footlights {
 		val appKey = "app.prefs." + appName
 		val map = new HashMap[String,String]
 
-		try open(prefs getString appKey) match {
-			case f:data.File => map ++= Preferences.parse(f.getContents())
-			case _ => None
-		}
-		catch {
-			case e:NoSuchElementException => None
-			case e:data.NoSuchBlockException => None
-			case t:Throwable => throw new ProgrammerError("Uncaught exception", t)
+		prefs getString(appKey) flatMap { filename =>
+			try { Some(open(filename)) } catch { case e:data.NoSuchBlockException => None }
+		} map {
+			_ match { case file:data.File => map ++= Preferences.parse(file.getContents()) }
 		}
 
 		// Create an anonymous mutable version which can save itself

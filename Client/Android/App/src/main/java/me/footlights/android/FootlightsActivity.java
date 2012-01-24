@@ -27,6 +27,7 @@ import android.widget.ListView;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.InjectView;
+import scala.Option;
 
 import me.footlights.core.Kernel;
 import me.footlights.core.Preferences;
@@ -58,7 +59,7 @@ public class FootlightsActivity extends RoboActivity
 
 		log.log("Created Footlights kernel: " + kernel + "\n");
 
-		Preferences prefs = Preferences.create(PreferenceAdapter.wrap(sharedPrefs));
+		Preferences prefs = Preferences.create(Option.apply(PreferenceAdapter.wrap(sharedPrefs)));
 		for (Map.Entry<String,?> entry : prefs.getAll().entrySet())
 			log.log(entry.getKey() + ": " + entry.getValue().toString());
 	}

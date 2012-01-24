@@ -85,7 +85,8 @@ public class SecretKey
 			if (secret == null)
 			{
 				secret = new byte[keylen];
-				SecureRandom.getInstance(preferences.getString("crypto.prng")).nextBytes(secret);
+				SecureRandom.getInstance(preferences.getString("crypto.prng").get())
+					.nextBytes(secret);
 			}
 
 			if (keySpec == null) keySpec = new SecretKeySpec(secret, algorithm);
@@ -93,9 +94,9 @@ public class SecretKey
 		}
 
 
-		private String algorithm = preferences.getString("crypto.sym.algorithm");
+		private String algorithm = preferences.getString("crypto.sym.algorithm").get();
 
-		private int keylen = preferences.getInt("crypto.sym.keylen");
+		private int keylen = preferences.getInt("crypto.sym.keylen").get();
 		private byte[] secret = null;
 		private Fingerprint.Builder fingerprint = Fingerprint.newBuilder();
 		private SecretKeySpec keySpec;
@@ -145,8 +146,8 @@ public class SecretKey
 		private CipherBuilder() {}
 
 		private Operation operation = Operation.ENCRYPT;
-		private String mode = preferences.getString("crypto.sym.mode");
-		private String padding = preferences.getString("crypto.sym.padding");
+		private String mode = preferences.getString("crypto.sym.mode").get();
+		private String padding = preferences.getString("crypto.sym.padding").get();
 	}
 
 

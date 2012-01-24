@@ -112,11 +112,11 @@ class SigningIdentity extends Identity
 		/** The self-declared identity for the certificate. */
 		private X500Principal principal;
 
-		private String publicKeyType = preferences.getString("crypto.asym.algorithm");
-		private String hashAlgorithm = preferences.getString("crypto.hash.algorithm");
+		private String publicKeyType = preferences.getString("crypto.asym.algorithm").get();
+		private String hashAlgorithm = preferences.getString("crypto.hash.algorithm").get();
 
-		private int keyLength = preferences.getInt("crypto.asym.keylen");
-		private int validity = preferences.getInt("crypto.cert.validity");
+		private int keyLength = preferences.getInt("crypto.asym.keylen").get();
+		private int validity = preferences.getInt("crypto.cert.validity").get();
 	}
 
 

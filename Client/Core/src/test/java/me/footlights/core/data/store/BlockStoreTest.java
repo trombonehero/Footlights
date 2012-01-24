@@ -38,7 +38,7 @@ public class BlockStoreTest
 {
 	@BeforeClass public static void setupClass() throws Exception
 	{
-		sharedSecret = Preferences.loadFromDefaultLocation().getString(SHARED_SECRET_KEY);
+		sharedSecret = Preferences.loadFromDefaultLocation().getString(SHARED_SECRET_KEY).get();
 	}
 
 	/** Test communication with a local BlockStore instance. */

@@ -88,7 +88,7 @@ public class Keychain implements HasBytes
 		throws CertificateException, IOException, KeyStoreException,
 		       NoSuchAlgorithmException, UnrecoverableEntryException
 	{
-		importKeystoreFile(input, PREFERENCES.getString("crypto.keystore.type"));
+		importKeystoreFile(input, PREFERENCES.getString("crypto.keystore.type").get());
 	}
 
 	/** Merge a KeyStore file into this Keychain. */
@@ -169,7 +169,7 @@ public class Keychain implements HasBytes
 		try
 		{
 			store = buildExternalizableKeyStore(
-					PREFERENCES.getString("crypto.keystore.type"), password);
+					PREFERENCES.getString("crypto.keystore.type").get(), password);
 		}
 		catch (Exception e)
 		{

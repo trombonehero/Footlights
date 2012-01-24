@@ -109,7 +109,7 @@ public class Fingerprint
 			try
 			{
 				algorithm = MessageDigest.getInstance(
-					preferences.getString("crypto.hash.algorithm"));
+					preferences.getString("crypto.hash.algorithm").get());
 			}
 			catch (NoSuchAlgorithmException e)
 			{

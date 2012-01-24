@@ -74,22 +74,22 @@ object Kernel {
 		val fileBackedPrefs = FileBackedPreferences.loadFromDefaultLocation
 		Flusher(fileBackedPrefs) start
 
-		val prefs = Preferences.create(fileBackedPrefs)
+		val prefs = Preferences.create(Some(fileBackedPrefs))
 
 		val io = IO.direct
 
 		val keychain = Keychain create
-		val keychainFile =
-			new java.io.File(prefs getString { FileBackedPreferences.KEYCHAIN_KEY })
+		val keychainFile = prefs getString { FileBackedPreferences.KEYCHAIN_KEY } map {
+			new java.io.File(_) } flatMap { f => if (f.exists) Some(f) else None }
 
-		if (keychainFile exists) {
-			try keychain.importKeystoreFile(new FileInputStream(keychainFile))
+		if (keychainFile isDefined) {
+			try keychain.importKeystoreFile(new FileInputStream(keychainFile get))
 			catch {
 				case e:Exception => log.log(Level.SEVERE, "Error loading keychain", e)
 			}
-		}
 
-		Flusher(keychain, keychainFile) start
+			Flusher(keychain, keychainFile get) start
+		}
 
 		val apps = new HashMap[URI,AppWrapper]
 		val uis = new HashSet[UI]
@@ -104,7 +104,7 @@ object Kernel {
 
 		// Where are we storing data?
 		val resolver = new Resolver(io, keychain)
-		val setupData = resolver.fetchJSON(new URL(prefs getString "init.setup"))
+		val setupData = prefs getString "init.setup" map { new URL(_) } map { resolver.fetchJSON }
 		val up = getStoreLocation("up", prefs, setupData)
 		val down = getStoreLocation("down", prefs, setupData)
 
@@ -118,11 +118,11 @@ object Kernel {
 			with security.KernelPrivilege
 	}
 
-	private def getStoreLocation(key:String, prefs:Preferences, setupData:ImmutableMap[String,_]) = {
-		(try { Some(prefs getString "blockstore." + key) } catch {
-			case e:NoSuchElementException => None
-		}) orElse {
-			setupData.get(key) match { case Some(s:String) => Some(s); case _ => None }
+	private def getStoreLocation(
+		key:String, prefs:Preferences, setupData:Option[ImmutableMap[String,_]]) = {
+
+		prefs getString("blockstore." + key) orElse {
+			setupData.get.get(key) match { case Some(s:String) => Some(s); case _ => None }
 		} map {
 			new URL(_)
 		}

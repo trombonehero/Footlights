@@ -41,7 +41,7 @@ public class DiskStore extends LocalStore
 
 		public Builder setDefaultDirectory()
 		{
-			dir = new File(prefs.getString(FileBackedPreferences.CACHE_DIR_KEY));
+			dir = new File(prefs.getString(FileBackedPreferences.CACHE_DIR_KEY()).get());
 			dir.mkdirs();
 
 			return this;

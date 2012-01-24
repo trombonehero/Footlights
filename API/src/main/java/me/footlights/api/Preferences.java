@@ -16,13 +16,14 @@
 package me.footlights.api;
 
 import java.util.NoSuchElementException;
+import scala.Option;
 
 
 /** Representation of stored plugin preferences. */
 public interface Preferences
 {
-	public String getString(String key) throws NoSuchElementException;
-	public boolean getBoolean(String key) throws NoSuchElementException;
-	public int getInt(String key) throws NoSuchElementException;
-	public float getFloat(String key) throws NoSuchElementException;
+	public Option<String>  getString(String key) throws NoSuchElementException;
+	public Option<Boolean> getBoolean(String key) throws NoSuchElementException;
+	public Option<Integer> getInt(String key) throws NoSuchElementException;
+	public Option<Float>   getFloat(String key) throws NoSuchElementException;
 }

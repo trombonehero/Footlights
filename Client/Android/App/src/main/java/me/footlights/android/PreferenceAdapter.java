@@ -18,6 +18,8 @@ package me.footlights.android;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import scala.Option;
+
 import android.content.SharedPreferences;
 
 import me.footlights.core.PreferenceStorageEngine;
@@ -31,36 +33,36 @@ public class PreferenceAdapter extends PreferenceStorageEngine
 		return new PreferenceAdapter(prefs);
 	}
 
-	@Override protected Map<String,?> getAll() { return prefs.getAll(); }
+	@Override public Map<String,?> getAll() { return prefs.getAll(); }
 
-	@Override protected String getRaw(String key) throws NoSuchElementException
+	@Override public Option<String> getRaw(String key) throws NoSuchElementException
 	{
 		if (!prefs.contains(key)) throw new NoSuchElementException(key);
-		return getAll().get(key).toString();
+		return Option.apply(getAll().get(key).toString());
 	}
 
-	@Override public String getString(String key) throws NoSuchElementException
+	@Override public Option<String> getString(String key) throws NoSuchElementException
 	{
 		if (!prefs.contains(key)) throw new NoSuchElementException(key);
-		return prefs.getString(key, null);
+		return Option.apply(prefs.getString(key, null));
 	}
 
-	@Override public boolean getBoolean(String key) throws NoSuchElementException
+	@Override public Option<Boolean> getBoolean(String key) throws NoSuchElementException
 	{
 		if (!prefs.contains(key)) throw new NoSuchElementException(key);
-		return prefs.getBoolean(key, false);
+		return Option.apply(prefs.getBoolean(key, false));
 	}
 
-	@Override public int getInt(String key) throws NoSuchElementException
+	@Override public Option<Integer> getInt(String key) throws NoSuchElementException
 	{
 		if (!prefs.contains(key)) throw new NoSuchElementException(key);
-		return prefs.getInt(key, 0);
+		return Option.apply(prefs.getInt(key, 0));
 	}
 
-	@Override public float getFloat(String key) throws NoSuchElementException
+	@Override public Option<Float> getFloat(String key) throws NoSuchElementException
 	{
 		if (!prefs.contains(key)) throw new NoSuchElementException(key);
-		return prefs.getFloat(key, 0);
+		return Option.apply(prefs.getFloat(key, 0));
 	}
 
 

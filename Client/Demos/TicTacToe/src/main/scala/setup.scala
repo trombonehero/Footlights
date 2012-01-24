@@ -44,9 +44,7 @@ class TicTacToe(val prefs:ModifiablePreferences) extends Application
 		game = new Game
 	}
 
-	def getCounter(name:String) =
-		try { prefs.getInt(name) }
-		catch { case e:NoSuchElementException => 0 }
+	def getCounter(name:String):Int = prefs getInt(name) map { _.intValue } getOrElse 0
 
 	private def incrementCounter(name:String) = {
 		var count = getCounter(name) + 1

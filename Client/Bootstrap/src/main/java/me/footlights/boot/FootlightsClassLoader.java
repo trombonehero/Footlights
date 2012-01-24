@@ -132,7 +132,8 @@ class FootlightsClassLoader extends ClassLoader
 				knownPackages.put(packageName, loader);
 				return c;
 			}
-			catch (Exception e) {}
+			catch (ClassNotFoundException e) {}
+			catch (Exception e) { throw new RuntimeException(e); }
 		}
 
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);

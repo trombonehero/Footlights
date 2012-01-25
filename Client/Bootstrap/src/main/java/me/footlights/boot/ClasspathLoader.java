@@ -38,7 +38,7 @@ class ClasspathLoader extends ClassLoader
 	static ClasspathLoader create(ClassLoader parent, URL classpath, String basePackage)
 		throws FileNotFoundException, MalformedURLException
 	{
-		// Only grant privileges to code Footlights code.
+		// Only grant privileges to core Footlights code.
 		final PermissionCollection permissions;
 		if (basePackage.startsWith("me.footlights.core")
 		    || basePackage.startsWith("me.footlights.ui"))

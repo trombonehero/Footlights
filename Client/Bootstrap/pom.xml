@@ -27,12 +27,15 @@
 			<version>2.9.1</version>
 		</dependency>
 
+		<!-- Google collections (e.g. Maps). -->
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
 			<version>1.0</version>
 			<optional>false</optional>
 		</dependency>
+
+		<!-- The Footlights code to bootstrap (runtime and/or test). -->
 		<dependency>
 			<groupId>me.footlights</groupId>
 			<artifactId>footlights-core</artifactId>

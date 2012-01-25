@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.boot;
 
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.Permissions;
-import java.security.Policy;
-import java.security.ProtectionDomain;
+import java.security.{CodeSource,Permissions,Policy,ProtectionDomain}
+import java.io.FilePermission
 
+
+package me.footlights.boot {
 
 /** A very restrictive Java security policy. */
-class RestrictivePolicy extends Policy
+final class RestrictivePolicy extends Policy
 {
-	@Override public PermissionCollection getPermissions(CodeSource codesource)
-	{
-		return new Permissions();
-	}
+	override def getPermissions(source:CodeSource) = new Permissions
+	override def getPermissions(domain:ProtectionDomain) = getPermissions(domain.getCodeSource())
+	override def refresh = {}
+}
 
-	@Override public PermissionCollection getPermissions(ProtectionDomain domain)
-	{
-		return getPermissions(domain.getCodeSource());
-	}
-
-	@Override public void refresh() {}
 }

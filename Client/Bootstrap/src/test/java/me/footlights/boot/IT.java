@@ -63,9 +63,9 @@ public class IT
 	/** Make sure we can load classes from {@link me.footlights.core}. */
 	@Test public void testLoadingCore() throws ClassNotFoundException
 	{
-		Class<?> c = loader.loadClass("me.footlights.core.Core");
+		Class<?> c = loader.loadClass("me.footlights.core.Kernel");
 		assertNotNull(c);
-		assertEquals("me.footlights.core.Core", c.getCanonicalName());
+		assertEquals("me.footlights.core.Kernel", c.getCanonicalName());
 
 		PermissionCollection permissions = c.getProtectionDomain().getPermissions();
 		assertTrue(permissions.implies(new AllPermission()));
@@ -73,7 +73,6 @@ public class IT
 
 	@Test public void testGoodApplication() throws Exception
 	{
-
 		Class<?> c = loader.loadClass(GOOD_APPLICATION);
 
 		assertNotNull(c);
@@ -96,7 +95,7 @@ public class IT
 		{
 			if (Modifier.isStatic(m.getModifiers())
 				&& (m.getName() == "init")
-				&& (m.getParameterTypes().length == 2))
+				&& (m.getParameterTypes().length == 3))
 			{
 				init = m;
 				break;
@@ -106,7 +105,7 @@ public class IT
 		if (init == null)
 			fail("Unable to find static init() method in app " + c.getCanonicalName());
 
-		Object app = init.invoke(null, null, logger);
+		Object app = init.invoke(null, null, null, logger);
 		assertNotNull(app);
 
 		verify(logger, atLeastOnce()).info(anyString());
@@ -176,7 +175,7 @@ public class IT
 		sb.append("jar:file://");
 		sb.append(
 			System.getProperty("java.class.path")
-				.replaceFirst("Client/Bootstrap/.*", "Client/Plugins/"));
+				.replaceFirst("Client/Bootstrap/.*", "Client/Demos/"));
 		sb.append(projectDir);
 		sb.append("/target/");
 		sb.append(projectName);
@@ -188,11 +187,11 @@ public class IT
 
 	private static final String GOOD_CLASSNAME = "me.footlights.demos.good.GoodApp";
 	private static final String GOOD_CLASS_FILE = GOOD_CLASSNAME.replaceAll("\\.", "/") + ".class";
-	private static final String GOOD_APPLICATION = appUri("Good", "good-plugin", GOOD_CLASSNAME);
+	private static final String GOOD_APPLICATION = appUri("Basic", "basic-demo", GOOD_CLASSNAME);
 
 	private static final String WICKED_CLASSNAME = "me.footlights.demos.wicked.WickedApp";
 	private static final String WICKED_APPLICATION =
-		appUri("Wicked", "wicked-plugin", WICKED_CLASSNAME);
+		appUri("Wicked", "wicked-app", WICKED_CLASSNAME);
 
 	private FootlightsClassLoader loader;
 	private Logger logger;

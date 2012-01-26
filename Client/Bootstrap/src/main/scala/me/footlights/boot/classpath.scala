@@ -48,8 +48,6 @@ object Classpath {
 /** Loads classes from a local directory. */
 private[boot]
 class FileLoader(url:URL) extends Classpath(url) {
-	override def dependencies = Nil
-
 	override def readClass(className:String) = {
 		open(className.split("\\.").toList, "class") map read map {
 			(_, new CodeSource(url, new Array[CodeSigner](0)))
@@ -89,6 +87,23 @@ class FileLoader(url:URL) extends Classpath(url) {
 
 	/** Path component separator ('/' on UNIX, '\' on Windows). */
 	private val pathSep = File.separatorChar.toString
+
+
+	/** Calculate the JAR files which we are depending on. */
+	override val dependencies =
+		open("META-INF" :: "MANIFEST" :: Nil, "MF") map read map { new String(_) } map { s=> {
+				// Find the classpath line in the manifest file.
+				val target = "Class-Path: "
+				((s.indexOf(target) + target.length) match {
+					case begin:Int if begin >= target.length =>
+						(s.indexOf('\n', begin) match {
+							case end:Int if end > 0 => s.substring(begin, end)
+							case _ => s.substring(begin)
+						}).split(" ").toList  // Split into class paths.
+					case _ => Nil
+				})
+			}
+		} map makeDependencyURLs getOrElse Nil
 }
 
 private[boot]

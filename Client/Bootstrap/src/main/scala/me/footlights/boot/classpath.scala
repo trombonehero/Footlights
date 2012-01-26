@@ -29,6 +29,9 @@ abstract class Classpath(url:URL) {
 	def externalURL = url.toExternalForm
 	def dependencies:List[URL]
 	def readClass(name:String): Option[(Array[Byte],CodeSource)]
+
+	protected def makeDependencyURLs(paths:List[String]) =
+		paths filter { _.endsWith(".jar") } map { s => new URL("jar:" + s + "!/") }
 }
 
 private[boot]
@@ -100,9 +103,9 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 	val dependencies = jar.getManifest match {
 		case null => throw new SecurityException("JAR file has no manifest (so it isn't signed)")
 		case m:Manifest => m.getMainAttributes.getValue("Class-Path") match {
-			case null => Nil
-			case s:String => List.fromArray(s.split(" ")) map { new URL(_) }
-		}
+				case null => Nil
+				case s:String => makeDependencyURLs { List.fromArray(s.split(" ")) }
+			}
 	}
 
 	/** Read a class' bytecode. */

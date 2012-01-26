@@ -48,18 +48,9 @@ class FileLoader(url:URL) extends Classpath(url) {
 	override def dependencies = Nil
 
 	override def readClass(className:String) = {
-		val file = open(className.split("\\.").toList, "class")
-		val bytes = new Array[Byte](file map { _.length.toInt } getOrElse 0)
-
-		file map { new FileInputStream(_) } foreach { stream => {
-				var offset = 0
-				while (offset < bytes.length)
-					offset += stream.read(bytes, offset, bytes.length - offset)
-				stream.close
-			}
+		open(className.split("\\.").toList, "class") map read map {
+			(_, new CodeSource(url, new Array[CodeSigner](0)))
 		}
-
-		Some((bytes, new CodeSource(url, new Array[CodeSigner](0))))
 	}
 
 	/** Open a file within the current classpath. */
@@ -68,6 +59,24 @@ class FileLoader(url:URL) extends Classpath(url) {
 			case f:File if f.exists => Some(f)
 			case _ => None
 		}
+
+	/**
+	 * Read all bytes from a given file.
+	 *
+	 * This isn't at all efficient for large files, but the class files that I'm looking at are
+	 * in the range [129 B, 52 kB].
+	 */
+	private def read(file:File) = {
+		val bytes = new Array[Byte](file.length.toInt)
+		val stream = new FileInputStream(file)
+
+		var offset = 0
+		while (offset < bytes.length)
+			offset += stream.read(bytes, offset, bytes.length - offset)
+		stream.close
+
+		bytes
+	}
 
 	/** The directory underneath which the classes are stored. */
 	private val dirName = url.getFile

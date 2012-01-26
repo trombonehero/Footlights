@@ -48,7 +48,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 	override def dependencies = Nil
 
 	override def readClass(className:String) = {
-		val file = open(className.split("\\."), "class")
+		val file = open(className.split("\\.").toList, "class")
 		val bytes = new Array[Byte](file map { _.length.toInt } getOrElse 0)
 
 		file map { new FileInputStream(_) } foreach { stream => {

@@ -63,10 +63,21 @@ class FileLoader(url:URL) extends Classpath(url) {
 		(bytes, new CodeSource(url, new Array[CodeSigner](0)))
 	}
 
+	/** Open a file within the current classpath. */
+	private def open(path:Array[String], extension:String) =
+		new File((dirName ++ path).reduceLeft(_ + pathSep + _) + "." + extension) match {
+			case f:File if f.exists => Some(f)
+			case _ => None
+		}
+
 	/** The directory underneath which the classes are stored. */
-	private val dir = new java.io.File(url.getFile)
+	private val dirName = url.getFile
+	private val dir = new java.io.File(dirName)
 	if (!dir.exists)
 		throw new java.io.FileNotFoundException("No such classpath '" + url + "'");
+
+	/** Path component separator ('/' on UNIX, '\' on Windows). */
+	private val pathSep = File.separatorChar.toString
 }
 
 private[boot]

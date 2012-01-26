@@ -30,6 +30,9 @@ import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.util.Map;
 
+import scala.Option;
+import scala.Tuple2;
+
 import com.google.common.collect.Maps;
 
 
@@ -84,14 +87,15 @@ class ClasspathLoader extends ClassLoader
 	{
 		if (loadedClasses.containsKey(name)) return loadedClasses.get(name);
 
-		scala.Tuple2<byte[],CodeSource> bytecode;
+		final Option<Tuple2<byte[],CodeSource> > bytecode;
 		try
 		{
 			bytecode = AccessController.doPrivileged(
-					new PrivilegedExceptionAction<scala.Tuple2<byte[],CodeSource> >()
+					new PrivilegedExceptionAction<Option<Tuple2<byte[],CodeSource> > >()
 				{
 					@Override
-					public scala.Tuple2<byte[],CodeSource> run() throws ClassNotFoundException, IOException
+					public Option<Tuple2<byte[],CodeSource> > run()
+						throws ClassNotFoundException, IOException
 					{
 						return classpath.readClass(name);
 					}
@@ -102,8 +106,14 @@ class ClasspathLoader extends ClassLoader
 			throw new ClassNotFoundException("Unable to load " + name + " from " + classpath, e);
 		}
 
-		ProtectionDomain domain = new ProtectionDomain(bytecode._2, permissions);
-		Class<?> c = defineClass(name, bytecode._1, 0, bytecode._1.length, domain);
+		if (bytecode.isEmpty())
+			throw new ClassNotFoundException("Unable to load " + name + " from " + classpath);
+
+		byte[] bytes = bytecode.get()._1;
+		CodeSource source = bytecode.get()._2;
+
+		ProtectionDomain domain = new ProtectionDomain(source, permissions);
+		Class<?> c = defineClass(name, bytes, 0, bytes.length, domain);
 		loadedClasses.put(name, c);
 		return c;
 	}

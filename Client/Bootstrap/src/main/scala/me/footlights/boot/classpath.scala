@@ -28,7 +28,7 @@ private[boot]
 abstract class Classpath(url:URL) {
 	def externalURL = url.toExternalForm
 	def dependencies:List[URL]
-	def readClass(name:String): (Array[Byte],CodeSource)
+	def readClass(name:String): Option[(Array[Byte],CodeSource)]
 }
 
 private[boot]
@@ -59,7 +59,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 			}
 		}
 
-		(bytes, new CodeSource(url, new Array[CodeSigner](0)))
+		Some((bytes, new CodeSource(url, new Array[CodeSigner](0))))
 	}
 
 	/** Open a file within the current classpath. */
@@ -109,7 +109,7 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 				if (signers == null) throw new SecurityException(entry.toString() + " not signed")
 				val source = new CodeSource(url, signers)
 
-				(bytes, source)
+				Some((bytes, source))
 			}
 		} getOrElse {
 			throw new ClassNotFoundException("No class " + className + " in JAR file " + url)

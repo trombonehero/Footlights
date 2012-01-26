@@ -88,7 +88,7 @@ class FootlightsClassLoader extends ClassLoader
 			}
 			catch (PrivilegedActionException e)
 			{
-				throw new ClassNotFoundException("Invalid classpath: " + classpath, e);
+				throw new ClassNotFoundException("Unable to load classpath: " + classpath, e);
 			}
 
 			try

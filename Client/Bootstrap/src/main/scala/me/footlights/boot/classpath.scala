@@ -63,8 +63,8 @@ class FileLoader(url:URL) extends Classpath(url) {
 	}
 
 	/** Open a file within the current classpath. */
-	private def open(path:Array[String], extension:String) =
-		new File((dirName ++ path).reduceLeft(_ + pathSep + _) + "." + extension) match {
+	private def open(path:List[String], extension:String) =
+		new File((dirName :: path).reduceLeft(_ + pathSep + _) + "." + extension) match {
 			case f:File if f.exists => Some(f)
 			case _ => None
 		}

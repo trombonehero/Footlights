@@ -29,6 +29,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import scala.Option;
 import scala.Tuple2;
@@ -58,6 +59,9 @@ class ClasspathLoader extends ClassLoader
 			path = new URL("jar:" + path + "!/");
 
 		Classpath classpath = Classpath.open(path, basePackage).get();
+		if (classpath.dependencies().length() > 0)
+			log.info("Classpath '" + path + "' has dependencies: " + classpath.dependencies());
+
 		return new ClasspathLoader(parent, classpath, basePackage, permissions);
 	}
 
@@ -194,4 +198,6 @@ class ClasspathLoader extends ClassLoader
 		PRIVILEGED_PERMISSIONS.add(new AllPermission());
 		PRIVILEGED_PERMISSIONS.setReadOnly();
 	}
+
+	private static final Logger log = Logger.getLogger(ClasspathLoader.class.getCanonicalName());
 }

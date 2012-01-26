@@ -48,6 +48,7 @@ object Classpath {
 /** Loads classes from a local directory. */
 private[boot]
 class FileLoader(url:URL) extends Classpath(url) {
+	/** Read a class from this filesystem hierarchy. */
 	override def readClass(className:String) = {
 		open(className.split("\\.").toList, "class") map read map {
 			(_, new CodeSource(url, new Array[CodeSigner](0)))

@@ -38,10 +38,10 @@ class ResolverTest extends Spec with BeforeAndAfter with MockitoSugar with Shoul
 	describe("A Resolver") {
 		it("should resolve names with a specified key") {
 			val key = new Array[Byte](16); key(15) = 0x42
-			val file = mockFile(f, Some("AES:00000000000000000000000000000042"))
+			val file = mockFile(f, Option("AES:00000000000000000000000000000042"))
 			when(io.fetch(url)) thenReturn { file }
 
-			resolver.resolve(url) should equal(Some(
+			resolver.resolve(url) should equal(Option(
 					Link.newBuilder()
 						.setFingerprint(f)
 						.setKey(SecretKey.newGenerator()

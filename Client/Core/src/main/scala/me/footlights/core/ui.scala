@@ -57,7 +57,7 @@ trait SwingPowerboxes extends Kernel {
 	private def open() = {
 		val d = new JFileChooser
 		val filename = d.showOpenDialog(null) match {
-			case JFileChooser.APPROVE_OPTION => Some(d.getSelectedFile())
+			case JFileChooser.APPROVE_OPTION => Option(d.getSelectedFile())
 			case _ => { log.fine("User cancelled file open dialog"); None }
 		}
 

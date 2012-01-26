@@ -24,15 +24,10 @@ package me.footlights.core.security {
 object CryptoBackend {
 	def get:Option[Provider] = synchronized {
 		// Convert Java-style "null" provider to a scala None.
-		Some(Security.getProvider("BC")) flatMap {
-			_ match {
-				case p:Provider => Some(p)
-				case null => None;
-			}
-		} orElse {
+		Option(Security.getProvider("BC")) orElse {
 			// If we haven't already installed BouncyCastle as the crypto provider, we must be
 			// running in a special environment such as a unit test.
-			val p = Some(new BouncyCastleProvider())
+			val p = Option(new BouncyCastleProvider())
 			p foreach { Security.addProvider(_) }
 			p
 		}

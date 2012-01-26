@@ -74,13 +74,13 @@ object Kernel {
 		val fileBackedPrefs = FileBackedPreferences.loadFromDefaultLocation
 		Flusher(fileBackedPrefs) start
 
-		val prefs = Preferences.create(Some(fileBackedPrefs))
+		val prefs = Preferences.create(Option(fileBackedPrefs))
 
 		val io = IO.direct
 
 		val keychain = Keychain create
 		val keychainFile = prefs getString { FileBackedPreferences.KEYCHAIN_KEY } map {
-			new java.io.File(_) } flatMap { f => if (f.exists) Some(f) else None }
+			new java.io.File(_) } filter { _.exists }
 
 		if (keychainFile isDefined) {
 			try keychain.importKeystoreFile(new FileInputStream(keychainFile get))
@@ -122,7 +122,7 @@ object Kernel {
 		key:String, prefs:Preferences, setupData:Option[ImmutableMap[String,_]]) = {
 
 		prefs getString("blockstore." + key) orElse {
-			setupData.get.get(key) match { case Some(s:String) => Some(s); case _ => None }
+			setupData.get.get(key) match { case Some(s:String) => Option(s); case _ => None }
 		} map {
 			new URL(_)
 		}

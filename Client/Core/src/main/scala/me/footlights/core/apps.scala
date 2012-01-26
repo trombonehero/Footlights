@@ -84,7 +84,7 @@ trait Applications extends Footlights {
 		val map = new HashMap[String,String]
 
 		prefs getString(appKey) flatMap { filename =>
-			try { Some(open(filename)) } catch { case e:data.NoSuchBlockException => None }
+			try { Option(open(filename)) } catch { case e:data.NoSuchBlockException => None }
 		} map {
 			_ match { case file:data.File => map ++= Preferences.parse(file.getContents()) }
 		}
@@ -103,10 +103,11 @@ trait Applications extends Footlights {
 
 				// Save updated preferences to the Store.
 				val saved = try save(Preferences.encode(map)) match {
-					case f:data.File => Some(f)
-				} catch { case e:IOException =>
-					log.log(Level.WARNING, "Error saving preferences for '" + appName + "'", e)
-					None
+					case f:me.footlights.core.data.File => Some(f)
+				} catch {
+					case e:IOException =>
+						log.log(Level.WARNING, "Error saving preferences for '" + appName + "'", e)
+						None
 				}
 
 				// Save the link to the updated preferences.

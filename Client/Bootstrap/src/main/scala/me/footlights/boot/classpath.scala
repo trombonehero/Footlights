@@ -58,7 +58,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 	/** Open a file within the current classpath. */
 	private def open(path:List[String], extension:String) =
 		new File((dirName :: path).reduceLeft(_ + pathSep + _) + "." + extension) match {
-			case f:File if f.exists => Some(f)
+			case f:File if f.exists => Option(f)
 			case _ => None
 		}
 
@@ -137,7 +137,7 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 				if (signers == null) throw new SecurityException(entry.toString() + " not signed")
 				val source = new CodeSource(url, signers)
 
-				Some((bytes, source))
+				Option((bytes, source))
 			}
 		} getOrElse {
 			throw new ClassNotFoundException("No class " + className + " in JAR file " + url)
@@ -147,7 +147,7 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 
 private[boot]
 object JARLoader {
-	def open(url:URL) = Some(new JARLoader((new JAROpener).open(url), url))
+	def open(url:URL) = Option(new JARLoader((new JAROpener).open(url), url))
 }
 
 }

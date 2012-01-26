@@ -71,14 +71,14 @@ class IO(proxy:java.net.Proxy) {
 				}
 
 				// If we're opening a large file, let the OS map it into memory.
-				case n if n > 10000 => Some(channel.map(MapMode.READ_ONLY, 0, file.length()))
+				case n if n > 10000 => Option(channel.map(MapMode.READ_ONLY, 0, file.length()))
 
 				// For smaller files, it can be more efficient to simply read the bytes out.
 				case n:Long => {
 					val buffer = ByteBuffer allocateDirect n.toInt
 					channel read { buffer }
 					buffer.flip
-					Some(buffer)
+					Option(buffer)
 				}
 			}
 		} }
@@ -93,7 +93,7 @@ class IO(proxy:java.net.Proxy) {
 
 		while (in.available() > 0) {
 			// TODO: use some kind of NIO operation with channels and whatnot
-			data += Some(ByteBuffer.allocate(4096)) map { b =>
+			data += Option(ByteBuffer.allocate(4096)) map { b =>
 				b.limit(in.read(b.array())) match { case bb:ByteBuffer => bb } }
 		}
 

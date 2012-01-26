@@ -51,7 +51,7 @@ abstract class PreferenceStorageEngine extends me.footlights.api.Preferences {
 object PreferenceStorageEngine {
 	def wrap(map:Map[String,_]) = new PreferenceStorageEngine() {
 		override def getAll = map
-		override def getRaw(s:String) = if (map contains s) Some(map get(s) toString) else None
+		override def getRaw(s:String) = if (map contains s) Option(map get(s) toString) else None
 	}
 }
 
@@ -168,17 +168,17 @@ object Preferences {
 	def getDefaultPreferences = defaultPreferences getOrElse new Preferences(None)
 
 	/** Load Preferences from the default filesystem location. */
-	def loadFromDefaultLocation = create(Some(FileBackedPreferences.loadFromDefaultLocation))
+	def loadFromDefaultLocation = create(Option(FileBackedPreferences.loadFromDefaultLocation))
 
 	/** Create preferences with an explicitly-specified backing engine. */
 	def create[T <: PreferenceStorageEngine](engine:Option[T]) = {
 		val prefs = new Preferences(engine)
-		if (defaultPreferences.isEmpty) { defaultPreferences = Some(prefs) }
+		if (defaultPreferences.isEmpty) { defaultPreferences = Option(prefs) }
 		prefs
 	}
 
 	/** Wrap a String->Any mapping in a {@link Preferences} object.*/
-	def wrap(map:Map[String,_]) = create(Some(PreferenceStorageEngine.wrap(map)))
+	def wrap(map:Map[String,_]) = create(Option(PreferenceStorageEngine.wrap(map)))
 
 
 	/** Generate byte encoding of {@link Preferences}. */
@@ -251,10 +251,7 @@ final class FileBackedPreferences(properties:java.util.Properties, configFile:ja
 
 	// PreferenceStorageEngine implementation
 	private[core] override def getAll = com.google.common.collect.Maps.fromProperties(properties)
-	override def getRaw(name:String) = properties.getProperty(name) match {
-		case s:String => Some(String.copyValueOf(s.toCharArray))
-		case null => None
-	}
+	override def getRaw(name:String) = Option(properties.getProperty(name))
 
 	// ModifiablePreferences implementation
 	override def set(key:String, value:String) = synchronized {

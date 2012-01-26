@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.AllPermission;
+import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.PrivilegedActionException;
@@ -35,7 +36,7 @@ import com.google.common.collect.Maps;
 /** Loads classes and resources from a single classpath. */
 class ClasspathLoader extends ClassLoader
 {
-	static ClasspathLoader create(ClassLoader parent, URL classpath, String basePackage)
+	static ClasspathLoader create(ClassLoader parent, URL path, String basePackage)
 		throws FileNotFoundException, MalformedURLException
 	{
 		// Only grant privileges to core Footlights code.
@@ -46,19 +47,14 @@ class ClasspathLoader extends ClassLoader
 		else
 		{
 			permissions = new Permissions();
-			permissions.add(new FilePermission(classpath.toExternalForm(), "read"));
+			permissions.add(new FilePermission(path.toExternalForm(), "read"));
 			permissions.setReadOnly();
 		}
 
-		if (classpath.getProtocol().equals("file"))
-		{
-			java.io.File file = new java.io.File(classpath.getFile());
-			if (!file.exists())
-				throw new FileNotFoundException("No such classpath '" + classpath + "'");
-		}
-		if (!classpath.getProtocol().startsWith("jar:") && classpath.getPath().endsWith(".jar"))
-			classpath = new URL("jar:" + classpath + "!/");
+		if (!path.getProtocol().startsWith("jar:") && path.getPath().endsWith(".jar"))
+			path = new URL("jar:" + path + "!/");
 
+		Classpath classpath = Classpath.open(path, basePackage).get();
 		return new ClasspathLoader(parent, classpath, basePackage, permissions);
 	}
 
@@ -88,15 +84,16 @@ class ClasspathLoader extends ClassLoader
 	{
 		if (loadedClasses.containsKey(name)) return loadedClasses.get(name);
 
-		Bytecode bytecode;
+		scala.Tuple2<byte[],CodeSource> bytecode;
 		try
 		{
-			bytecode = AccessController.doPrivileged(new PrivilegedExceptionAction<Bytecode>()
+			bytecode = AccessController.doPrivileged(
+					new PrivilegedExceptionAction<scala.Tuple2<byte[],CodeSource> >()
 				{
 					@Override
-					public Bytecode run() throws ClassNotFoundException, IOException
+					public scala.Tuple2<byte[],CodeSource> run() throws ClassNotFoundException, IOException
 					{
-						return Bytecode.read(classpath, name);
+						return classpath.readClass(name);
 					}
 				});
 		}
@@ -105,8 +102,8 @@ class ClasspathLoader extends ClassLoader
 			throw new ClassNotFoundException("Unable to load " + name + " from " + classpath, e);
 		}
 
-		ProtectionDomain domain = new ProtectionDomain(bytecode.source, permissions);
-		Class<?> c = defineClass(name, bytecode.raw, 0, bytecode.raw.length, domain);
+		ProtectionDomain domain = new ProtectionDomain(bytecode._2, permissions);
+		Class<?> c = defineClass(name, bytecode._1, 0, bytecode._1.length, domain);
 		loadedClasses.put(name, c);
 		return c;
 	}
@@ -117,7 +114,7 @@ class ClasspathLoader extends ClassLoader
 	{
 		try
 		{
-			String externalUrl = classpath.toExternalForm();
+			String externalUrl = classpath.externalURL();
 
 			StringBuilder sb = new StringBuilder();
 			sb.append(externalUrl);
@@ -136,7 +133,7 @@ class ClasspathLoader extends ClassLoader
 		sb.append("ClasspathLoader { package = '");
 		sb.append(basePackage);
 		sb.append("', url = '");
-		sb.append(classpath.toExternalForm());
+		sb.append(classpath.externalURL());
 		sb.append("', permissions = ");
 		sb.append(permissions);
 		sb.append("' }");
@@ -154,7 +151,7 @@ class ClasspathLoader extends ClassLoader
 	 *                          this parameter should be "com.foo".
 	 * @param permissions       Permissions that should be granted to loaded classes.
 	 */
-	private ClasspathLoader(ClassLoader parent, URL classpath, String basePackage,
+	private ClasspathLoader(ClassLoader parent, Classpath classpath, String basePackage,
 		PermissionCollection permissions)
 	{
 		super(parent);
@@ -171,7 +168,7 @@ class ClasspathLoader extends ClassLoader
 	private final Map<String, Class<?>> loadedClasses;
 
 	/** Where we find our classes and resources. */
-	private final URL classpath;
+	private final Classpath classpath;
 
 	/** The package that we are loading classes from. */
 	private final String basePackage;

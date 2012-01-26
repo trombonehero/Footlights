@@ -27,18 +27,6 @@ import java.security.CodeSource;
 /** Holds bytecode from a Java class file */
 class Bytecode
 {
-	/** Read {@link Bytecode} from a classpath, which may be a directory or a JAR file. */
-	public static Bytecode read(URL classpath, String className)
-		throws ClassNotFoundException, IOException
-	{
-		if (classpath.getProtocol().equals("jar"))
-			return JARLoader.open(classpath).readBytecode(className);
-
-		else
-			return Bytecode.readFile(classpath, className);
-	}
-
-
 	/** Read bytecode from a class file using a classpath and class name. */
 	public static Bytecode readFile(URL classpath, String className)
 			throws ClassNotFoundException, MalformedURLException

@@ -28,12 +28,15 @@ import java.security.Permissions;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import scala.Option;
+import scala.Some;
 import scala.Tuple2;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 
@@ -62,7 +65,8 @@ class ClasspathLoader extends ClassLoader
 		if (classpath.dependencies().size() > 0)
 			log.info("Classpath '" + path + "' has dependencies: " + classpath.dependencies());
 
-		return new ClasspathLoader(parent, classpath, basePackage, permissions);
+		return new ClasspathLoader(parent, classpath, basePackage,
+				ImmutableList.copyOf(classpath.dependencies()), permissions);
 	}
 
 
@@ -75,7 +79,7 @@ class ClasspathLoader extends ClassLoader
 	@Override protected synchronized Class<?> loadClass(String name, boolean resolve)
 		throws ClassNotFoundException
 	{
-		if (!name.startsWith(basePackage))
+		if (getClasspath(name).isEmpty())
 			return getParent().loadClass(name);
 
 		Class<?> c = findClass(name);
@@ -90,6 +94,10 @@ class ClasspathLoader extends ClassLoader
 		throws ClassNotFoundException
 	{
 		if (loadedClasses.containsKey(name)) return loadedClasses.get(name);
+
+		final Option<Classpath> classpath = getClasspath(name);
+		if (classpath.isEmpty())
+			throw new ClassNotFoundException("Unable to load " + name + " from " + classpath);
 
 		final Option<Tuple2<byte[],CodeSource> > bytecode;
 		try
@@ -144,15 +152,63 @@ class ClasspathLoader extends ClassLoader
 	@Override public String toString()
 	{
 		StringBuffer sb = new StringBuffer();
-		sb.append("ClasspathLoader { package = '");
-		sb.append(basePackage);
-		sb.append("', url = '");
-		sb.append(classpath.externalURL());
+		sb.append("ClasspathLoader { base url = '");
+		sb.append(base.toExternalForm());
+		sb.append("', classpaths = '");
+		sb.append(dependencies);
 		sb.append("', permissions = ");
 		sb.append(permissions);
+		sb.append(", dependencies = ");
+		sb.append(dependencies);
 		sb.append("' }");
 
 		return sb.toString();
+	}
+
+	/** Get the {@link Classpath} which can serve a given class. */
+	private Option<Classpath> getClasspath(String className) throws ClassNotFoundException
+	{
+		// Can this be served by an existing Classpath?
+		for (String packageName : classpaths.keySet())
+			if (className.startsWith(packageName))
+				return Some.apply(classpaths.get(packageName));
+
+		// Can it be served by a dependency?
+		String packageName = className.substring(className.lastIndexOf('.'));
+		// Try already-loaded classpaths first.
+		for (Map.Entry<URL,Option<Classpath> > dep : dependencies.entrySet())
+		{
+			if (dep.getValue().isEmpty()) continue;
+
+			Classpath cp = dep.getValue().get();
+			if (cp.readClass(className).isEmpty()) continue;
+
+			classpaths.put(packageName, cp);
+			return Option.apply(cp);
+		}
+
+		// If that didn't work, start loading new classpaths.
+		synchronized(this)
+		{
+			for (Map.Entry<URL,Option<Classpath> > dep : dependencies.entrySet())
+			{
+				if (!dep.getValue().isEmpty()) continue;
+
+				URL url = dep.getKey();
+				Option<Classpath> cp = Classpath.open(url, packageName);
+				if (cp.isEmpty())
+					throw new ClassNotFoundException("Unable to open classpath '" + url + "'");
+
+				dependencies.put(url, cp);
+
+				if (cp.get().readClass(className).isEmpty()) continue;
+				else classpaths.put(packageName, cp.get());
+
+				return cp;
+			}
+		}
+
+		return Option.apply(null);
 	}
 
 	/**
@@ -166,26 +222,34 @@ class ClasspathLoader extends ClassLoader
 	 * @param permissions       Permissions that should be granted to loaded classes.
 	 */
 	private ClasspathLoader(ClassLoader parent, Classpath classpath, String basePackage,
-		PermissionCollection permissions)
+		List<URL> dependencies, PermissionCollection permissions)
 	{
 		super(parent);
 
-		this.classpath = classpath;
-		this.basePackage = basePackage;
+		this.loadedClasses = Maps.newHashMap();
+		this.dependencies = Maps.newLinkedHashMap();
+		for (URL dep : dependencies)
+			this.dependencies.put(dep, Option.<Classpath>apply(null));
+
+		this.classpaths = Maps.newLinkedHashMap();
 		this.permissions = permissions;
 
-		this.loadedClasses = Maps.newHashMap();
+		base = classpath.url();
+		classpaths.put(basePackage, classpath);
 	}
 
+
+	/** Base URL for the classpath. */
+	private final URL base;
 
 	/** Classes that we've already loaded. */
 	private final Map<String, Class<?>> loadedClasses;
 
-	/** Where we find our classes and resources. */
-	private final Classpath classpath;
+	/** External classpaths (which may not have been accessed yet). */
+	private final Map<URL, Option<Classpath> > dependencies;
 
-	/** The package that we are loading classes from. */
-	private final String basePackage;
+	/** Where we find our classes and resources (package name -> {@link Classpath}). */
+	private final Map<String, Classpath> classpaths;
 
 	/** Cached permissions given to classes that we load. */
 	private final PermissionCollection permissions;

@@ -17,6 +17,8 @@ import me.footlights.api.ajax.AjaxHandler;
 import me.footlights.api.ajax.Context;
 import me.footlights.api.ajax.JavaScript;
 
+import me.footlights.demos.library.Library;
+
 import static me.footlights.demos.good.DemoAjaxHandler.AjaxRequest.*;
 
 
@@ -63,6 +65,12 @@ class DemoAjaxHandler extends Context
 				Helper h = new Helper();
 
 				response.append(makeDiv("And a regular method... "+ h.help()));
+
+				response.append(
+					makeDiv("Test static method from a library: '" + Library.staticMethod() + "'"));
+
+				response.append(
+					makeDiv("Test regular library method: '" + new Library().method() + "'"));
 
 				response.append(ajax(AjaxRequest.CONTENT.name()));
 				return response;

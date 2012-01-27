@@ -20,16 +20,19 @@ import java.util.jar.{JarEntry,JarFile,Manifest}
 
 import collection.JavaConversions._
 
+import com.google.common.collect.ImmutableList
+
 
 package me.footlights.boot {
 
 /** Holds bytecode from a Java class file */
 private[boot]
-abstract class Classpath(url:URL) {
+abstract class Classpath(val url:URL) {
 	def externalURL = url.toExternalForm
-	def dependencies:List[URL]
+	def dependencies:ImmutableList[URL] = ImmutableList.copyOf(makeDependencyURLs { classPaths })
 	def readClass(name:String): Option[(Array[Byte],CodeSource)]
 
+	protected def classPaths:List[String]
 	protected def makeDependencyURLs(paths:List[String]) =
 		paths filter { _.endsWith(".jar") } map { s => new URL("jar:" + s + "!/") }
 }
@@ -91,7 +94,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 
 
 	/** Calculate the JAR files which we are depending on. */
-	override val dependencies =
+	override val classPaths =
 		open("META-INF" :: "MANIFEST" :: Nil, "MF") map read map { new String(_) } map { s=> {
 				// Find the classpath line in the manifest file.
 				val target = "Class-Path: "
@@ -104,7 +107,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 					case _ => Nil
 				})
 			}
-		} map makeDependencyURLs getOrElse Nil
+		} getOrElse Nil
 }
 
 private[boot]
@@ -116,11 +119,11 @@ object FileLoader {
 /** Loads classes from a single JAR file. */
 private[boot]
 class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
-	val dependencies = jar.getManifest match {
+	val classPaths = jar.getManifest match {
 		case null => throw new SecurityException("JAR file has no manifest (so it isn't signed)")
 		case m:Manifest => m.getMainAttributes.getValue("Class-Path") match {
 				case null => Nil
-				case s:String => makeDependencyURLs { List.fromArray(s.split(" ")) }
+				case s:String => s split(" ") toList
 			}
 	}
 

@@ -137,10 +137,8 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 				if (signers == null) throw new SecurityException(entry.toString() + " not signed")
 				val source = new CodeSource(url, signers)
 
-				Option((bytes, source))
+				(bytes, source)
 			}
-		} getOrElse {
-			throw new ClassNotFoundException("No class " + className + " in JAR file " + url)
 		}
 	}
 }

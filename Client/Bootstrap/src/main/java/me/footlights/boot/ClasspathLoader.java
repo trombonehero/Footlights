@@ -59,7 +59,7 @@ class ClasspathLoader extends ClassLoader
 			path = new URL("jar:" + path + "!/");
 
 		Classpath classpath = Classpath.open(path, basePackage).get();
-		if (classpath.dependencies().length() > 0)
+		if (classpath.dependencies().size() > 0)
 			log.info("Classpath '" + path + "' has dependencies: " + classpath.dependencies());
 
 		return new ClasspathLoader(parent, classpath, basePackage, permissions);
@@ -101,7 +101,7 @@ class ClasspathLoader extends ClassLoader
 					public Option<Tuple2<byte[],CodeSource> > run()
 						throws ClassNotFoundException, IOException
 					{
-						return classpath.readClass(name);
+						return classpath.get().readClass(name);
 					}
 				});
 		}
@@ -128,7 +128,7 @@ class ClasspathLoader extends ClassLoader
 	{
 		try
 		{
-			String externalUrl = classpath.externalURL();
+			String externalUrl = base.toExternalForm();
 
 			StringBuilder sb = new StringBuilder();
 			sb.append(externalUrl);

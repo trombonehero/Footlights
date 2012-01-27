@@ -112,7 +112,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 
 private[boot]
 object FileLoader {
-	def open(url:URL) = Some(new FileLoader(url))
+	def open(url:URL) = Option(new FileLoader(url))
 }
 
 

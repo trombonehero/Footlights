@@ -174,7 +174,7 @@ class ClasspathLoader extends ClassLoader
 				return Some.apply(classpaths.get(packageName));
 
 		// Can it be served by a dependency?
-		String packageName = className.substring(className.lastIndexOf('.'));
+		String packageName = className.substring(0, className.lastIndexOf('.'));
 		// Try already-loaded classpaths first.
 		for (Map.Entry<URL,Option<Classpath> > dep : dependencies.entrySet())
 		{

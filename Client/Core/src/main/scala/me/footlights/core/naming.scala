@@ -77,14 +77,13 @@ class Resolver(io:IO, keychain: Keychain)
 
 	def fetchJSON(url: URL):Map[String,_] =
 		// Fetch and parse JSON -- this yields an (Any->Any) mapping.
-		Option(io fetch { url }) map { _.getContents } map { buffer => {
-				val bytes = new Array[Byte](buffer.remaining)
-				buffer.get(bytes)
-				JSON.parseFull(new String(bytes)) map {
-					case m:Map[_,_] => m
-					case _ => Map()
-				} getOrElse Map()
-			}
+		Option(io fetch url) map { _.getContents } map { buffer =>
+			val bytes = new Array[Byte](buffer.remaining)
+			buffer.get(bytes)
+			JSON.parseFull(new String(bytes)) map {
+				case m:Map[_,_] => m
+				case _ => Map()
+			} getOrElse Map()
 		} map { json:Map[_,_] =>
 			// Convert (Any->Any) mapping into (String->Any).
 			for ((k,v) <- json) yield (k.toString(), v)

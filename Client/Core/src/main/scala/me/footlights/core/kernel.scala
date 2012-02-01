@@ -104,7 +104,7 @@ object Kernel {
 
 		// Where are we storing data?
 		val resolver = new Resolver(io, keychain)
-		val setupData = prefs getString "init.setup" map { new URL(_) } map { resolver.fetchJSON }
+		val setupData = prefs getString "init.setup" map { new URL(_) } flatMap { resolver.fetchJSON }
 		val up = getStoreLocation("up", prefs, setupData)
 		val down = getStoreLocation("down", prefs, setupData)
 

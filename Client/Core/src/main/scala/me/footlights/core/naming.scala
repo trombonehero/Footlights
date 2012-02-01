@@ -43,51 +43,47 @@ class Resolver(io:IO, keychain: Keychain)
 	 * to already be in our {@link Keychain}.
 	 */
 	def resolve(url: URL):Option[Link] = {
-		// Fetch the remote content into a {@link String}
-		val json = fetchJSON(url)
+		fetchJSON(url) flatMap { json =>
+			json.get("fingerprint") map {
+				_ match { case s:String => Fingerprint.decode(s) }
+			} map {
+				// Check for a key.
+				json.get("key") match {
+					// If a key has been explicitly specified, use it.
+					case Some(s:String) => {
+						val tokens = s.split(":")
+						tokens.length match {
+							case 2 =>
+								Link.newBuilder
+									.setFingerprint(_)
+									.setKey(
+										SecretKey.newGenerator
+											.setAlgorithm(tokens(0))
+											.setBytes(Hex.decodeHex(tokens(1).toCharArray()))
+											.generate)
+									.build
 
-		json.get("fingerprint") map {
-			_ match { case s:String => Fingerprint.decode(s) }
-		} map {
-			// Check for a key.
-			json.get("key") match {
-				// If a key has been explicitly specified, use it.
-				case Some(s:String) => {
-					val tokens = s.split(":")
-					tokens.length match {
-						case 2 =>
-							Link.newBuilder
-								.setFingerprint(_)
-								.setKey(
-									SecretKey.newGenerator
-										.setAlgorithm(tokens(0))
-										.setBytes(Hex.decodeHex(tokens(1).toCharArray()))
-										.generate)
-								.build
-
-						case _ => null
+							case _ => null
+						}
 					}
-				}
 
-				// No key specified; we expect the key to be in the keychain.
-				case _ => keychain getLink _
+					// No key specified; we expect the key to be in the keychain.
+					case _ => keychain getLink _
+				}
 			}
 		}
 	}
 
-	def fetchJSON(url: URL):Map[String,_] =
-		// Fetch and parse JSON -- this yields an (Any->Any) mapping.
+	def fetchJSON(url: URL):Option[Map[String,_]] =
 		io fetch url map { _.getContents } map { buffer =>
 			val bytes = new Array[Byte](buffer.remaining)
 			buffer.get(bytes)
-			JSON.parseFull(new String(bytes)) map {
-				case m:Map[_,_] => m
-				case _ => Map()
-			} getOrElse Map()
-		} map { json:Map[_,_] =>
+			new String(bytes)
+		} flatMap { JSON.parseFull(_) } flatMap {
 			// Convert (Any->Any) mapping into (String->Any).
-			for ((k,v) <- json) yield (k.toString(), v)
-		} getOrElse Map()
+			case m:Map[_,_] => Option(for ((k,v) <- m) yield (k.toString(), v))
+			case _ => None
+		}
 }
 
 object Resolver {

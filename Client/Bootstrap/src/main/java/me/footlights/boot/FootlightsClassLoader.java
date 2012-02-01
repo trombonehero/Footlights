@@ -124,7 +124,6 @@ class FootlightsClassLoader extends ClassLoader
 
 		// Fall back to exhaustive search of core classpaths.
 		for (URL url : classpaths)
-		{
 			try
 			{
 				ClasspathLoader loader = ClasspathLoader.create(this, url, packageName);
@@ -133,8 +132,6 @@ class FootlightsClassLoader extends ClassLoader
 				return c;
 			}
 			catch (ClassNotFoundException e) {}
-			catch (Exception e) { throw new RuntimeException(e); }
-		}
 
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
 	}

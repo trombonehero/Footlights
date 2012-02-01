@@ -73,14 +73,14 @@ class ResolverTest extends Spec with BeforeAndAfter with MockitoSugar with Shoul
 	before { resolver = new Resolver(io, keychain) }
 
 
-	private def mockFile(fingerprint:Fingerprint, key:Option[String] = None):File = {
+	private def mockFile(fingerprint:Fingerprint, key:Option[String] = None) = {
 		val builder = JSON.newBuilder.put("fingerprint", fingerprint.encode)
 		key foreach { builder.put("key", _) }
 		val json = ByteBuffer wrap { builder.build.toString.getBytes }
 
 		val f = mock[File]
 		when { f getContents } thenReturn { json }
-		f
+		Option(f)
 	}
 }
 

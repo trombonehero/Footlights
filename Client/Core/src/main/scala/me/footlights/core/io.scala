@@ -86,18 +86,20 @@ class IO(proxy:java.net.Proxy) {
 
 
 	def fetch(url: URL) = {
-		// TODO: use URL.openConnection(Proxy)
-		val in = url.openConnection(proxy).getInputStream
+		(try {
+			// TODO: use URL.openConnection(Proxy)
+			Option(url.openConnection(proxy).getInputStream)
+		} catch {
+			case ioe:IOException => None
+		}) map { in =>
+			val data = new ListBuffer[Option[ByteBuffer]]
+			while (in.available() > 0)
+				// TODO: use some kind of NIO operation with channels and whatnot
+				data += Option(ByteBuffer.allocate(4096)) map { b =>
+					b.limit(in.read(b.array())) match { case bb:ByteBuffer => bb } }
 
-		val data = new ListBuffer[Option[ByteBuffer]]
-
-		while (in.available() > 0) {
-			// TODO: use some kind of NIO operation with channels and whatnot
-			data += Option(ByteBuffer.allocate(4096)) map { b =>
-				b.limit(in.read(b.array())) match { case bb:ByteBuffer => bb } }
+			File.newBuilder().setContent(data flatten).freeze()
 		}
-
-		File.newBuilder().setContent(data flatten).freeze()
 	}
 
 	private val log = Logger getLogger { this getClass() getCanonicalName }

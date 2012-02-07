@@ -31,24 +31,22 @@ class AjaxServer(footlights:Footlights) extends WebServer
 
 	override def name:String = "Ajax"
 
-	override def handle(request:WebRequest) = {
-		val resp =
-			request.prefix() match {
-				case "global" => globalContext.service(request.shift())
-				case "app" => {
-					val appRequest = request.shift()
+	override def handle(req:WebRequest) = {
+		// The request to be passed up to the next level of the stack.
+		val request = req.shift
 
-					appAjaxHandlers.get(appRequest.prefix())
-						.getOrElse(throw new IllegalArgumentException(
-							"No such app '" + appRequest.prefix() + "'"))
-						.service(appRequest.shift())
+		Option(req.prefix match {
+			case GlobalContext => globalContext service request
+			case ApplicationContext =>
+				appAjaxHandlers.get(request.prefix) map { _.service(request.shift) } getOrElse {
+					throw new IllegalArgumentException("No such app: " + request.prefix)
 				}
-				case _:String => new JavaScript()
-			}
-
-		Response.newBuilder()
-			.setResponse(resp.mimeType, resp.data)
-			.build()
+			case _:String => new JavaScript()
+		}) map { response =>
+			Response.newBuilder()
+				.setResponse(response.mimeType, response.data)
+				.build()
+		} getOrElse { throw new IllegalArgumentException("Unable to service request: " + req) }
 	}
 
 
@@ -60,6 +58,9 @@ class AjaxServer(footlights:Footlights) extends WebServer
 
 		appAjaxHandlers += name -> appHandler
 	}
+
+	private val GlobalContext = "global"
+	private val ApplicationContext = "app"
 }
 
 
@@ -70,7 +71,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 {
 	override def service(request:WebRequest) = {
 		request.path() match {
-			case "init" => {
+			case Init =>
 				server.reset
 
 				new JavaScript()
@@ -87,20 +88,19 @@ buttons.clear();""")
 					.append("""
 context.globals['sandboxes'].create(
 	'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 100 });
-""")
-					.append("context.log('UI Initialized');")
-			}
 
-			case "reset" => {
+context.log('UI Initialized');
+""")
+
+			case Reset =>
 				while (footlights.runningApplications().size() > 0)
 					footlights.unloadApplication(
 						footlights.runningApplications().iterator().next());
 
 				server.reset
 				new JavaScript().append("context.globals['window'].location.reload()")
-			}
 
-			case LoadApplication(path) => {
+			case LoadApplication(path) =>
 				val name = path.substring(path.lastIndexOf('/') + 1);
 				val uri = new java.net.URI(request.shift().path())
 				val app = footlights.loadApplication(name, uri)
@@ -119,7 +119,6 @@ var sb = context.globals['sandboxes'].create(
 sb.ajax('init');
 
 """ format (className, sanitizeText(app.getName()), "100%"))
-			}
 
 			case FillPlaceholder(name) => {
 				me.footlights.api.ajax.JSON.newBuilder()
@@ -130,6 +129,8 @@ sb.ajax('init');
 		}
 	}
 
+	private val Init            = "init"
+	private val Reset           = "reset"
 	private val FillPlaceholder = """fill_placeholder/(.*)""".r
 	private val LoadApplication = """load_app/(.*)""".r
 

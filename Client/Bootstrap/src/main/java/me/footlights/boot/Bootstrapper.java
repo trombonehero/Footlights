@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
@@ -64,6 +65,9 @@ class Bootstrapper
 
 	public static void main(String[] args) throws Exception
 	{
+		LogManager.getLogManager().readConfiguration(
+			Bootstrapper.class.getResourceAsStream("logging.properties"));
+
 		String bootPath = "Bootstrap";
 		List<String> corePaths = new ArrayList<String>();
 		corePaths.add("Core");

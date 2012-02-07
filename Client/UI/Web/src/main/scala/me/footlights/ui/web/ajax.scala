@@ -124,8 +124,6 @@ context.log('UI Initialized');
 
 				new JavaScript()
 					.append("""
-context.log('loaded app \'%s\'');
-
 var sb = context.globals['sandboxes'].create(
 	'app/%s', context.root, context.log, { x: 0, y: 0, width: '%s', height: 400 });
 sb.ajax('init');

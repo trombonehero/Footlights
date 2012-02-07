@@ -22,17 +22,31 @@ import me.footlights.core.{AppLoadedEvent,AppUnloadingEvent}
 import me.footlights.core.{Footlights,Preconditions,UI}
 import me.footlights.core.apps.AppWrapper
 
+import me.footlights.api.ajax.JavaScript
+
 import me.footlights.ui.web.Constants.WEB_PORT
 
 package me.footlights.ui.web {
 
-class WebUI(footlights:Footlights, server:MasterServer, apps:Map[String,AppWrapper])
+class WebUI(
+		footlights:Footlights, server:MasterServer, ajax:AjaxServer, apps:Map[String,AppWrapper])
 	extends UI("Web UI", footlights) {
 
 	override def run = new Thread(null, server, "Web Server").run
 	override def handleEvent(e:UI.Event) = e match {
-		case e:AppLoadedEvent => apps.put(e.app.getName, e.app)
-		case e:AppUnloadingEvent => apps.remove(e.app.getName)
+		case e:AppLoadedEvent =>
+			apps put(e.app.getName, e.app)
+			ajax fireEvent {
+				new JavaScript()
+					.append("context.log('Loaded app: %s');" format e.app.getName)
+			}
+
+		case e:AppUnloadingEvent =>
+			apps remove e.app.getName
+			ajax fireEvent {
+				new JavaScript()
+					.append("context.log('Unloaded app: %s');" format e.app.getName)
+			}
 	}
 }
 
@@ -47,7 +61,7 @@ object WebUI {
 		val staticContent = new StaticContentServer(apps)
 		val master = new MasterServer(port, footlights, ajax, staticContent)
 
-		new WebUI(footlights, master, apps)
+		new WebUI(footlights, master, ajax, apps)
 	}
 
 	/** Log. */

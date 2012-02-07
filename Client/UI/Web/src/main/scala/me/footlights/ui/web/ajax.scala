@@ -128,7 +128,7 @@ var sb = context.globals['sandboxes'].create(
 	'app/%s', context.root, context.log, { x: 0, y: 0, width: '%s', height: 400 });
 sb.ajax('init');
 
-""" format (className, sanitizeText(app.getName()), "100%"))
+""" format (className, sanitizeText(app.getName), "100%"))
 
 			case FillPlaceholder(name) => {
 				me.footlights.api.ajax.JSON.newBuilder()

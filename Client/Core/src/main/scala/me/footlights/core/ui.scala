@@ -31,10 +31,10 @@ import data.File
 
 /** Manages interaction with UIs (e.g. the Swing UI, the Web UI, ...). */
 trait UIManager extends Footlights {
-	def uis:Set[UI]
+	protected def uis:Set[UI]
 
-	def registerUI(ui:UI):Unit = uis.add(ui)
-	def deregisterUI(ui:UI):Unit = uis.remove(ui)
+	override def registerUI(ui:UI):Unit = uis.add(ui)
+	override def deregisterUI(ui:UI):Unit = uis.remove(ui)
 
 	abstract override def loadApplication(name:String, uri:URI) = {
 		val wrapper = super.loadApplication(name, uri)
@@ -50,7 +50,7 @@ trait UIManager extends Footlights {
 
 /** Provides Swing-based powerboxes for prompting users (e.g. "which file?", "which friend?"). */
 trait SwingPowerboxes extends Kernel {
-	def io:IO
+	protected def io:IO
 	override def openLocalFile():_root_.me.footlights.api.File = open getOrElse { null }
 
 

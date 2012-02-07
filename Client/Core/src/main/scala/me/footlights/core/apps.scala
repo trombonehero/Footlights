@@ -35,17 +35,14 @@ import crypto.Keychain
 
 /** Provides plugin [un]loading. */
 trait Applications extends Footlights {
-	def keychain:Keychain
-	def loadedApps:HashMap[URI,AppWrapper]
-	def appLoader:ClassLoader
-	def prefs:ModifiablePreferences
-
-	def open(name:String):File
-	def save(bytes:ByteBuffer):File
+	protected def keychain:Keychain
+	protected def loadedApps:HashMap[URI,AppWrapper]
+	protected def appLoader:ClassLoader
+	protected def prefs:ModifiablePreferences
 
 	def runningApplications():_root_.java.util.Collection[AppWrapper] = loadedApps.values
 
-	def loadApplication(name:String, uri:URI) = {
+	override def loadApplication(name:String, uri:URI) =
 		loadedApps get(uri) getOrElse {
 			val prefs = appPreferences(name)
 			val c = appLoader.loadClass(uri.toString)
@@ -67,9 +64,8 @@ trait Applications extends Footlights {
 
 			wrapper
 		}
-	}
 
-	def unloadApplication(app:AppWrapper) =
+	override def unloadApplication(app:AppWrapper) =
 		loadedApps find { kv => kv._2 == app } foreach { kv => loadedApps remove kv._1 }
 
 

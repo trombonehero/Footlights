@@ -47,21 +47,19 @@ import data.store.{BlockStoreClient, DiskStore, Store}
  * should {@link KernelPrivilege} if running in a privilege-constrained environment.
  */
 abstract class Kernel(
-		i:IO, loader:ClassLoader, p:FileBackedPreferences, k:Keychain,
-		apps:HashMap[URI,AppWrapper], u:Set[UI], s:Store)
+	protected val io: IO,
+	protected val appLoader: ClassLoader,
+	protected val prefs: FileBackedPreferences,
+	protected val keychain: Keychain,
+	protected val loadedApps: HashMap[URI,AppWrapper],
+	protected val uis: Set[UI],
+	protected val store: Store)
 
 	extends Footlights
 		with Filesystem
 		with Applications
 		with UIManager
 {
-	val io = i
-	val keychain = k
-	val store = s
-	val loadedApps = apps
-	val appLoader = loader
-	val prefs = p
-	val uis = u
 }
 
 

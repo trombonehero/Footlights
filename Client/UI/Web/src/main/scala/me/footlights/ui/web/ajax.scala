@@ -78,6 +78,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 					.append("""
 var buttons = context.root.getChild(function(node) { return node.class == 'buttons'; });
 buttons.clear();""")
+					.append(setupAsyncChannel)
 
 					.append(button("Good App", JavaScript.ajax("load_app/" + GOOD_APP)))
 					.append(button("Wicked App", JavaScript.ajax("load_app/" + WICKED_APP)))
@@ -88,10 +89,6 @@ buttons.clear();""")
 					.append("""
 context.globals['sandboxes'].create(
 	'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 'auto' });
-
-// Set up a channel for asychronous events.
-var setTimeout = context.globals['setTimeout'];
-setTimeout(function() { context.ajax('async_channel'); }, 0);
 
 context.log('UI Initialized');
 """)
@@ -150,6 +147,9 @@ sb.ajax('init');
 	private val Reset           = "reset"
 	private val FillPlaceholder = """fill_placeholder/(.*)""".r
 	private val LoadApplication = """load_app/(.*)""".r
+
+	private val setupAsyncChannel =
+		new JavaScript().append("context.globals['setupAsyncChannel']();")
 
 	private def button(label:String, onClick:JavaScript) = new JavaScript()
 		.append("""

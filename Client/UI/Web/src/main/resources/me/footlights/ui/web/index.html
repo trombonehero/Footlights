@@ -53,7 +53,12 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	rootContext.root = proxy(document.getElementById('content'), rootContext);
 	rootContext.globals['sandboxes'] = sandboxes;
 	rootContext.globals['window'] = window;
-	rootContext.globals['setTimeout'] = setTimeout;
+
+	// Set up a channel for asychronous events.
+	var setupAsyncChannel = function() {
+		setTimeout(function() { rootContext.ajax('async_channel'); }, 0);
+	}
+	rootContext.globals['setupAsyncChannel'] = setupAsyncChannel;
 
 	sandboxes['global'] = Object.freeze(rootContext);
 

@@ -58,6 +58,7 @@ abstract class Kernel(
 	extends Footlights
 		with Filesystem
 		with Applications
+		with Placeholders
 		with UIManager
 {
 }

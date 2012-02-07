@@ -25,6 +25,15 @@ import me.footlights.core.apps.*;
 /** Interface to the software core */
 public interface Footlights extends KernelInterface
 {
+	/**
+	 * Convert a placeholder name (e.g. "user.name") into a meaningful value.
+	 *
+	 * This is part of {@link Footlights} rather than the {@link KernelInterface} because apps
+	 * cannot request placeholder evaluation directly; it has to be done by a trusted bit of UI
+	 * code, which inserts the proxied content in such a way that the app UI can't read it.
+	 */
+	public String evaluate(String placeholder);
+
 	public void registerUI(UI ui);
 	public void deregisterUI(UI ui);
 

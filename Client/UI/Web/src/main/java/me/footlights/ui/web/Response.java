@@ -143,6 +143,11 @@ class Response
 		out.flush();
 	}
 
+	@Override public String toString()
+	{
+		return "HTTP Response { " + http + ", MIME type: '" + mimeType + "' }";
+	}
+
 	private Response(HttpResponseCode httpResponse, String mimeType, InputStream content,
 		Throwable errorCause)
 	{

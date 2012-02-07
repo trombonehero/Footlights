@@ -49,7 +49,7 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	function log(message) { status.log(message); }
 	var rootContext = sandboxes.wrap('global', log);
 
-	// What makes the root context special is what we pass into it.
+	// The root context has no inherent privileges: we must pass special things in.
 	rootContext.root = proxy(document.getElementById('content'), rootContext);
 	rootContext.globals['sandboxes'] = sandboxes;
 	rootContext.globals['window'] = window;

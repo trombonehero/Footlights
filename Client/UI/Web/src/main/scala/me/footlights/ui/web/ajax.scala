@@ -104,7 +104,9 @@ context.log('UI Initialized');
 			case AsyncChannel =>
 				asyncEvents.synchronized {
 					while (asyncEvents.isEmpty) { asyncEvents.wait }
-					asyncEvents.dequeue
+					new JavaScript()
+						.append(setupAsyncChannel)
+						.append(asyncEvents.dequeue)
 				}
 
 			case LoadApplication(path) =>
@@ -136,9 +138,9 @@ sb.ajax('init');
 		}
 	}
 
-	private val asyncEvents = collection.mutable.Queue[AjaxResponse]()
+	private val asyncEvents = collection.mutable.Queue[JavaScript]()
 
-	private[web] def fireAsync(event:AjaxResponse) = asyncEvents.synchronized {
+	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
 		asyncEvents enqueue event
 	}
 

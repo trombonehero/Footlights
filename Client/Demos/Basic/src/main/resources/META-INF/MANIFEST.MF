@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Class-Path: http://footlights.me/demo/library.jar
+Class-Path: http://footlights.me/demo/library-v1

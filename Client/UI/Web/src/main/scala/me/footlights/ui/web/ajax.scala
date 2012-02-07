@@ -142,6 +142,7 @@ sb.ajax('init');
 
 	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
 		asyncEvents enqueue event
+		asyncEvents notifyAll
 	}
 
 	private val Init            = "init"

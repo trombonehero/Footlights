@@ -59,6 +59,9 @@ class AjaxServer(footlights:Footlights) extends WebServer
 		appAjaxHandlers += name -> appHandler
 	}
 
+	/** Send an asychronous event to the trusted part of the UI. */
+	private[web] def fireEvent(response:JavaScript) = globalContext fireEvent response
+
 	private val GlobalContext = "global"
 	private val ApplicationContext = "app"
 }

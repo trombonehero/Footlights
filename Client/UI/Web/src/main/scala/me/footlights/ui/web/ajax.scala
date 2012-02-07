@@ -87,7 +87,11 @@ buttons.clear();""")
 
 					.append("""
 context.globals['sandboxes'].create(
-	'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 100 });
+	'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 'auto' });
+
+// Set up a channel for asychronous events.
+var setTimeout = context.globals['setTimeout'];
+setTimeout(function() { context.ajax('async_channel'); }, 0);
 
 context.log('UI Initialized');
 """)
@@ -99,6 +103,12 @@ context.log('UI Initialized');
 
 				server.reset
 				new JavaScript().append("context.globals['window'].location.reload()")
+
+			case AsyncChannel =>
+				asyncEvents.synchronized {
+					while (asyncEvents.isEmpty) { asyncEvents.wait }
+					asyncEvents.dequeue
+				}
 
 			case LoadApplication(path) =>
 				val name = path.substring(path.lastIndexOf('/') + 1);
@@ -129,7 +139,14 @@ sb.ajax('init');
 		}
 	}
 
+	private val asyncEvents = collection.mutable.Queue[AjaxResponse]()
+
+	private[web] def fireAsync(event:AjaxResponse) = asyncEvents.synchronized {
+		asyncEvents enqueue event
+	}
+
 	private val Init            = "init"
+	private val AsyncChannel    = "async_channel"
 	private val Reset           = "reset"
 	private val FillPlaceholder = """fill_placeholder/(.*)""".r
 	private val LoadApplication = """load_app/(.*)""".r

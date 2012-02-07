@@ -20,6 +20,7 @@ import java.util.logging.Level.{FINE,WARNING,SEVERE}
 import java.util.logging.Logger
 
 import scala.actors.Actor._
+import scala.actors.Futures._
 
 import me.footlights.core.Footlights;
 
@@ -61,7 +62,7 @@ class MasterServer(
 	private val server = actor {
 		loop {
 			react {
-				case (Some(request:Request), socket:Socket) =>
+				case (Some(request:Request), socket:Socket) => future {
 					log fine "Request: " + request
 
 					servers.get(request.prefix) map { server =>
@@ -88,6 +89,7 @@ class MasterServer(
 						}
 						socket.close
 					}
+				}
 
 				case a:Any =>
 					log info "Unknown event for 'server' actor: " + a

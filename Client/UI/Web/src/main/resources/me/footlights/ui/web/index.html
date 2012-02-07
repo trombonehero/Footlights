@@ -53,6 +53,7 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	rootContext.root = proxy(document.getElementById('content'), rootContext);
 	rootContext.globals['sandboxes'] = sandboxes;
 	rootContext.globals['window'] = window;
+	rootContext.globals['setTimeout'] = setTimeout;
 
 	sandboxes['global'] = Object.freeze(rootContext);
 

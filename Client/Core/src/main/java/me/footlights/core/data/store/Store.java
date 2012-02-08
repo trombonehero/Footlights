@@ -43,7 +43,7 @@ public abstract class Store implements java.io.Flushable
 
 
 	/** Constructor */
-	public Store(Store cache)
+	public Store(LocalStore cache)
 	{
 		this.cache = cache;
 		this.journal = Lists.newLinkedList();
@@ -142,7 +142,7 @@ public abstract class Store implements java.io.Flushable
 	 * If we have a cache, this method should not block for I/O. To ensure that the block has
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
-	private final synchronized void store(String name, ByteBuffer bytes) throws IOException
+	protected final synchronized void store(String name, ByteBuffer bytes) throws IOException
 	{
 		if (name == null) throw new NullPointerException("Expected block name, not null");
 
@@ -157,7 +157,7 @@ public abstract class Store implements java.io.Flushable
 
 
 	/** Local cache */
-	private Store cache;
+	private LocalStore cache;
 
 	/** A list of blocks stored in cache */
 	private Queue<String> journal;

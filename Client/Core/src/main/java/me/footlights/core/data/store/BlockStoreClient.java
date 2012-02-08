@@ -74,7 +74,7 @@ public final class BlockStoreClient extends Store
 		public Builder setUploadURL(URL up)     { this.up = up;       return this; }
 		public Builder setDownloadURL(URL down) { this.down = down;   return this; }
 		public Builder setSecretKey(String key) { this.key = key;     return this; }
-		public Builder setCache(Store cache)    { this.cache = cache; return this; }
+		public Builder setCache(LocalStore cache)    { this.cache = cache; return this; }
 
 		public BlockStoreClient build() throws MalformedURLException
 		{
@@ -84,7 +84,7 @@ public final class BlockStoreClient extends Store
 		private URL down;
 		private URL up;
 		private String key;
-		private Store cache;
+		private LocalStore cache;
 	}
 
 	@Override
@@ -159,7 +159,7 @@ public final class BlockStoreClient extends Store
 	}
 
 
-	private BlockStoreClient(URL down, URL up, String key, Store cache)
+	private BlockStoreClient(URL down, URL up, String key, LocalStore cache)
 		throws MalformedURLException
 	{
 		super(cache);

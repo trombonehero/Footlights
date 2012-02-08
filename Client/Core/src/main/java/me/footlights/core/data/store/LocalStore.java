@@ -25,7 +25,7 @@ import java.util.AbstractCollection;
  */
 public abstract class LocalStore extends Store
 {
-	public LocalStore(Store cache)
+	public LocalStore(LocalStore cache)
 	{
 		super(cache);
 	}

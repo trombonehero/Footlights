@@ -18,7 +18,7 @@ import java.util.logging.Logger
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
-import me.footlights.core.{AppLoadedEvent,AppUnloadingEvent}
+import me.footlights.core.{AppLoadedEvent,AppUnloadingEvent,FileOpenedEvent,FileSavedEvent}
 import me.footlights.core.{Footlights,Preconditions,UI}
 import me.footlights.core.apps.AppWrapper
 
@@ -46,6 +46,28 @@ class WebUI(
 			ajax fireEvent {
 				new JavaScript()
 					.append("context.log('Unloaded app: %s');" format e.app.getName)
+			}
+
+		case e:FileOpenedEvent =>
+			ajax fireEvent {
+				new JavaScript()
+					.append("context.log('opened: ")
+					.appendText(e.file toString)
+					.append("');")
+			}
+
+		case e:FileSavedEvent =>
+			ajax fireEvent {
+				new JavaScript()
+					.append("context.log('saved: ")
+					.appendText(e.file toString)
+					.append("');")
+			}
+
+		case e:UI.Event =>
+			ajax fireEvent {
+				new JavaScript()
+					.append("context.log('Unknown event: %s');" format e)
 			}
 	}
 }

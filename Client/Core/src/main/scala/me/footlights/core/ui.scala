@@ -21,12 +21,12 @@ import javax.swing.JFileChooser
 
 import scala.collection.mutable.Set
 
-import me.footlights.api.KernelInterface
+import me.footlights.api.{File,KernelInterface}
+
 
 package me.footlights.core {
 
 import apps.AppWrapper
-import data.File
 
 
 /** Manages interaction with UIs (e.g. the Swing UI, the Web UI, ...). */
@@ -36,16 +36,30 @@ trait UIManager extends Footlights {
 	override def registerUI(ui:UI):Unit = uis.add(ui)
 	override def deregisterUI(ui:UI):Unit = uis.remove(ui)
 
+	abstract override def open(filename:String):me.footlights.api.File = {
+		val f = super.open(filename)
+		fire(new FileOpenedEvent(f))
+		f
+	}
+
+	abstract override def save(data:ByteBuffer):me.footlights.api.File = {
+		val f = super.save(data)
+		fire(new FileSavedEvent(f))
+		f
+	}
+
 	abstract override def loadApplication(name:String, uri:URI) = {
 		val wrapper = super.loadApplication(name, uri)
-		uis foreach { _.handleEvent(new AppLoadedEvent(wrapper)) }
+		fire(new AppLoadedEvent(wrapper))
 		wrapper
 	}
 
 	abstract override def unloadApplication(app:AppWrapper) = {
-		uis foreach { _.handleEvent(new AppUnloadingEvent(app)) }
+		fire(new AppUnloadingEvent(app))
 		super.unloadApplication(app)
 	}
+
+	private def fire(event: UI.Event) = uis foreach { _ handleEvent event }
 }
 
 /** Provides Swing-based powerboxes for prompting users (e.g. "which file?", "which friend?"). */
@@ -61,7 +75,7 @@ trait SwingPowerboxes extends Kernel {
 			case _ => { log.fine("User cancelled file open dialog"); None }
 		}
 
-		io.read(filename) map { File.newBuilder().setContent(_).freeze() }
+		io.read(filename) map { data.File.newBuilder().setContent(_).freeze() }
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }
@@ -77,8 +91,12 @@ class AppUnloadingEvent(a:AppWrapper) extends UI.Event {
 	override val messageFOO = "Unloading app " + a
 }
 
-class FileSavedEvent(f:File) extends UI.Event {
-	override val messageFOO = "Saved " + f
+class FileOpenedEvent(val file:File) extends UI.Event {
+	override val messageFOO = "Opened " + file
+}
+
+class FileSavedEvent(val file:File) extends UI.Event {
+	override val messageFOO = "Saved " + file
 }
 
 }

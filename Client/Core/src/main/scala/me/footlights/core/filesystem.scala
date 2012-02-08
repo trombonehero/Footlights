@@ -33,10 +33,11 @@ trait Filesystem extends Footlights {
 	protected def store:Store
 
 	/** Open a file, named by its content, e.g. "sha-256:0123456789abcdef01234...". */
-	override def open(name:String) = store.fetch(keychain.getLink(Fingerprint.decode(name)))
+	override def open(name:String):me.footlights.api.File =
+		store fetch { keychain getLink { Fingerprint decode name } }
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
-	override def save(data:ByteBuffer):_root_.me.footlights.api.File = {
+	override def save(data:ByteBuffer):me.footlights.api.File = {
 			val f = File.newBuilder.setContent(data).freeze
 			store.store(f.toSave())
 			f

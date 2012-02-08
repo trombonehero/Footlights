@@ -29,6 +29,38 @@ package me.footlights.core {
 import apps.AppWrapper
 
 
+/** A User Interface */
+abstract class UI(val name:String, footlights:Footlights)
+		extends Thread("Footlights UI: '" + name + "'") {
+
+	def handleEvent(event:UI.Event): Unit
+
+	footlights registerUI this
+}
+
+/** Companion object for {@link UI} (contains {@link UI.Event}, etc.). */
+object UI {
+	abstract class Event { def message: String }
+
+	class AppLoadedEvent(val app:AppWrapper) extends Event {
+		override val message = "Loaded app " + app
+	}
+
+	class AppUnloadingEvent(val app:AppWrapper) extends Event {
+		override val message = "Unloading app " + app
+	}
+
+	class FileOpenedEvent(val file:File) extends Event {
+		override val message = "Opened " + file
+	}
+
+	class FileSavedEvent(val file:File) extends Event {
+		override val message = "Saved " + file
+	}
+}
+
+
+
 /** Manages interaction with UIs (e.g. the Swing UI, the Web UI, ...). */
 trait UIManager extends Footlights {
 	protected def uis:Set[UI]
@@ -36,9 +68,11 @@ trait UIManager extends Footlights {
 	override def registerUI(ui:UI):Unit = uis.add(ui)
 	override def deregisterUI(ui:UI):Unit = uis.remove(ui)
 
+	import UI._
+
 	abstract override def open(filename:String):me.footlights.api.File = {
 		val f = super.open(filename)
-		fire(new FileOpenedEvent(f))
+		fire(new UI.FileOpenedEvent(f))
 		f
 	}
 
@@ -79,24 +113,6 @@ trait SwingPowerboxes extends Kernel {
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }
-}
-
-class AppLoadedEvent(a:AppWrapper) extends UI.Event {
-	val app = a
-	override val messageFOO = "Loaded app " + a
-}
-
-class AppUnloadingEvent(a:AppWrapper) extends UI.Event {
-	val app = a
-	override val messageFOO = "Unloading app " + a
-}
-
-class FileOpenedEvent(val file:File) extends UI.Event {
-	override val messageFOO = "Opened " + file
-}
-
-class FileSavedEvent(val file:File) extends UI.Event {
-	override val messageFOO = "Saved " + file
 }
 
 }

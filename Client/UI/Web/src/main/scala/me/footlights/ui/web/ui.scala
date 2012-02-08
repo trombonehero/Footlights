@@ -18,8 +18,8 @@ import java.util.logging.Logger
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
-import me.footlights.core.{AppLoadedEvent,AppUnloadingEvent,FileOpenedEvent,FileSavedEvent}
 import me.footlights.core.{Footlights,Preconditions,UI}
+import me.footlights.core.UI._
 import me.footlights.core.apps.AppWrapper
 
 import me.footlights.api.ajax.JavaScript

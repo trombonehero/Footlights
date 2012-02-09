@@ -18,6 +18,7 @@ package me.footlights.core.data.store;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
@@ -79,6 +80,18 @@ public abstract class Store implements java.io.Flushable
 			catch (NoSuchBlockException e) {}
 
 		return get(name).asReadOnlyBuffer();
+	}
+
+	/**
+	 * Retrieve a list of {@link File} names which are known to exist in the {@link Store}.
+	 *
+	 * This is not guaranteed to be an exhaustive list; we only list files in the cache (if we
+	 * have one), and even that isn't guaranteed to exhaustively list anything.
+	 */
+	public Collection<Stat> list() throws IOException
+	{
+		if (cache != null) return cache.list();
+		else return Lists.newArrayList();
 	}
 
 

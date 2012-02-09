@@ -62,6 +62,12 @@ class WebUI(
 					.append("context.log('saved: ")
 					.appendText(e.file toString)
 					.append("');")
+					.append("function isSandbox(node) { return (node.class == \"sandbox\"); };")
+					.append("var contents = context.root.getChild(isSandbox);")
+					.append("contents.appendElement('div').appendText('")
+					.appendText(footlights.listFiles.size.toString)
+					.appendText(" files in local cache")
+					.append("');")
 			}
 
 		case e:UI.Event =>

@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import me.footlights.api.KernelInterface;
 import me.footlights.core.apps.*;
+import me.footlights.core.data.store.Stat;
 
 
 /** Interface to the software core */
@@ -37,6 +38,12 @@ public interface Footlights extends KernelInterface
 	public void registerUI(UI ui);
 	public void deregisterUI(UI ui);
 
+	/**
+	 * List some of the {@link File} names which are known to exist in the {@link Store}.
+	 *
+	 * This list describes files stored in local cache, not remotely on the global CAS.
+	 */
+	public Collection<Stat> listFiles();
 
 	public Collection<AppWrapper> runningApplications();
 	public AppWrapper loadApplication(String name, URI uri) throws AppStartupException;

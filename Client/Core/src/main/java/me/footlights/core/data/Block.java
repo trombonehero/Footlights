@@ -139,8 +139,7 @@ public class Block implements FootlightsPrimitive
 
 	public List<Link> links() { return links; }
 	public ByteBuffer content() { return content.asReadOnlyBuffer(); }
-	public Fingerprint fingerprint() { return fingerprint; }
-	public String name() { return fingerprint.encode(); }
+	public Fingerprint name() { return fingerprint; }
 
 	public EncryptedBlock encrypt() throws GeneralSecurityException
 	{

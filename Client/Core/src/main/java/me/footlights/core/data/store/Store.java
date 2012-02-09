@@ -23,6 +23,7 @@ import java.util.Queue;
 
 import com.google.common.collect.Lists;
 
+import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.data.Block;
 import me.footlights.core.data.EncryptedBlock;
 import me.footlights.core.data.File;
@@ -34,11 +35,11 @@ import me.footlights.core.data.NoSuchBlockException;
 public abstract class Store implements java.io.Flushable
 {
 	/** Low-level method to put a block on disk, the network, etc. */
-	protected abstract void put(String name, ByteBuffer bytes)
+	protected abstract void put(Fingerprint name, ByteBuffer bytes)
 		throws IOException;
 
 	/** Low-level method to get a block from the disk, network, etc. */
-	protected abstract ByteBuffer get(String name)
+	protected abstract ByteBuffer get(Fingerprint name)
 		throws IOException, NoSuchBlockException;
 
 
@@ -71,7 +72,7 @@ public abstract class Store implements java.io.Flushable
 
 
 	/** Retrieve a stored block (returns null if no such block is found) */
-	public final ByteBuffer retrieve(String name) throws IOException, NoSuchBlockException
+	public final ByteBuffer retrieve(Fingerprint name) throws IOException, NoSuchBlockException
 	{
 		if (cache != null)
 			try { return cache.retrieve(name).asReadOnlyBuffer(); }
@@ -84,7 +85,7 @@ public abstract class Store implements java.io.Flushable
 	/** Retrieve a stored (and encrypted) {@link File}. */
 	public File fetch(Link link) throws GeneralSecurityException, IOException
 	{
-		final String name = link.fingerprint().encode();
+		final Fingerprint name = link.fingerprint();
 
 		EncryptedBlock header = EncryptedBlock.newBuilder()
 			.setLink(link)
@@ -99,7 +100,7 @@ public abstract class Store implements java.io.Flushable
 		{
 			EncryptedBlock block = EncryptedBlock.newBuilder()
 				.setLink(l)
-				.setCiphertext(retrieve(l.fingerprint().encode()))
+				.setCiphertext(retrieve(l.fingerprint()))
 				.build();
 
 			content.add(block);
@@ -117,7 +118,7 @@ public abstract class Store implements java.io.Flushable
 		while (true)
 		{
 			// Ensure that only one thread polls from the queue at a time.
-			final String name;
+			final Fingerprint name;
 			synchronized(journal)
 			{
 				if (journal.isEmpty()) break;
@@ -142,7 +143,7 @@ public abstract class Store implements java.io.Flushable
 	 * If we have a cache, this method should not block for I/O. To ensure that the block has
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
-	protected final synchronized void store(String name, ByteBuffer bytes) throws IOException
+	protected final synchronized void store(Fingerprint name, ByteBuffer bytes) throws IOException
 	{
 		if (name == null) throw new NullPointerException("Expected block name, not null");
 
@@ -150,7 +151,7 @@ public abstract class Store implements java.io.Flushable
 		else
 		{
 			cache.store(name, bytes.asReadOnlyBuffer());
-			journal.add(name);
+			synchronized(journal) { journal.add(name); }
 			notifyAll();
 		}
 	}
@@ -160,5 +161,5 @@ public abstract class Store implements java.io.Flushable
 	private LocalStore cache;
 
 	/** A list of blocks stored in cache */
-	private Queue<String> journal;
+	private Queue<Fingerprint> journal;
 }

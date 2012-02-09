@@ -23,6 +23,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 
+import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.data.*;
 import me.footlights.core.data.store.Store;
 
@@ -31,9 +32,9 @@ import me.footlights.core.data.store.Store;
 public final class BlockStoreClient extends Store
 {
 	@Override
-	public ByteBuffer get(String name) throws IOException, NoSuchBlockException
+	public ByteBuffer get(Fingerprint name) throws IOException, NoSuchBlockException
 	{
-		URL fileUrl = new URL(downloadBase + "/" + URLEncoder.encode(name, "utf-8"));
+		URL fileUrl = new URL(downloadBase + "/" + URLEncoder.encode(name.encode(), "utf-8"));
 		HttpURLConnection connection = (HttpURLConnection) fileUrl.openConnection();
 
 		switch (connection.getResponseCode())
@@ -88,7 +89,7 @@ public final class BlockStoreClient extends Store
 	}
 
 	@Override
-	protected void put(String name, ByteBuffer bytes) throws IOException
+	protected void put(Fingerprint name, ByteBuffer bytes) throws IOException
 	{
 		URLConnection conn = uploadHost.openConnection();
 
@@ -119,7 +120,7 @@ public final class BlockStoreClient extends Store
 			.append("Content-Disposition: form-data; name=\"EXPECTED_NAME\"").append(CRLF)
 			.append("Content-Type: text/plain").append(CRLF)
 			.append(CRLF)
-			.append(name).append(CRLF)
+			.append(name.encode()).append(CRLF)
 			.flush()
 			;
 

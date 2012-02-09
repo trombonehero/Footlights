@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 
 import me.footlights.core.Preconditions;
+import me.footlights.core.crypto.Fingerprint;
 
 
 /**
@@ -54,8 +55,8 @@ public class EncryptedBlock
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** The name of the block. */
-	public String name() { return link.fingerprint().encode(); }
-	@Override public String toString() { return name(); }
+	public Fingerprint name() { return link.fingerprint(); }
+	@Override public String toString() { return name().toString(); }
 
 	/** The ciphertext itself. */
 	public ByteBuffer ciphertext() { return ciphertext.asReadOnlyBuffer(); }

@@ -20,10 +20,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.AbstractCollection;
-import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.google.common.collect.Lists;
 
 import me.footlights.core.FileBackedPreferences;
 import me.footlights.core.Preferences;
+import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.data.FormatException;
 import me.footlights.core.data.NoSuchBlockException;
 
@@ -76,33 +80,35 @@ public class DiskStore extends LocalStore
 
 
 	@Override
-	public AbstractCollection<String> list() throws IOException
+	public AbstractCollection<Fingerprint> list() throws IOException
 	{
 		String names[] = dir.list();
-		
-		AbstractCollection<String> l = new LinkedList<String>();
-		for (String name : names) l.add(name);
+
+		AbstractCollection<Fingerprint> l = Lists.newArrayListWithCapacity(names.length);
+		for (String name : names)
+			try { l.add(Fingerprint.decode(name)); }
+			catch (Exception e) { log.log(Level.WARNING, "Problem with cached file's name", e); }
 
 		return l;
 	}
 	
 	
 	@Override
-	protected void put(String name, ByteBuffer buffer) throws IOException
+	protected void put(Fingerprint name, ByteBuffer buffer) throws IOException
 	{
-		FileChannel channel = new FileOutputStream(new File(dir, name)).getChannel();
+		FileChannel channel = new FileOutputStream(new File(dir, name.encode())).getChannel();
 		channel.write(buffer.duplicate());
 		channel.force(true);
 	}
 
 
 	@Override
-	protected ByteBuffer get(String name)
+	protected ByteBuffer get(Fingerprint name)
 		throws IOException, NoSuchBlockException
 	{
 		try
 		{
-			File file = new File(dir, name);
+			File file = new File(dir, name.encode());
 			long len = file.length();
 			
 			if (len <= 0) throw new NoSuchBlockException(this, name);
@@ -141,6 +147,8 @@ public class DiskStore extends LocalStore
 
 	/** Files larger than this value will be mmap'ed, rather than read. */
 	private static int MAX_READ_SIZE = (1 << 20);
+
+	private static Logger log = Logger.getLogger(DiskStore.class.getCanonicalName());
 
 	/** The directory that we store files in. */
 	private final File dir;

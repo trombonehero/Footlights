@@ -18,6 +18,9 @@ package me.footlights.core.data.store;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import com.google.common.collect.Maps;
+
+import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.data.NoSuchBlockException;
 
 
@@ -28,24 +31,24 @@ public class MemoryStore extends LocalStore
 	public MemoryStore()
 	{
 		super(null);
-		blocks = new HashMap<String,ByteBuffer>();
+		blocks = Maps.newHashMap();
 	}
 
 	
 	@Override
-	public AbstractCollection<String> list()
+	public AbstractCollection<Fingerprint> list()
 	{
-		return (AbstractSet<String>) blocks.keySet();
+		return (AbstractSet<Fingerprint>) blocks.keySet();
 	}
 
 	@Override
-	public void put(String name, ByteBuffer bytes) 
+	public void put(Fingerprint name, ByteBuffer bytes)
 	{
 		if (name == null) throw new NullPointerException();
 		blocks.put(name, bytes);
 	}
 
-	@Override public ByteBuffer get(String name) throws NoSuchBlockException
+	@Override public ByteBuffer get(Fingerprint name) throws NoSuchBlockException
 	{
 		ByteBuffer buffer = blocks.get(name);
 
@@ -58,5 +61,5 @@ public class MemoryStore extends LocalStore
 
 
 	/** That actual block store */
-	private Map<String,ByteBuffer> blocks;
+	private Map<Fingerprint,ByteBuffer> blocks;
 }

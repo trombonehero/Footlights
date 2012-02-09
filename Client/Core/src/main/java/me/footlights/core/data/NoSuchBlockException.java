@@ -17,16 +17,17 @@ package me.footlights.core.data;
 
 import java.io.IOException;
 
+import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.data.store.Store;
 
 
 public class NoSuchBlockException extends IOException
 {
-	public NoSuchBlockException(Store store, String name)
+	public NoSuchBlockException(Store store, Fingerprint name)
 	{
 		super("The store " + store + " does not contain the block " + name);
 	}
 
 	private static final long serialVersionUID =
-		"footlights.core.data.NoSuchBlockException 2010-04-13 2019h".hashCode();
+		"footlights.core.data.NoSuchBlockException 2012-02-09 1154h GMT".hashCode();
 }

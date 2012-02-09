@@ -19,7 +19,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
-import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,13 +80,13 @@ public class DiskStore extends LocalStore
 
 
 	@Override
-	public AbstractCollection<Fingerprint> list() throws IOException
+	public Collection<Stat> list() throws IOException
 	{
 		String names[] = dir.list();
 
-		AbstractCollection<Fingerprint> l = Lists.newArrayListWithCapacity(names.length);
+		Collection<Stat> l = Lists.newArrayListWithCapacity(names.length);
 		for (String name : names)
-			try { l.add(Fingerprint.decode(name)); }
+			try { l.add(Stat.apply(new File(name))); }
 			catch (Exception e) { log.log(Level.WARNING, "Problem with cached file's name", e); }
 
 		return l;

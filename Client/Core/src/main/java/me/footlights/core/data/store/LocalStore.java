@@ -16,9 +16,7 @@
 package me.footlights.core.data.store;
 
 import java.io.IOException;
-import java.util.AbstractCollection;
-
-import me.footlights.core.crypto.Fingerprint;
+import java.util.Collection;
 
 
 /**
@@ -35,5 +33,5 @@ public abstract class LocalStore extends Store
 	/**
 	 * List the blocks that are stored here.
 	 */
-	public abstract AbstractCollection<Fingerprint> list() throws IOException;
+	public abstract Collection<Stat> list() throws IOException;
 }

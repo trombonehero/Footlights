@@ -56,7 +56,7 @@ abstract class Kernel(
 	protected val store: Store)
 
 	extends Footlights
-		with Filesystem
+		with data.store.Filesystem
 		with Applications
 		with Placeholders
 		with UIManager

@@ -15,13 +15,13 @@
  */
 import java.nio.ByteBuffer
 
-package me.footlights.core {
+import me.footlights.core.Footlights
+import me.footlights.core.crypto.{Fingerprint,Keychain}
+import me.footlights.core.data.File
+import me.footlights.core.data.store.{LocalStore,Store}
 
-import crypto.Fingerprint
-import crypto.Keychain
-import data.File
-import data.store.Store
 
+package me.footlights.core.data.store {
 
 /**
  * Provides the basics of a filesystem (opening and saving files), assuming that we have a
@@ -42,6 +42,16 @@ trait Filesystem extends Footlights {
 			store.store(f.toSave())
 			f
 		}
+
+	/** List some of the files in the filesystem (not exhaustive!). */
+	override def listFiles = store.list
+}
+
+class Stat(val name: Fingerprint, val length: Long)
+
+object Stat {
+	def apply(f:java.io.File) = new Stat(Fingerprint.decode(f.getCanonicalPath), f.length())
+	def apply(name:Fingerprint, length:Long) = new Stat(name, length)
 }
 
 }

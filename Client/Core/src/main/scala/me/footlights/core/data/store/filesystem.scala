@@ -50,7 +50,7 @@ trait Filesystem extends Footlights {
 class Stat(val name: Fingerprint, val length: Long)
 
 object Stat {
-	def apply(f:java.io.File) = new Stat(Fingerprint.decode(f.getCanonicalPath), f.length())
+	def apply(f:java.io.File) = new Stat(Fingerprint.decode(f.getName), f.length())
 	def apply(name:Fingerprint, length:Long) = new Stat(name, length)
 }
 

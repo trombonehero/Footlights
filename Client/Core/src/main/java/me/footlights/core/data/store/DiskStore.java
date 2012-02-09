@@ -86,8 +86,18 @@ public class DiskStore extends LocalStore
 
 		Collection<Stat> l = Lists.newArrayListWithCapacity(names.length);
 		for (String name : names)
-			try { l.add(Stat.apply(new File(name))); }
+		{
+			name = dir + File.separator + name;
+			File f = new File(name);
+			if (!f.exists())
+			{
+				log.log(Level.SEVERE, "Cached file does not exist: " + name);
+				continue;
+			}
+
+			try { l.add(Stat.apply(f)); }
 			catch (Exception e) { log.log(Level.WARNING, "Problem with cached file's name", e); }
+		}
 
 		return l;
 	}

@@ -46,7 +46,11 @@ initSES(window, whitelist, atLeastFreeVarNames);
 		update.appendChild(document.createTextNode(t));
 	};
 
-	function log(message) { status.log(message); }
+	function log(message)
+	{
+		console.log(message);
+		status.log(message);
+	}
 	var rootContext = sandboxes.wrap('global', log);
 
 	// The root context has no inherent privileges: we must pass special things in.

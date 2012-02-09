@@ -131,7 +131,7 @@ sb.ajax('init');
 				me.footlights.api.ajax.JSON.newBuilder()
 					.put("key", name)
 					.put("value", footlights.evaluate(name))
-					.build()
+					.build
 			}
 		}
 	}

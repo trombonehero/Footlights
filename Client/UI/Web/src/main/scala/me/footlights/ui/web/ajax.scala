@@ -90,11 +90,13 @@ buttons.clear();""")
 					.append(button("Reset", JavaScript.ajax("reset")))
 
 					.append("""
-context.globals['sandboxes'].create(
-	'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 'auto' });
-
-context.log('UI Initialized');
+var contents =
+	context.globals['sandboxes'].create(
+		'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 'auto' });
+contents.root.class = 'directory';
 """)
+					.append(listFiles)
+					.append("context.log('UI initialized.');")
 
 			case Reset =>
 				while (footlights.runningApplications().size() > 0)
@@ -134,6 +136,33 @@ sb.ajax('init');
 					.build
 			}
 		}
+	}
+
+
+	private def listFiles = {
+		val files = footlights.listFiles
+
+		val js = new JavaScript()
+		js.append("""
+var containers = context.root.getChildren(function(node) { return (node.class == "sandbox"); });
+
+var contents = null;
+for (var i in containers)
+{
+	contents = containers[i].getChild(function(node) { return (node.class == "directory"); });
+	if (contents != null) break;
+}
+
+if (contents != null)
+{
+	contents.clear();
+	contents.appendElement('div').appendText('%d files in local cache:');""" format files.size)
+
+		for (stat <- files take 5)
+			js.append("contents.appendElement('pre').appendText('%10d B   %s');"
+					format (stat.length, JavaScript.sanitizeText(stat.name.encode)))
+
+		js.append("}")
 	}
 
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()

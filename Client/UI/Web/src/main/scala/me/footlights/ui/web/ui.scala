@@ -59,15 +59,7 @@ class WebUI(
 		case e:FileSavedEvent =>
 			ajax fireEvent {
 				new JavaScript()
-					.append("context.log('saved: ")
-					.appendText(e.file toString)
-					.append("');")
-					.append("function isSandbox(node) { return (node.class == \"sandbox\"); };")
-					.append("var contents = context.root.getChild(isSandbox);")
-					.append("contents.appendElement('div').appendText('")
-					.appendText(footlights.listFiles.size.toString)
-					.appendText(" files in local cache")
-					.append("');")
+					.append("context.log('saved: ").appendText(e.file toString).append("');")
 			}
 
 		case e:UI.Event =>

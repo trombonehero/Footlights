@@ -157,7 +157,7 @@ sb.ajax('init');
 var button = buttons.appendElement('button');
 button.appendText('%s');
 
-button.onclick = function() { %s };
+button.onclick = function onClickHandler() { %s };
 """ format (label, onClick asScript))
 
 

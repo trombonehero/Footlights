@@ -29,11 +29,11 @@
 'use strict';
 initSES(window, whitelist, atLeastFreeVarNames);
 
-(function()
+(function init()
 {
 	// Set up logging (nice user-visible log box).
 	var status = document.getElementById('status');
-	status.log = function(t)
+	status.log = function logToStatusDiv(t)
 	{
 		var update = document.createElement('p');
 		this.insertBefore(update, this.firstChild);
@@ -54,9 +54,9 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	rootContext.globals['sandboxes'] = sandboxes;
 	rootContext.globals['window'] = window;
 
-	// Set up a channel for asychronous events.
-	var setupAsyncChannel = function() {
-		setTimeout(function() { rootContext.ajax('async_channel'); }, 0);
+	// A function which sets up a channel for asychronous events.
+	function setupAsyncChannel() {
+		setTimeout(function openAsyncChannel() { rootContext.ajax('async_channel'); }, 0);
 	}
 	rootContext.globals['setupAsyncChannel'] = setupAsyncChannel;
 

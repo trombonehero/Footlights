@@ -24,7 +24,8 @@ function ajax(url, context, callback)
 	try
 	{
 		xhr.open('GET', url);
-		xhr.onreadystatechange = function() { forwardAjaxResponse(xhr, url, context, callback); };
+		xhr.onreadystatechange =
+			function ajaxStateChange() { forwardAjaxResponse(xhr, url, context, callback); };
 
 		xhr.open('GET', 'http://localhost:4567/' + url, true);
 		xhr.send(null);
@@ -55,7 +56,8 @@ function forwardAjaxResponse(xhr, request, context, callback)
 
 	// If no callback has been specified, the response had better be code to be executed.
 	if (callback == undefined)
-		if (contentType == 'text/javascript') callback = function(code) { context.exec(code); }
+		if (contentType == 'text/javascript')
+			callback = function defaultAjaxCallback(code) { context.exec(code); }
 		else throw 'No callback given for Ajax response of type "' + contentType + '"';
 
 	callback(response);

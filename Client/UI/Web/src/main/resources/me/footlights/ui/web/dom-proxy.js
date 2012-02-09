@@ -69,7 +69,7 @@ function proxy(node, context)
 			var subproxy = proxy(span, context);
 			subproxy.class = 'placeholder';
 
-			var callback = function(json) { subproxy.appendText(json['value']) };
+			var callback = function interpretPlaceholder(p) { subproxy.appendText(p['value']); };
 			sandboxes['global'].ajax('fill_placeholder/' + name, callback);
 			return subproxy;
 		},
@@ -132,7 +132,7 @@ function proxy(node, context)
 		proxy_code: function(js)
 		{
 			theProxy[js] = context.compile(js)(context.globals);
-			return function() { theProxy[js](); }
+			return function proxiedCode() { theProxy[js](); }
 		},
 
 		set onclick(js)     { node.onclick      = theProxy.proxy_code(js); },

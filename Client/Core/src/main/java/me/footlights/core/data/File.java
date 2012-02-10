@@ -135,7 +135,7 @@ public class File implements me.footlights.api.File
 	/**
 	 * The content of the file, transformed into an {@link InputStream}.
 	 */
-	public InputStream getInputStream()
+	@Override public InputStream getInputStream()
 	{
 		final ByteBuffer[] buffers = new ByteBuffer[plaintext.size()];
 		for (int i = 0; i < buffers.length; i++)

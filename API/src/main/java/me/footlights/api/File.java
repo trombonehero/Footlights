@@ -42,6 +42,14 @@ public interface File
 
 
 	/**
+	 * The file's name.
+	 *
+	 * Client code should treat filenames as opaque identifiers; they are certainly not guaranteed
+	 * to be human-readable.
+	 */
+	public String name();
+
+	/**
 	 * The content of the file, transformed into an {@link InputStream}.
 	 */
 	public InputStream getInputStream();

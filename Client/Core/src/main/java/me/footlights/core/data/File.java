@@ -108,6 +108,8 @@ public class File implements me.footlights.api.File
 		private int desiredBlockSize = 4096;
 	}
 
+	@Override public String name() { return header.name().encode(); }
+
 
 	/**
 	 * The content of the file, as one big {@link ByteBuffer}.

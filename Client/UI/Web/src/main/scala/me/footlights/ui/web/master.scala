@@ -91,9 +91,11 @@ class MasterServer(
 					}
 				}
 
-				case a:Any =>
-					log info "Unknown event for 'server' actor: " + a
-					Unit
+				case (None, socket:Socket) =>
+					log info "Received 'None' request from client, closing socket"
+					socket.close
+
+				case a:Any => log severe "Web UI server received unknown event: " + a
 			}
 		}
 	}

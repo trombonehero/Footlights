@@ -102,6 +102,8 @@ object Kernel {
 		Flusher(cache) start
 
 		// Where are we storing data?
+		// TODO: use futures for deferred initialization of BlockStoreClient
+		log info "Retrieving CAS addresses"
 		val resolver = new Resolver(io, keychain)
 		val setupData = prefs getString "init.setup" map { new URL(_) } flatMap { resolver.fetchJSON }
 		val up = getStoreLocation("up", prefs, setupData)

@@ -23,6 +23,8 @@
 
 function proxy(node, context)
 {
+	if (typeof(node) != "object") throw "Attempting to proxy a non-object!";
+
 	var theProxy =
 	{
 		clear: function()

@@ -16,7 +16,7 @@
 
 import java.io._
 import java.net.{ServerSocket,Socket,SocketException}
-import java.util.logging.Level.{FINE,WARNING,SEVERE}
+import java.util.logging.Level.{FINE,INFO,WARNING,SEVERE}
 import java.util.logging.Logger
 
 import scala.actors.Actor._
@@ -84,7 +84,7 @@ class MasterServer(
 						try { response write socket.getOutputStream }
 						catch {
 							case t:Throwable =>
-								log.log(SEVERE,
+								log.log(INFO,
 									"Error responding to " + request + " with " + response, t)
 						}
 						socket.close

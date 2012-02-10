@@ -120,14 +120,7 @@ contents.root.class = 'directory';
 				val app = footlights.loadApplication(name, uri)
 
 				server.register(name, app.getApp.ajaxHandler)
-
-				new JavaScript()
-					.append("""
-var sb = context.globals['sandboxes'].create(
-	'app/%s', context.root, context.log, { x: 0, y: 0, width: '%s', height: 400 });
-sb.ajax('init');
-
-""" format (JavaScript.sanitizeText(app.getName), "100%"))
+				createUISandbox(app.getName)
 
 			case FillPlaceholder(name) => {
 				me.footlights.api.ajax.JSON.newBuilder()
@@ -137,6 +130,15 @@ sb.ajax('init');
 			}
 		}
 	}
+
+
+	private def createUISandbox(name:String) =
+		new JavaScript()
+			.append("""
+var sb = context.globals['sandboxes'].create(
+	'app/%s', context.root, context.log, { x: 0, y: 0, width: '%s', height: 400 });
+sb.ajax('init');
+""" format (JavaScript.sanitizeText(name), "100%"))
 
 
 	private def listFiles = {

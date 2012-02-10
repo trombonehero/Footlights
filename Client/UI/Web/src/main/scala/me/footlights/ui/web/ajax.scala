@@ -77,23 +77,20 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 			case Init =>
 				server.reset
 
+				val launcher = "context.globals['launcher']"
+
 				new JavaScript()
-					.append("""
-var buttons = context.root.getChild(function(node) { return node.class == 'buttons'; });
-buttons.clear();""")
+					.append(createClickableText(launcher, "Reset", "reset"))
+					.append(createClickableText(launcher, "Basic Demo", "load_app/" + GOOD_APP))
+					.append(createClickableText(launcher, "Tic-Tac-Toe", "load_app/" + TICTACTOE))
+					.append(createClickableText(launcher, "Wicked Demo", "load_app/" + WICKED_APP))
+					.append(createClickableText(launcher, "File Uploader", "load_app/" + WICKED_APP))
 					.append(setupAsyncChannel)
-
-					.append(button("Good App", JavaScript.ajax("load_app/" + GOOD_APP)))
-					.append(button("Wicked App", JavaScript.ajax("load_app/" + WICKED_APP)))
-					.append(button("Tic-Tac-Toe", JavaScript.ajax("load_app/" + TICTACTOE)))
-
-					.append(button("Reset", JavaScript.ajax("reset")))
 
 					.append("""
 var contents =
 	context.globals['sandboxes'].create(
-		'contents', context.root, context.log, { x: 0, y: 0, width: '%s', height: 'auto' });
-contents.root.class = 'directory';
+		'content', context.globals['content'], context.log, { x: 0, y: 0 });
 """)
 					.append(listFiles)
 					.append("context.log('UI initialized.');")
@@ -132,11 +129,20 @@ contents.root.class = 'directory';
 	}
 
 
+	private def createClickableText(parent:String, name:String, ajax:String) = {
+		new JavaScript()
+			.append("""
+var a = %s.appendElement('div').appendElement('a');
+a.appendText('%s');
+a.onclick = function onClickHandler() { context.ajax('%s'); };
+""" format (parent, JavaScript.sanitizeText(name), ajax))
+	}
+
 	private def createUISandbox(name:String) =
 		new JavaScript()
 			.append("""
 var sb = context.globals['sandboxes'].create(
-	'app/%s', context.root, context.log, { x: 0, y: 0, width: '%s', height: 400 });
+	'app/%s', context.globals['content'], context.log, { x: 0, y: 0 });
 sb.ajax('init');
 """ format (JavaScript.sanitizeText(name), "100%"))
 
@@ -146,25 +152,18 @@ sb.ajax('init');
 
 		val js = new JavaScript()
 		js.append("""
-var containers = context.root.getChildren(function(node) { return (node.class == "sandbox"); });
-
-var contents = null;
-for (var i in containers)
-{
-	contents = containers[i].getChild(function(node) { return (node.class == "directory"); });
-	if (contents != null) break;
-}
-
-if (contents != null)
-{
-	contents.clear();
-	contents.appendElement('div').appendText('%d files in local cache:');""" format files.size)
+var dir = contents.root.appendElement('div');
+dir.class = 'directory';
+dir.style['font-family'] = 'monospace';
+dir.style['white-space'] = 'pre-wrap';
+dir.clear();
+dir.appendElement('div').appendText('%d files in local cache:');""" format files.size)
 
 		for (stat <- files take 5)
-			js.append("contents.appendElement('pre').appendText('%10d B   %s');"
+			js.append("dir.appendText('%10d B   %s\\n');"
 					format (stat.length, JavaScript.sanitizeText(stat.name.encode)))
 
-		js.append("}")
+		js
 	}
 
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()
@@ -182,15 +181,6 @@ if (contents != null)
 
 	private val setupAsyncChannel =
 		new JavaScript().append("context.globals['setupAsyncChannel']();")
-
-	private def button(label:String, onClick:JavaScript) = new JavaScript()
-		.append("""
-var button = buttons.appendElement('button');
-button.appendText('%s');
-
-button.onclick = function onClickHandler() { %s };
-""" format (label, onClick asScript))
-
 
 
 	// Hardcode demo app paths for now, just to demonstrate that they work.

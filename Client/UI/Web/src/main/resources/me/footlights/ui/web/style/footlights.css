@@ -20,15 +20,36 @@ h1
 	padding: 0.5em;
 }
 
-#status
+#launcher
 {
+	position: fixed;
+	left: 0;
+	top: 6em;
+
+	width: 8em;
+
+	margin: 0;
+	padding: .25em;
+
 	background: #ccf;	
 	border: 1px solid #66f;
 	color: #333;
-	float: left;
-	margin: .5em;
-	padding: .5em;
-	width: 12.5em;
+}
+
+#status
+{
+	position: absolute;
+	right: 0;
+	top: 6em;
+
+	width: 12em;
+
+	margin: 0;
+	padding: .25em;
+
+	background: #ccf;
+	border: 1px solid #66f;
+	color: #333;
 }
 
 #status:before
@@ -37,7 +58,24 @@ h1
 	content: "Status";
 	font-size: smaller;
 	font-weight: bold;
+	float: right;
 }
+
+#content
+{
+	position: absolute;
+	top: 5em;
+
+	margin-top: 0;
+	margin-left: 9em;
+	margin-right: 13em;
+	padding: .25em;
+
+	width: auto;
+
+	color: #333;
+}
+
 
 .timestamp
 {
@@ -46,64 +84,6 @@ h1
 	display: block;
 }
 
-#content
-{
-	color: #333;
-	margin: .5em;
-	margin-left: 15em;
-	padding: .5em;
-}
-
-#content:before
-{
-	color: #666;
-	content: "Content";
-	font-size: smaller;
-	font-weight: bold;
-}
-
-.response, .error
-{
-	border: 1px solid;
-	display: block;
-	margin: .5em;
-	padding: .5em;
-}
-
-
-.response { background: #ccc; }
-.error { background: #f99; }
-
-.response .content, .error .message
-{
-	border: 1px dashed;
-	font-family: monospace;
-	margin: .5em;
-	padding: .5em;
-	white-space: pre;
-}
-
-.response:before, .error:before
-{
-	font-size: smaller;
-	font-weight: bold;
-}
-
-.response:before { content: "Ajax Response"; }
-.error:before { content: "Error"; }
-
-.response .type:before { content: "Type: "; }
-
-.timestamp { font-size: smaller; }
-
-#buttons { float: right; }
-
-iframe
-{
-	border: 0;
-	margin: 0;
-	padding: 0;
-}
 
 #mainframe
 {
@@ -123,7 +103,8 @@ iframe
 .sandbox
 {
 	background: #ffc;
-	border: 3px solid orange;
+	border: 1px solid orange;
+	padding: .5em;
 	position: relative;
 }
 
@@ -132,7 +113,7 @@ iframe
 	content: 'This is a sandbox for untrusted ECMAScript';
 	display: block;
 
-	border-bottom: 3px solid orange; 
+	border-bottom: 1px solid orange;
 	color: orange;
 	font-size: smaller;
 }

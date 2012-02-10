@@ -18,11 +18,9 @@
 		<h1>Footlights</h1>
 
 		<div id="root">
+			<div id="launcher"></div>
 			<div id="status"></div>
-
-			<div id="content">
-				<div class="buttons">Loading buttons...</div>
-			</div>
+			<div id="content"></div>
 		</div>
 
 		<script type="text/javascript">
@@ -52,11 +50,14 @@ initSES(window, whitelist, atLeastFreeVarNames);
 		status.log(message);
 	}
 	var rootContext = sandboxes.wrap('global', log);
+	rootContext.root = proxy(document.getElementById('root'), rootContext);
 
 	// The root context has no inherent privileges: we must pass special things in.
-	rootContext.root = proxy(document.getElementById('content'), rootContext);
 	rootContext.globals['sandboxes'] = sandboxes;
 	rootContext.globals['window'] = window;
+	['content', 'status', 'launcher'].forEach(function addAppLink(name) {
+		rootContext.globals[name] = proxy(document.getElementById(name), rootContext);
+	});
 
 	// A function which sets up a channel for asychronous events.
 	function setupAsyncChannel() {

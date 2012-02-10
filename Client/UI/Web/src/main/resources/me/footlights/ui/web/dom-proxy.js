@@ -105,7 +105,7 @@ function proxy(node, context)
 		getChildren: function(predicate)
 		{
 			var children = [];
-			for (var i in node.childNodes)
+			for (var i = 0; i < node.childNodes.length; i++)
 			{
 				var p = proxy(node.childNodes[i], context);
 				if (predicate(p)) children.push(p);

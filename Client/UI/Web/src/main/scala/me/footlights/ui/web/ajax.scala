@@ -153,7 +153,7 @@ sb.ajax('init');
 		val js = new JavaScript()
 		js.append("""
 var dir = contents.root.appendElement('div');
-dir.class = 'directory';
+dir.class = 'console';
 dir.style['font-family'] = 'monospace';
 dir.style['white-space'] = 'pre-wrap';
 dir.clear();

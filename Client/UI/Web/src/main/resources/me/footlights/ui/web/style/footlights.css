@@ -77,6 +77,8 @@ h1
 	width: auto;
 
 	color: #333;
+
+	z-index: -1;
 }
 
 
@@ -107,6 +109,7 @@ h1
 {
 	background: #ffc;
 	border: 1px solid orange;
+	margin: .5em;
 	padding: .5em;
 	position: relative;
 }
@@ -135,8 +138,19 @@ h1.main
 
 a
 {
+	color: #339;
 	font-family: Abel;
 	text-decoration: none;
+}
+
+a:hover
+{
+	opacity: 0.5;
+}
+
+a:followed
+{
+	color: #339;
 }
 
 .console

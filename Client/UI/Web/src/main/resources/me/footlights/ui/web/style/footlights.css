@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Abel|Gudea|Ubuntu+Mono);
+
 html
 {
 	background: black;
@@ -7,7 +9,8 @@ html
 	background-repeat: no-repeat;
 	background-position: bottom center;
 
-	font-family: sans-serif;
+	font-family: Gudea;
+	font-weight: 400;
 	margin: 0;
 	padding: 0;
 }
@@ -132,7 +135,19 @@ h1.main
 
 a
 {
+	font-family: Abel;
 	text-decoration: none;
+}
+
+.console
+{
+	font-family: "Ubuntu Mono";
+
+	/* For some reason, 50em translates to 80 columns, even through we use a fixed-width font... */
+	width: 50em;
+
+	background-color: black;
+	color: grey;
 }
 
 .ajaxContext

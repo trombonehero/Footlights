@@ -18,6 +18,7 @@ package me.footlights.api;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import scala.Option;
 
 
 /** An application's interface to the Footlights core. */
@@ -32,5 +33,5 @@ public interface KernelInterface
 	public File open(String name) throws IOException;
 
 	/** Open a file on the local machine (e.g. a photo to upload). */
-	public File openLocalFile() throws IOException;
+	public Option<File> openLocalFile() throws IOException;
 }

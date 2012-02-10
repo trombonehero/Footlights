@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import scala.Option;
+
 import com.google.common.collect.Maps;
 
 import me.footlights.api.File;
@@ -149,13 +151,14 @@ class DemoAjaxHandler extends Context
 			@Override public JavaScript service(WebRequest request)
 				throws FileNotFoundException, SecurityException, Throwable
 			{
-				File file = kernel.openLocalFile();
-				if (file == null)
+				Option<File> file = kernel.openLocalFile();
+				if (file.isEmpty())
 					return new JavaScript()
 						.append("context.log('User cancelled file dialog');");
 
 				return new JavaScript()
-					.append(makeDiv("Opened " + file.getInputStream().available() + " B file"));
+					.append(
+						makeDiv("Opened " + file.get().getInputStream().available() + " B file"));
 			}
 		});
 

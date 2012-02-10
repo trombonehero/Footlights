@@ -97,12 +97,10 @@ trait UIManager extends Footlights {
 }
 
 /** Provides Swing-based powerboxes for prompting users (e.g. "which file?", "which friend?"). */
-trait SwingPowerboxes extends Kernel {
+trait SwingPowerboxes extends Footlights {
 	protected def io:IO
-	override def openLocalFile():_root_.me.footlights.api.File = open getOrElse { null }
 
-
-	private def open() = {
+	override def openLocalFile():Option[_root_.me.footlights.api.File] = {
 		val d = new JFileChooser
 		val filename = d.showOpenDialog(null) match {
 			case JFileChooser.APPROVE_OPTION => Option(d.getSelectedFile())

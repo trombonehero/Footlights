@@ -56,7 +56,13 @@ sandboxes.wrap = function(name, log)
 			exec: function(code)
 			{
 				try { cajaVM.compileModule(code)({ 'context': this }); }
-				catch (e) { sandbox.log(e.name + ": " + e.message + "\n" + code); }
+				catch (e)
+				{
+					sandbox.log(e.name + ": " + e.message + "\n" +
+							code +
+							(e.stack ? ("\n" + e.stack) : ""));
+					throw e;
+				}
 			},
 			load: function(filename) { ajax('static/' + this.name + '/' + filename, this); },
 			log: log,

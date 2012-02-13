@@ -15,54 +15,39 @@ html
 	padding: 0;
 }
 
-h1, h2 { color: #66f; }
+h1, h2 { color: rgb(230, 221, 35); }
 
-h1
+#launcher, #status
 {
-	background-image: url('../images/lighting.jpeg');
-	padding: 0.5em;
+	top: 70px;
+
+	margin: 0;
+	padding: .25em;
+
+	background: rgba(230, 221, 35, 0.15);
+	color: rgba(230, 221, 35, 0.6);
 }
 
 #launcher
 {
 	position: fixed;
 	left: 0;
-	top: 6em;
 
-	width: 8em;
-
-	margin: 0;
-	padding: .25em;
-
-	background: #ccf;	
-	border: 1px solid #66f;
-	color: #333;
+	width: 7em;
 }
 
 #status
 {
 	position: absolute;
 	right: 0;
-	top: 6em;
 
 	width: 12em;
-
-	margin: 0;
-	padding: .25em;
-
-	background: #ccf;
-	border: 1px solid #66f;
-	color: #333;
 }
 
-#status:before
-{
-	color: #66f;
-	content: "Status";
-	font-size: smaller;
-	font-weight: bold;
-	float: right;
-}
+#status { background: rgba(230, 221, 35, 0.1); }
+
+#launcher a { color: rgba(230, 221, 35, 0.75); }
+#launcher a:hover { color: rgba(230, 221, 35, 1.0); }
 
 #content
 {
@@ -70,7 +55,7 @@ h1
 	top: 5em;
 
 	margin-top: 0;
-	margin-left: 9em;
+	margin-left: 7em;
 	margin-right: 13em;
 	padding: .25em;
 
@@ -78,13 +63,13 @@ h1
 
 	color: #333;
 
-	z-index: -1;
+	z-index: -3;
 }
 
 
 .timestamp
 {
-	color: #66f;
+	color: rgba(230, 221, 35, 0.4);
 	font-size: smaller;
 	display: block;
 }
@@ -143,11 +128,6 @@ a
 	text-decoration: none;
 }
 
-a:hover
-{
-	opacity: 0.5;
-}
-
 a:followed
 {
 	color: #339;
@@ -157,7 +137,7 @@ a:followed
 {
 	font-family: "Ubuntu Mono";
 
-	/* For some reason, 50em translates to 80 columns, even through we use a fixed-width font... */
+	/* 50em translates to 80 columns... maybe it's ems of the container? */
 	width: 50em;
 
 	background-color: black;

@@ -70,7 +70,7 @@ class ResolverTest extends Spec with BeforeAndAfter with MockitoSugar with Shoul
 	val keychain = mock[Keychain]
 
 	var resolver:Resolver = _
-	before { resolver = new Resolver(io, keychain) }
+	before { resolver = Resolver(io, keychain) }
 
 
 	private def mockFile(fingerprint:Fingerprint, key:Option[String] = None) = {

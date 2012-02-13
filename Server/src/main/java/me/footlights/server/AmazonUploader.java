@@ -44,11 +44,11 @@ public final class AmazonUploader implements Uploader
 	@Inject
 	public AmazonUploader(Preferences preferences)
 	{
-		authSecret = preferences.getString("blockstore.secret");
-		if (authSecret.isEmpty()) throw new ConfigurationError("BlockStore secret not set");
+		this.prefs = preferences;
+		this.authSecret = getMandatoryPreference("cas.secret");
 
-		final String keyId = preferences.getString("amazon.keyId");
-		final String secret = preferences.getString("amazon.secretKey");
+		final String keyId = getMandatoryPreference("amazon.keyId");
+		final String secret = getMandatoryPreference("amazon.secretKey");
 
 		if (keyId.isEmpty()) throw new ConfigurationError("Amazon key ID not set");
 		if (secret.isEmpty()) throw new ConfigurationError("Amazon secret key not set");
@@ -119,16 +119,25 @@ public final class AmazonUploader implements Uploader
 		return (authenticator.equals(authSecret));
 	}
 
+	private String getMandatoryPreference(String name) throws ConfigurationError
+	{
+		scala.Option<String> value = prefs.getString(name);
+		if (value.isEmpty()) throw new ConfigurationError(name + " not set");
+		else return value.get();
+	}
 
 
 	/** User data is public by default (but encrypted!). */
 	private static final CannedAccessControlList DEFAULT_ACL = CannedAccessControlList.PublicRead;
 
 	/** The S3 bucket to store user data in. */
-	private static final String USER_DATA_BUCKET = "me.footlights.userdata";
+	private static final String USER_DATA_BUCKET = "footlights-cas";
 
 	/** Class-specific logger. */
 	private static final Logger log = Logger.getLogger(AmazonUploader.class.getCanonicalName());
+
+	/** Configuration data. */
+	private final Preferences prefs;
 
 	/** Amazon S3 client. */
 	private final AmazonS3Client s3;

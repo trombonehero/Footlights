@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.{IOException,PrintWriter}
 import java.nio.ByteBuffer
+import java.nio.channels.Channels
+import java.net.{HttpURLConnection,MalformedURLException,URL,URLConnection,URLEncoder}
+import java.util.logging.Logger
 
+import scala.actors.Future
+import scala.actors.Futures.future
 import scala.collection.JavaConversions._
 
+import me.footlights.core.{Kernel,Preferences,Resolver}
 import me.footlights.core.crypto.Fingerprint
 import me.footlights.core.data.NoSuchBlockException
 
@@ -37,6 +44,163 @@ class MemoryStore extends LocalStore(null) {
 
 	/** Do nothing; {@link MemoryStore} always blocks. */
 	override def flush = Unit
+}
+
+
+
+/** A client for the Footlights Content-Addressible Store (CAS). */
+class CASClient private(
+		urls:Future[Map[String,URL]], uploadKey:Option[String], resolver:Resolver, cache:LocalStore)
+	extends Store(cache) {
+
+	override protected[store] def get(name:Fingerprint) = {
+		downloadUrl(name) flatMap { _.openConnection match {
+				case http:HttpURLConnection =>
+					http.getResponseCode match {
+						case 200 =>
+							if (!http.getContentType.equals("application/octet-stream"))
+								throw new IOException("Unknown mime-type: " + http.getContentType)
+							Option(http)
+
+						case 404 => None
+						case 410 => None
+						case other =>
+							log severe "Unknown CAS HTTP response code: " + other
+							None
+					}
+				case _ =>
+					log severe "Non-HTTP response for block " + name
+					None
+			}
+		} map { connection =>
+			val buffer = ByteBuffer allocate connection.getContentLength
+			val channel = Channels newChannel connection.getInputStream
+
+			while (buffer.remaining > 0) channel read buffer
+
+			buffer.flip
+			buffer.asReadOnlyBuffer
+		} getOrElse { throw new NoSuchBlockException(this, name) }
+	}
+
+	override protected[store] def put(name:Fingerprint, bytes:ByteBuffer) = {
+		if (uploadKey.isEmpty) throw new IOException("No upload key set")
+		if (uploadUrl.isEmpty) throw new IOException("Upload URL not set")
+
+		val textFields = Map("AUTHENTICATOR" -> uploadKey.get, "EXPECTED_NAME" -> name.encode)
+		val files = Map("upload" -> bytes)
+
+		val CRLF = "\r\n"
+		val boundary = "CASClientMIMEBoundary"
+		val boundaryLine = "--" + boundary
+
+		val c = uploadUrl.get.openConnection
+		c setDoInput true
+		c setDoOutput true
+		c.setRequestProperty("Content-Type",
+				"""multipart/form-data; boundary=%s""" format boundary)
+
+		val out = c.getOutputStream
+		val writer = new PrintWriter(out, true)
+//		val binaryChannel = Channels newChannel out
+
+		textFields foreach { case (key, value) =>
+			List(
+				boundaryLine,
+				"""Content-Disposition: form-data; name="%s"""" format key,
+				"Content-Type: text/plain",
+				"",
+				value
+			) foreach { writer append _ append CRLF }
+			writer.flush
+		}
+
+		files foreach { case (name, bytes) =>
+			List(
+				boundaryLine,
+				"""Content-Disposition: form-data; name="FILE_CONTENTS"; """ +
+						"""filename="%s"""" format name,
+				"Content-Type: application/octet-stream",
+				"Content-Transfer-Encoding: binary",
+//				"Content-Length: %d" format bytes.remaining,
+				""
+			) foreach { writer append _ append CRLF }
+			writer.flush
+
+			val copy = bytes.asReadOnlyBuffer
+			val buffer = new Array[Byte](Math.min(4096, copy.remaining))
+			while (copy.hasRemaining) //binaryChannel write copy
+			{
+				val count = Math.min(copy.remaining, buffer.length)
+				copy.get(buffer, 0, count)
+				out.write(buffer, 0, count)
+			}
+			out.flush
+
+			writer append CRLF
+			writer.flush
+		}
+
+		writer append boundaryLine append "--" append CRLF append CRLF
+		writer.flush
+
+		out.flush
+		out.close
+
+		new java.io.BufferedReader(new java.io.InputStreamReader(c.getInputStream)) readLine match {
+			case s if s == name.encode => // The upload server returned the name that we expected.
+			case other => throw new IOException("Bad name: " + other + " != " + name)
+		}
+	}
+
+
+	private def downloadUrl(name:Fingerprint) =
+		urls() get "downloadURL" map { base =>
+			new URL(base + "/" + URLEncoder.encode(name.encode, "utf-8"))
+		}
+
+	private def uploadUrl = urls() get "uploadURL"
+
+	private val log = CASClient.log
+}
+
+
+object CASClient {
+	def apply(prefs:Preferences, resolver:Resolver, cache:LocalStore,
+			uploadSecret:Option[String] = None) = {
+		// A map of URLs for uploading and downloading CAS content.
+		//
+		// Building this map might mean retrieving default settings from footlights.me in
+		// the background, so we wrap the whole thing in a Future.
+		val urls = future {
+			val setupUrl = prefs getString PrefPrefix + "setup" map { new URL(_) }
+
+			(List("uploadURL", "downloadURL") map { key =>
+				prefs getString PrefPrefix + key orElse {
+					setupUrl flatMap { url =>
+						log info "Retrieving CAS {up,down}load URLs from " + url + "..."
+						resolver fetchJSON url flatMap { _.get(key) } flatMap {
+							case s:String => Option(s)
+							case _ => None
+						}
+					}
+				} map { url =>
+					log info key + ": " + url
+					(key, new URL(url))
+				}
+			} flatten) toMap
+		}
+
+		// The key used to upload content. If None, we can still use the CASClient for downloading.
+		val uploadKey = uploadSecret orElse { prefs getString PrefPrefix + "secret" }
+
+		new CASClient(urls, uploadKey, resolver, cache)
+	}
+
+	private val log = Logger.getLogger(classOf[CASClient].getCanonicalName)
+
+	/** The prefix for all CAS-related preferences. */
+	private val PrefPrefix = "cas."
 }
 
 }

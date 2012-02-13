@@ -25,13 +25,13 @@ import scala.collection.mutable.{HashMap,HashSet,LinkedList,Map,Set}
 import scala.collection.immutable.{Map => ImmutableMap}
 
 import me.footlights.api.KernelInterface
-import me.footlights.core.data.store.BlockStoreClient
+import me.footlights.core.data.store.CASClient
 
 package me.footlights.core {
 
 import apps.AppWrapper
 import crypto.Keychain
-import data.store.{BlockStoreClient, DiskStore, Store}
+import data.store.{CASClient, DiskStore, Store}
 
 
 /**
@@ -53,7 +53,7 @@ abstract class Kernel(
 	protected val keychain: Keychain,
 	protected val loadedApps: HashMap[URI,AppWrapper],
 	protected val uis: Set[UI],
-	protected val store: Store)
+	protected val cache: DiskStore)
 
 	extends Footlights
 		with data.store.Filesystem
@@ -61,6 +61,8 @@ abstract class Kernel(
 		with Placeholders
 		with UIManager
 {
+	private val resolver = Resolver(io, keychain)
+	protected val store = CASClient(Preferences(prefs), resolver, cache)    // TODO: don't wrap?
 }
 
 
@@ -101,20 +103,7 @@ object Kernel {
 				.build
 		Flusher(cache) start
 
-		// Where are we storing data?
-		// TODO: use futures for deferred initialization of BlockStoreClient
-		log info "Retrieving CAS addresses"
-		val resolver = new Resolver(io, keychain)
-		val setupData = prefs getString "init.setup" map { new URL(_) } flatMap { resolver.fetchJSON }
-		val up = getStoreLocation("up", prefs, setupData)
-		val down = getStoreLocation("down", prefs, setupData)
-
-		val blockBuilder = BlockStoreClient.newBuilder setCache cache
-		up foreach { blockBuilder.setUploadURL }
-		down foreach { blockBuilder.setDownloadURL }
-		val store = blockBuilder.build
-
-		new Kernel(io, appLoader, fileBackedPrefs, keychain, apps, uis, store)
+		new Kernel(io, appLoader, fileBackedPrefs, keychain, apps, uis, cache)
 			with SwingPowerboxes
 			with security.KernelPrivilege
 	}

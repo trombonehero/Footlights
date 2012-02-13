@@ -92,7 +92,7 @@ class Preferences(engine:Option[PreferenceStorageEngine])
 	// Provide some sane default for crypto settings and storage locations.
 	private val defaultPrefs = MutableMap[String,String]()
 	defaultPrefs ++= cryptoDefaults(security.CryptoBackend.get)
-	defaultPrefs += ("init.setup" -> "http://footlights.me/setup.json")
+	defaultPrefs += ("init.setup" -> "http://footlights.me/settings/cas.json")
 
 	try {
 		// OS-specific home directory.

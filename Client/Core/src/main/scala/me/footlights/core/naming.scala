@@ -33,7 +33,7 @@ import data.Link
  * Resolves public names (e.g. a {@link URL}) into Footlights names (e.g. a {@link Fingerprint}
  * or a {@link Link}).
  */
-class Resolver(io:IO, keychain: Keychain)
+class Resolver private(io:IO, keychain: Keychain)
 {
 	/**
 	 * Resolve a URL into a {@link Link}.

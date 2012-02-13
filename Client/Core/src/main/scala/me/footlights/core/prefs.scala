@@ -171,11 +171,17 @@ object Preferences {
 	def loadFromDefaultLocation = create(Option(FileBackedPreferences.loadFromDefaultLocation))
 
 	/** Create preferences with an explicitly-specified backing engine. */
-	def create[T <: PreferenceStorageEngine](engine:Option[T]) = {
+	def apply[T <: PreferenceStorageEngine](engine:Option[T]) = {
 		val prefs = new Preferences(engine)
 		if (defaultPreferences.isEmpty) { defaultPreferences = Option(prefs) }
 		prefs
 	}
+
+	def apply(engine:PreferenceStorageEngine):Preferences = apply(Option(engine))
+
+
+	/** Java-friendly name for {@link #apply}. */
+	def create[T <: PreferenceStorageEngine](engine:Option[T]) = apply(engine)
 
 	/** Wrap a String->Any mapping in a {@link Preferences} object.*/
 	def wrap(map:Map[String,_]) = create(Option(PreferenceStorageEngine.wrap(map)))

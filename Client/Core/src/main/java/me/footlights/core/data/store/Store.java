@@ -40,7 +40,7 @@ public abstract class Store implements java.io.Flushable
 		throws IOException;
 
 	/** Low-level method to get a block from the disk, network, etc. */
-	protected abstract ByteBuffer get(Fingerprint name)
+	protected abstract ByteBuffer get(Fingerprint name)      // TODO: Option<ByteBuffer>
 		throws IOException, NoSuchBlockException;
 
 

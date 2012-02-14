@@ -26,6 +26,8 @@ h1, h2 { color: rgb(230, 221, 35); }
 
 	background: rgba(230, 221, 35, 0.15);
 	color: rgba(230, 221, 35, 0.6);
+
+	z-index: 2;
 }
 
 #launcher
@@ -63,9 +65,18 @@ h1, h2 { color: rgb(230, 221, 35); }
 
 	color: #333;
 
-	z-index: -3;
+	z-index: 0;
 }
 
+
+#curtain-top, #curtain-left, #curtain-right
+{
+	position: fixed;
+	top: 0;
+	z-index: 1;
+}
+
+#curtain-right { right: 0; }
 
 .timestamp
 {

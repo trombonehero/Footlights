@@ -40,8 +40,8 @@ public class DiskStore extends LocalStore
 	{
 		public DiskStore build() { return new DiskStore(dir, cache); }
 
-		public Builder setCache(LocalStore cache)			{ this.cache = Option.apply(cache);	return this; }
-		public Builder setDirectory(File dir)				{ this.dir = dir;		return this; }
+		public Builder setCache(Option<LocalStore> cache)	{ this.cache = cache;	return this; }
+		public Builder setDirectory(File dir)				{ this.dir   = dir;		return this; }
 		public Builder setPreferences(Preferences prefs)	{ this.prefs = prefs;	return this; }
 
 		public Builder setDefaultDirectory()

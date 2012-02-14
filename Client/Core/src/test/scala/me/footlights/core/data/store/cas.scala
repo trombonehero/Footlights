@@ -35,6 +35,65 @@ import me.footlights.core.data
 
 package me.footlights.core.data.store {
 
+
+@RunWith(classOf[JUnitRunner])
+class MemoryStoreTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
+
+	private var store:MemoryStore = _
+	before { store = new MemoryStore() }
+
+	"A MemoryStore" - {
+		"should return the same bytes that get stored" in {
+			val block = Block.newBuilder()
+				.setContent(ByteBuffer wrap List[Byte](1, 2, 3, 4).toArray)
+				.build
+
+			store store block
+			Block parse { store retrieve block.name get } should equal(block)
+		}
+
+		"should use LRU or something" in (pending)
+	}
+}
+
+
+
+@RunWith(classOf[JUnitRunner])
+class DiskStoreTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
+
+	private var store:DiskStore = _
+	before {
+		store = DiskStore.newBuilder()
+			.createTemporaryDirectory()
+			.setCache(None)
+			.build
+	}
+
+	"A DiskStore" - {
+		"should be able to store plaintext" in {
+			store store b1
+			Block parse { store retrieve b1.name get } should equal(b1)
+		}
+
+		"should be able to fetch files" in {
+			val blocks = List(b1, b2) map { _.getBytes }
+			val file = data.File.newBuilder setContent blocks freeze
+
+			store store file.toSave
+			store fetch file.link should equal(Some(file))
+		}
+	}
+
+	private val b1 = Block.newBuilder()
+		.setContent(ByteBuffer wrap List[Byte](1, 2, 3, 4).toArray)
+		.build
+
+	private val b2 = Block.newBuilder()
+		.setContent(ByteBuffer wrap List[Byte](5, 6, 7, 8).toArray)
+		.build
+}
+
+
 @RunWith(classOf[JUnitRunner])
 class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 

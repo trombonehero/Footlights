@@ -19,7 +19,7 @@ import java.net.URI
 import java.util.logging.{Level, Logger}
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.HashMap
+import scala.collection.mutable
 
 import me.footlights.api.Application
 import me.footlights.api.File
@@ -36,9 +36,11 @@ import crypto.Keychain
 /** Provides plugin [un]loading. */
 trait Applications extends Footlights {
 	protected def keychain:Keychain
-	protected def loadedApps:HashMap[URI,AppWrapper]
+	protected def loadedApps:mutable.Map[URI,AppWrapper]
 	protected def appLoader:ClassLoader
 	protected def prefs:ModifiablePreferences
+
+	protected def readPrefs(filename:String):Option[Map[String,String]]
 
 	def runningApplications():_root_.java.util.Collection[AppWrapper] = loadedApps.values
 
@@ -77,20 +79,16 @@ trait Applications extends Footlights {
 	 */
 	private def appPreferences(appName:String) = {
 		val appKey = "app.prefs." + appName
-		val map = new HashMap[String,String]
+		val map = mutable.Map() ++ (prefs getString appKey flatMap readPrefs getOrElse Map())
 
-		prefs getString(appKey) flatMap open map {
-			case file:data.File => map ++= Preferences.parse(file.getContents())
-		}
+		val reader = PreferenceStorageEngine wrap map
 
 		// Create an anonymous mutable version which can save itself
-		val reader = PreferenceStorageEngine.wrap(map)
-
 		new ModifiableStorageEngine {
 			override def getAll = reader.getAll
 			override def getRaw(name:String) = reader.getRaw(name)
 
-			override def set(key:String, value:String) = synchronized
+			override def set(key:String, value:String): ModifiableStorageEngine = synchronized
 			{
 				// Update the preferences.
 				map.put(key, value)

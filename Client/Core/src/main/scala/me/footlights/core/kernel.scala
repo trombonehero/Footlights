@@ -22,7 +22,9 @@ import java.util.logging.Logger
 import javax.swing.JFileChooser
 
 import scala.collection.{immutable,mutable}
+import scala.collection.JavaConversions._
 
+import me.footlights.api
 import me.footlights.api.KernelInterface
 import me.footlights.core.data.store.CASClient
 
@@ -62,6 +64,10 @@ abstract class Kernel(
 {
 	private val resolver = Resolver(io, keychain)
 	protected val store = CASClient(Preferences(prefs), resolver, Option(cache))    // TODO: don't wrap?
+
+	/** Read {@link Preferences} from a file. */
+	protected def readPrefs(filename:String) =
+		open(filename) map { case file:data.File => Map() ++ Preferences.parse(file.getContents) }
 }
 
 

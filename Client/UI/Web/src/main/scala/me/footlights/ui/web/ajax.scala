@@ -106,6 +106,7 @@ var contents =
 			case AsyncChannel =>
 				asyncEvents.synchronized {
 					while (asyncEvents.isEmpty) { asyncEvents.wait }
+					asyncEvents.notify
 					new JavaScript()
 						.append(setupAsyncChannel)
 						.append(asyncEvents.dequeue)
@@ -171,7 +172,7 @@ dir.appendElement('div').appendText('%d files in local cache:');""" format files
 
 	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
 		asyncEvents enqueue event
-		asyncEvents notifyAll
+		asyncEvents notify
 	}
 
 	private val Init            = "init"

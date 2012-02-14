@@ -21,8 +21,7 @@ import java.util.logging.Logger
 
 import javax.swing.JFileChooser
 
-import scala.collection.mutable.{HashMap,HashSet,LinkedList,Map,Set}
-import scala.collection.immutable.{Map => ImmutableMap}
+import scala.collection.{immutable,mutable}
 
 import me.footlights.api.KernelInterface
 import me.footlights.core.data.store.CASClient
@@ -51,8 +50,8 @@ abstract class Kernel(
 	protected val appLoader: ClassLoader,
 	protected val prefs: FileBackedPreferences,
 	protected val keychain: Keychain,
-	protected val loadedApps: HashMap[URI,AppWrapper],
-	protected val uis: Set[UI],
+	protected val loadedApps: mutable.HashMap[URI,AppWrapper],
+	protected val uis: mutable.Set[UI],
 	protected val cache: DiskStore)
 
 	extends Footlights
@@ -92,8 +91,8 @@ object Kernel {
 			Flusher(keychain, keychainFile get) start
 		}
 
-		val apps = new HashMap[URI,AppWrapper]
-		val uis = new HashSet[UI]
+		val apps = new mutable.HashMap[URI,AppWrapper]
+		val uis = new mutable.HashSet[UI]
 
 		// Local disk cache for the network-based store.
 		val cache =
@@ -109,7 +108,7 @@ object Kernel {
 	}
 
 	private def getStoreLocation(
-		key:String, prefs:Preferences, setupData:Option[ImmutableMap[String,_]]) = {
+		key:String, prefs:Preferences, setupData:Option[Map[String,_]]) = {
 
 		prefs getString("blockstore." + key) orElse {
 			setupData.get.get(key) match { case Some(s:String) => Option(s); case _ => None }

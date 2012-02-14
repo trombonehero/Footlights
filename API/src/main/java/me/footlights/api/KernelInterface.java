@@ -27,10 +27,10 @@ public interface KernelInterface
 	/**
 	 * Save data to a logical file.
 	 */
-	public File save(ByteBuffer data) throws IOException;
+	public Option<File> save(ByteBuffer data) throws IOException;
 
 	/** Open a named file. */
-	public File open(String name) throws IOException;
+	public Option<File> open(String name) throws IOException;
 
 	/** Open a file on the local machine (e.g. a photo to upload). */
 	public Option<File> openLocalFile() throws IOException;

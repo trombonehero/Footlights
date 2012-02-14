@@ -106,7 +106,7 @@ class DemoAjaxHandler extends Context
 				{
 					try
 					{
-						File file = kernel.save(ByteBuffer.wrap("Hello, world!".getBytes()));
+						File file = kernel.save(ByteBuffer.wrap("Hello, world!".getBytes())).get();
 						response.append(makeDiv("saved file: " + file));
 					}
 					catch (IOException e)

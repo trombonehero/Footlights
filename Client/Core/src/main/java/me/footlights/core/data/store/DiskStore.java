@@ -23,13 +23,14 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import scala.Option;
+
 import com.google.common.collect.Lists;
 
 import me.footlights.core.FileBackedPreferences;
 import me.footlights.core.Preferences;
 import me.footlights.core.crypto.Fingerprint;
 import me.footlights.core.data.FormatException;
-import me.footlights.core.data.NoSuchBlockException;
 
 
 /** A block store on disk */
@@ -39,7 +40,7 @@ public class DiskStore extends LocalStore
 	{
 		public DiskStore build() { return new DiskStore(dir, cache); }
 
-		public Builder setCache(LocalStore cache)			{ this.cache = cache;	return this; }
+		public Builder setCache(LocalStore cache)			{ this.cache = Option.apply(cache);	return this; }
 		public Builder setDirectory(File dir)				{ this.dir = dir;		return this; }
 		public Builder setPreferences(Preferences prefs)	{ this.prefs = prefs;	return this; }
 
@@ -62,17 +63,17 @@ public class DiskStore extends LocalStore
 
 		private Builder()
 		{
-			cache = new MemoryStore();
+			cache = Option.apply((LocalStore) new MemoryStore());
 		}
 
 		private File dir;
-		private LocalStore cache;
+		private Option<LocalStore> cache;
 		private Preferences prefs = Preferences.getDefaultPreferences();
 	}
 
 	public static Builder newBuilder() { return new Builder(); }
 
-	private DiskStore(File storageDirectory, LocalStore cache)
+	private DiskStore(File storageDirectory, Option<LocalStore> cache)
 	{
 		super(cache);
 		this.dir = storageDirectory;
@@ -101,8 +102,8 @@ public class DiskStore extends LocalStore
 
 		return l;
 	}
-	
-	
+
+
 	@Override
 	public void put(Fingerprint name, ByteBuffer buffer) throws IOException
 	{
@@ -113,42 +114,40 @@ public class DiskStore extends LocalStore
 
 
 	@Override
-	public ByteBuffer get(Fingerprint name)
-		throws IOException, NoSuchBlockException
+	public Option<ByteBuffer> get(Fingerprint name)
 	{
 		try
 		{
 			File file = new File(dir, name.encode());
 			long len = file.length();
 			
-			if (len <= 0) throw new NoSuchBlockException(this, name);
+			if (len <= 0) return Option.apply(null);
 			else if (len > MAX_FILE_SIZE)
-				throw new IOException(
-					"Block is too large to load (" + len + "B, max loadable size is "
+			{
+				log.warning("Block is too large to load (" + len + "B, max loadable size is "
 					 + MAX_FILE_SIZE + "B)");
+				return Option.apply(null);
+			}
 
 			// The file is a valid block, smaller than MAX_FILE_SIZE (so < 2^31).
 			// Read it if it's small, mmap it if it's large.
 			FileChannel channel = new FileInputStream(file).getChannel();
 
 			if (len > MAX_READ_SIZE)
-				return channel.map(MapMode.READ_ONLY, 0, len);
+				return Option.apply((ByteBuffer) channel.map(MapMode.READ_ONLY, 0, len));
 			else
 			{
 				ByteBuffer buffer = ByteBuffer.allocate((int) len);
 				channel.read(buffer);
 				buffer.rewind();
-				return buffer.asReadOnlyBuffer();
+				return Option.apply(buffer.asReadOnlyBuffer());
 			}
 		}
-		catch(FileNotFoundException e)
-		{
-			throw new NoSuchBlockException(this, name);
-		}
-		catch(FormatException e)
-		{
-			throw new IOException("Mangled block: " + e);
-		}
+		catch(FileNotFoundException e) {}
+		catch(FormatException e) { log.log(Level.WARNING, "Mangled block", e); }
+		catch(IOException e) { log.log(Level.WARNING, "Error reading file", e); }
+
+		return Option.apply(null);
 	}
 
 

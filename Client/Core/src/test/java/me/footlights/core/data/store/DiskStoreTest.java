@@ -48,7 +48,7 @@ public class DiskStoreTest
 		store.store(b1);
 		store.flush();
 
-		assertEquals(b1.getBytes(), store.retrieve(b1.name()));
+		assertEquals(b1.getBytes(), store.retrieve(b1.name()).get());
 	}
 
 	@Test public void testStoreAndFetch() throws Throwable
@@ -57,7 +57,7 @@ public class DiskStoreTest
 		Block b = Block.newBuilder().setContent(ByteBuffer.wrap(content)).build();
 		store.store(b);
 
-		Block retrieved = Block.parse(store.retrieve(b.name()));
+		Block retrieved = Block.parse(store.retrieve(b.name()).get());
 		assertEquals(b, retrieved);
 	}
 
@@ -73,7 +73,7 @@ public class DiskStoreTest
 
 		store.store(f.toSave());
 
-		File fetched = store.fetch(f.link());
+		File fetched = store.fetch(f.link()).get();
 		assertEquals(f, fetched);
 	}
 

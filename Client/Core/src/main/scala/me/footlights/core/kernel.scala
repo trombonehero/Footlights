@@ -61,7 +61,7 @@ abstract class Kernel(
 		with UIManager
 {
 	private val resolver = Resolver(io, keychain)
-	protected val store = CASClient(Preferences(prefs), resolver, cache)    // TODO: don't wrap?
+	protected val store = CASClient(Preferences(prefs), resolver, Option(cache))    // TODO: don't wrap?
 }
 
 
@@ -83,7 +83,7 @@ object Kernel {
 			new java.io.File(_) } filter { _.exists }
 
 		if (keychainFile isDefined) {
-			try keychain.importKeystoreFile(new FileInputStream(keychainFile get))
+			try { keychain.importKeystoreFile(new FileInputStream(keychainFile get)) }
 			catch {
 				case e:Exception => log.log(Level.SEVERE, "Error loading keychain", e)
 			}

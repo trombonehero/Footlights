@@ -25,36 +25,33 @@ import scala.collection.JavaConversions._
 
 import me.footlights.core.{Kernel,Preferences,Resolver}
 import me.footlights.core.crypto.Fingerprint
-import me.footlights.core.data.{Block,EncryptedBlock,File,Link,NoSuchBlockException}
+import me.footlights.core.data.{Block,EncryptedBlock,File,Link}
 
 
 package me.footlights.core.data.store {
 
 
 /** Stores blocks of content. */
-abstract class Store protected(cache:LocalStore) extends java.io.Flushable {
+abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushable {
 	@throws(classOf[java.io.IOException])
 	protected def put(name:Fingerprint, bytes:ByteBuffer)
 
-	@throws(classOf[java.io.IOException])
-	protected def get(name:Fingerprint): ByteBuffer
+	protected def get(name:Fingerprint): Option[ByteBuffer]
 
+	if (cache == null) throw new NullPointerException("null cache")
+	if (cache.isDefined && cache.get == null) throw new NullPointerException("null cache")
 
 	def store(block:Block): Unit = store(block.name, block.getBytes)
 	def store(block:EncryptedBlock): Unit = store(block.name, block.ciphertext)
 	def store(blocks:Iterable[EncryptedBlock]): Unit = blocks foreach { store(_) }
 
-	@throws(classOf[java.io.IOException])
-	def retrieve(name:Fingerprint): ByteBuffer =
-//		cache map { _.retrieve(name) } getOrElse { get(name) }
-		if (cache != null) cache.retrieve(name)
-		else get(name)
+	def retrieve(name:Fingerprint):Option[ByteBuffer] =
+		cache map { _ retrieve name } getOrElse { get(name) }
 
-	def retrieveCiphertext(link:Link) = {
-		val ciphertext = retrieve(link.fingerprint)
+	def retrieveCiphertext(link:Link) = retrieve(link.fingerprint) map {
 		EncryptedBlock.newBuilder()
 			.setLink(link)
-			.setCiphertext(ciphertext)
+			.setCiphertext(_)
 			.build
 	}
 
@@ -64,18 +61,17 @@ abstract class Store protected(cache:LocalStore) extends java.io.Flushable {
 	 * This is not guaranteed to be an exhaustive list; we only list files in the cache (if we
 	 * have one), and even that isn't guaranteed to exhaustively list anything.
 	 */
-	def listBlocks:Collection[Stat] = if (cache == null) Nil else cache.list
+	def listBlocks:Collection[Stat] = cache map { _.list } flatten
 
 	/** Retrieve a stored (and encrypted) {@link File}. */
-	@throws(classOf[java.io.IOException])
-	def fetch(link:Link):File = {
-		val encryptedHeader = Option(retrieveCiphertext(link))
+	def fetch(link:Link):Option[File] = {
+		val encryptedHeader = retrieveCiphertext(link)
 		encryptedHeader map { _.plaintext } map { header => {
-				val blocks = header.links map retrieveCiphertext
+				val blocks = header.links map retrieveCiphertext flatten
 				val f = File.from(encryptedHeader.get, blocks)
 				f
 			}
-		} getOrElse { throw new java.io.IOException("No such file: " + link) }
+		}
 	}
 
 	/**
@@ -83,10 +79,10 @@ abstract class Store protected(cache:LocalStore) extends java.io.Flushable {
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
 	private def store(name:Fingerprint, bytes:ByteBuffer): Unit = {
-		if (cache == null) put(name, bytes.asReadOnlyBuffer)
+		if (cache.isEmpty) put(name, bytes.asReadOnlyBuffer)
 		else cache.synchronized {
-			cache.store(name, bytes.asReadOnlyBuffer)
-			journal.synchronized { journal add name }
+			cache map { _.store(name, bytes.asReadOnlyBuffer) }
+			journal.synchronized { journal enqueue name }
 			cache.notify
 		}
 	}
@@ -96,30 +92,29 @@ abstract class Store protected(cache:LocalStore) extends java.io.Flushable {
 	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
 	 */
 	override def flush = if (cache != null) journal.synchronized {
-		val name = journal.front
-		try { put(name, cache get name) }
-		catch {
-			case e:NoSuchBlockException =>
-				throw new IOException("Cache inconsistency: block '" + name
-					+ "' not in cache '" + cache + "'");
+		journal map { name =>
+			cache flatMap { _ get name } orElse {
+				log severe "Cache inconsistency: %s not in cache %s".format(name, this)
+				None
+			} foreach {
+				block => put(name, block)
+				journal.dequeue
+			}
 		}
-		journal.dequeue
 	}
 
 	private val journal = collection.mutable.Queue[Fingerprint]()
+	private val log = java.util.logging.Logger getLogger classOf[Store].getCanonicalName
 }
 
 
 
 /** A block store in memory. */
-class MemoryStore extends LocalStore(null) {
+class MemoryStore extends LocalStore {
 	val blocks = collection.mutable.Map[Fingerprint,ByteBuffer]()
 
 	override def put(name:Fingerprint, bytes:ByteBuffer) = blocks.put(name, bytes)
-	override def get(name:Fingerprint) =
-		blocks.get(name) map { _.asReadOnlyBuffer } getOrElse {
-			throw new NoSuchBlockException(this, name)
-		}
+	override def get(name:Fingerprint) = blocks.get(name) map { _.asReadOnlyBuffer }
 
 	override def list = for ((name,bytes) <- blocks) yield Stat(name, bytes.remaining)
 
@@ -131,7 +126,8 @@ class MemoryStore extends LocalStore(null) {
 
 /** A client for the Footlights Content-Addressible Store (CAS). */
 class CASClient private(
-		urls:Future[Map[String,URL]], uploadKey:Option[String], resolver:Resolver, cache:LocalStore)
+		urls:Future[Map[String,URL]], uploadKey:Option[String], resolver:Resolver,
+		cache:Option[LocalStore])
 	extends Store(cache) {
 
 	override protected[store] def get(name:Fingerprint) = {
@@ -161,7 +157,7 @@ class CASClient private(
 
 			buffer.flip
 			buffer.asReadOnlyBuffer
-		} getOrElse { throw new NoSuchBlockException(this, name) }
+		}
 	}
 
 	override protected[store] def put(name:Fingerprint, bytes:ByteBuffer) = {
@@ -247,7 +243,7 @@ class CASClient private(
 
 
 object CASClient {
-	def apply(prefs:Preferences, resolver:Resolver, cache:LocalStore,
+	def apply(prefs:Preferences, resolver:Resolver, cache:Option[LocalStore],
 			uploadSecret:Option[String] = None) = {
 		// A map of URLs for uploading and downloading CAS content.
 		//

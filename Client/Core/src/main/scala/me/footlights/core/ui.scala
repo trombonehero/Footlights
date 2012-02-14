@@ -70,15 +70,15 @@ trait UIManager extends Footlights {
 
 	import UI._
 
-	abstract override def open(filename:String):me.footlights.api.File = {
+	abstract override def open(filename:String) = {
 		val f = super.open(filename)
-		fire(new UI.FileOpenedEvent(f))
+		f map { new UI.FileOpenedEvent(_) } foreach fire
 		f
 	}
 
-	abstract override def save(data:ByteBuffer):me.footlights.api.File = {
+	abstract override def save(data:ByteBuffer) = {
 		val f = super.save(data)
-		fire(new FileSavedEvent(f))
+		f map { new UI.FileSavedEvent(_) } foreach fire
 		f
 	}
 

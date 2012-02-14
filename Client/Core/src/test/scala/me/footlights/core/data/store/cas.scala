@@ -30,7 +30,7 @@ import org.scalatest.mock.MockitoSugar
 import me.footlights.core.Preferences
 import me.footlights.core.crypto.Fingerprint
 import me.footlights.core.data.Block
-import me.footlights.core.data.NoSuchBlockException
+import me.footlights.core.data
 
 
 package me.footlights.core.data.store {
@@ -110,8 +110,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 
 	// A couple of mocks.
 	val resolver = mock[me.footlights.core.Resolver]
-	val cache = mock[LocalStore]
-	when { cache fetch any() } thenReturn null
+	val cache = None
 
 	val log = Logger getLogger classOf[CASClient].getCanonicalName
 }

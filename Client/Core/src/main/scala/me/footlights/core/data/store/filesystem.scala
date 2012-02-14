@@ -20,7 +20,8 @@ import scala.collection.JavaConversions._
 import me.footlights.core.Footlights
 import me.footlights.core.crypto.{Fingerprint,Keychain}
 import me.footlights.core.data.File
-import me.footlights.core.data.store.{LocalStore,Store}
+
+import me.footlights.api
 
 
 package me.footlights.core.data.store {
@@ -35,14 +36,19 @@ trait Filesystem extends Footlights {
 	protected def store:Store
 
 	/** Open a file, named by its content, e.g. "sha-256:0123456789abcdef01234...". */
-	override def open(name:String):me.footlights.api.File =
-		store fetch { keychain getLink { Fingerprint decode name } }
+	override def open(name:String):Option[api.File] =
+		Option(Fingerprint decode name) flatMap { fingerprint =>
+			try { Option(keychain getLink fingerprint) }
+			catch {
+				case e:NoSuchElementException => None
+			}
+		} flatMap { store.fetch }
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
-	override def save(data:ByteBuffer):me.footlights.api.File = {
+	override def save(data:ByteBuffer):Option[api.File] = {
 			val f = File.newBuilder.setContent(data).freeze
 			store.store(f.toSave())
-			f
+			Some(f)
 		}
 
 	/** List some of the files in the filesystem (not exhaustive!). */

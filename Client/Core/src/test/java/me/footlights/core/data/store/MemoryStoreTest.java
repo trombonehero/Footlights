@@ -38,7 +38,7 @@ public class MemoryStoreTest
 
 		store.store(b);
 
-		assertEquals(b, Block.parse(store.retrieve(b.name())));
+		assertEquals(b, Block.parse(store.retrieve(b.name()).get()));
 	}
 
 	@Test public void testReplacement() throws Throwable

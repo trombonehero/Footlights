@@ -43,9 +43,7 @@ trait Placeholders extends Footlights {
 			case _ => ""
 		}
 
-		prefs getString(prefKey) flatMap { filename =>
-			try { Option(open(filename)) } catch { case e:data.NoSuchBlockException => None }
-		} map {
+		prefs getString(prefKey) flatMap open map {
 			_ match { case file:data.File => Preferences.parse(file getContents) }
 		} map {
 			_ get { id reduceLeft { _ + _ } }

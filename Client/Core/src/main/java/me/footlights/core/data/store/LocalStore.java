@@ -18,6 +18,8 @@ package me.footlights.core.data.store;
 import java.io.IOException;
 import java.util.Collection;
 
+import scala.Option;
+
 
 /**
  * A store which is in some sense "local" (e.g. in memory, on disk), so the
@@ -25,7 +27,8 @@ import java.util.Collection;
  */
 public abstract class LocalStore extends Store
 {
-	public LocalStore(LocalStore cache)
+	public LocalStore() { this(Option.<LocalStore>apply(null)); }
+	public LocalStore(Option<LocalStore> cache)
 	{
 		super(cache);
 	}

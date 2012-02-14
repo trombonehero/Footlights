@@ -19,14 +19,19 @@ import java.net.URL
 import java.nio.ByteBuffer
 import java.util.logging.Level._
 import java.util.logging.Logger
+
 import scala.collection.JavaConversions._
+
 import org.junit.runner.RunWith
+
 import org.mockito.Matchers._
 import org.mockito.Mockito.when
+
 import org.scalatest.{BeforeAndAfter,FreeSpec}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
+
 import me.footlights.core.Preferences
 import me.footlights.core.crypto.Fingerprint
 import me.footlights.core.data.Block
@@ -99,7 +104,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 
 	before { prefs = Map() }
 
-	"The CAS client" - {
+	"A CAS client" - {
 		"should refuse to upload files without an upload key" in {
 			val f = mock[Fingerprint]
 			val b = mock[ByteBuffer]

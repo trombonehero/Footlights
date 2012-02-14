@@ -15,7 +15,7 @@
  */
 
 import java.io._
-import java.net.{ServerSocket,Socket,SocketException}
+import java.net.{ServerSocket,Socket}
 import java.util.logging.Level.{FINE,INFO,WARNING,SEVERE}
 import java.util.logging.Logger
 
@@ -83,8 +83,11 @@ class MasterServer(
 						log fine "Response: " + response
 						try { response write socket.getOutputStream }
 						catch {
+							case e:java.net.SocketException =>
+								log fine "Can't write response: " + e
+
 							case t:Throwable =>
-								log.log(INFO,
+								log.log(WARNING,
 									"Error responding to " + request + " with " + response, t)
 						}
 						socket.close

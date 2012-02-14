@@ -104,7 +104,7 @@ public class DiskStore extends LocalStore
 	
 	
 	@Override
-	protected void put(Fingerprint name, ByteBuffer buffer) throws IOException
+	public void put(Fingerprint name, ByteBuffer buffer) throws IOException
 	{
 		FileChannel channel = new FileOutputStream(new File(dir, name.encode())).getChannel();
 		channel.write(buffer.duplicate());
@@ -113,7 +113,7 @@ public class DiskStore extends LocalStore
 
 
 	@Override
-	protected ByteBuffer get(Fingerprint name)
+	public ByteBuffer get(Fingerprint name)
 		throws IOException, NoSuchBlockException
 	{
 		try

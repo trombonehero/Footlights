@@ -25,10 +25,91 @@ import scala.collection.JavaConversions._
 
 import me.footlights.core.{Kernel,Preferences,Resolver}
 import me.footlights.core.crypto.Fingerprint
-import me.footlights.core.data.NoSuchBlockException
+import me.footlights.core.data.{Block,EncryptedBlock,File,Link,NoSuchBlockException}
 
 
 package me.footlights.core.data.store {
+
+
+/** Stores blocks of content. */
+abstract class Store protected(cache:LocalStore) extends java.io.Flushable {
+	@throws(classOf[java.io.IOException])
+	protected def put(name:Fingerprint, bytes:ByteBuffer)
+
+	@throws(classOf[java.io.IOException])
+	protected def get(name:Fingerprint): ByteBuffer
+
+
+	def store(block:Block): Unit = store(block.name, block.getBytes)
+	def store(block:EncryptedBlock): Unit = store(block.name, block.ciphertext)
+	def store(blocks:Iterable[EncryptedBlock]): Unit = blocks foreach { store(_) }
+
+	@throws(classOf[java.io.IOException])
+	def retrieve(name:Fingerprint): ByteBuffer =
+//		cache map { _.retrieve(name) } getOrElse { get(name) }
+		if (cache != null) cache.retrieve(name)
+		else get(name)
+
+	def retrieveCiphertext(link:Link) = {
+		val ciphertext = retrieve(link.fingerprint)
+		EncryptedBlock.newBuilder()
+			.setLink(link)
+			.setCiphertext(ciphertext)
+			.build
+	}
+
+	/**
+	 * Retrieve a list of {@link File} names which are known to exist in the {@link Store}.
+	 *
+	 * This is not guaranteed to be an exhaustive list; we only list files in the cache (if we
+	 * have one), and even that isn't guaranteed to exhaustively list anything.
+	 */
+	def listBlocks:Collection[Stat] = if (cache == null) Nil else cache.list
+
+	/** Retrieve a stored (and encrypted) {@link File}. */
+	@throws(classOf[java.io.IOException])
+	def fetch(link:Link):File = {
+		val encryptedHeader = Option(retrieveCiphertext(link))
+		encryptedHeader map { _.plaintext } map { header => {
+				val blocks = header.links map retrieveCiphertext
+				val f = File.from(encryptedHeader.get, blocks)
+				f
+			}
+		} getOrElse { throw new java.io.IOException("No such file: " + link) }
+	}
+
+	/**
+	 * If we have a cache, this method should not block for I/O. To ensure that the block has
+	 * really been written to disk, the network, etc., call {@link #flush()}.
+	 */
+	private def store(name:Fingerprint, bytes:ByteBuffer): Unit = {
+		if (cache == null) put(name, bytes.asReadOnlyBuffer)
+		else cache.synchronized {
+			cache.store(name, bytes.asReadOnlyBuffer)
+			journal.synchronized { journal add name }
+			cache.notify
+		}
+	}
+
+
+	/**
+	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
+	 */
+	override def flush = if (cache != null) journal.synchronized {
+		val name = journal.front
+		try { put(name, cache get name) }
+		catch {
+			case e:NoSuchBlockException =>
+				throw new IOException("Cache inconsistency: block '" + name
+					+ "' not in cache '" + cache + "'");
+		}
+		journal.dequeue
+	}
+
+	private val journal = collection.mutable.Queue[Fingerprint]()
+}
+
+
 
 /** A block store in memory. */
 class MemoryStore extends LocalStore(null) {

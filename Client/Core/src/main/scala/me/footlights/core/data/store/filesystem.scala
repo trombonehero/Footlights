@@ -15,6 +15,8 @@
  */
 import java.nio.ByteBuffer
 
+import scala.collection.JavaConversions._
+
 import me.footlights.core.Footlights
 import me.footlights.core.crypto.{Fingerprint,Keychain}
 import me.footlights.core.data.File
@@ -44,7 +46,7 @@ trait Filesystem extends Footlights {
 		}
 
 	/** List some of the files in the filesystem (not exhaustive!). */
-	override def listFiles = store.list
+	override def listFiles = store.listBlocks
 }
 
 class Stat(val name: Fingerprint, val length: Long)

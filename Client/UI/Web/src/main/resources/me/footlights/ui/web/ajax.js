@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/**
+ * Perform an Ajax call from within a particular execution context.
+ *
+ * @param callback     may be undefined, in which case a generic callback will be used
+ *                     that requires the Ajax response to be executable JS code, and executes
+ *                     it within the given context's sandbox
+ */
 function ajax(url, context, callback)
 {
 	var xhr = false;

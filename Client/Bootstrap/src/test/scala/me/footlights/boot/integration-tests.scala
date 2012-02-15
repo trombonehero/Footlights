@@ -35,51 +35,44 @@ package me.footlights.boot {
 /** Integration tests for {@link FootlightsClassLoader}. */
 @RunWith(classOf[JUnitRunner])
 class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
-	before { loader = new FootlightsClassLoader(coreUrls) }
+
+	var loader:ClassLoader = _
+
+	// Classes loaded by the ClassLoader under test.
+	var core:Class[_] = _
+	var good:Class[_] = _
+	var evil:Class[_] = _
 
 	"A Footlights class loader, " - {
 		"when loading a core class, " - {
-			"should load the correct class." in {
-				val loaded = loader loadClass coreClassName
-				loaded.getCanonicalName should equal(coreClassName)
-			}
-
-			"should grant the AllPermission." in {
-				val loaded = loader loadClass coreClassName
-				loaded should have (allPermission)
-			}
+			"should load the correct class." in { core.getCanonicalName should equal(CoreClassName) }
+			"should grant the AllPermission." in { core should have (allPermission) }
 		}
 
 		"when loading a " - {
 			"well-behaved app," - {
 				"should load the correct app." in {
-					val c = loader loadClass BasicDemo.uri
-					c.getCanonicalName should equal (BasicDemo.className)
+					good.getCanonicalName should equal (BasicDemo.className)
 				}
 
 				"should not grant the AllPermission." in {
-					val c = loader loadClass BasicDemo.uri
-					c should not have allPermission
+					good should not have allPermission
 				}
 
 				"should not grant the 'exitVM' permission." in {
-					val c = loader loadClass BasicDemo.uri
-					c should not have permission(exitVM)
+					good should not have permission(exitVM)
 				}
 
 				"should not grant the right to read core classpaths." in {
-					val c = loader loadClass BasicDemo.uri
-					c should not have permissions(readCore)
+					good should not have permissions(readCore)
 				}
 
 				"should provide an executable app." in {
-					val c = loader loadClass BasicDemo.uri
-
-					val init = c.getMethods find { method =>
+					val init = good.getMethods find { method =>
 						java.lang.reflect.Modifier.isStatic(method.getModifiers) &&
 						method.getName == "init" &&
 						method.getParameterTypes.length == 3
-					} orElse { fail("Unable to find static init() method in " + c) }
+					} orElse { fail("Unable to find static init() method in " + good) }
 
 					val log = mock[java.util.logging.Logger]
 					val app = init map { _.invoke(null, null, null, log) }
@@ -88,8 +81,7 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 				}
 
 				"should be able to load resources from a JAR file." in {
-					val c = loader loadClass BasicDemo.uri
-					val appLoader = c.getClassLoader
+					val appLoader = good.getClassLoader
 					val url = appLoader getResource BasicDemo.classFile
 					url should not equal null
 
@@ -101,40 +93,51 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 				}
 
 				"should be able to load a second instance of the same app." in {
-					val c1 = loader loadClass BasicDemo.uri
-					val c2 = loader loadClass BasicDemo.uri
-
-					c1 should not equal c2
+					val c = loader loadClass BasicDemo.uri
+					c should not equal good
 				}
 			}
 
 			"malicious app, " - {
-				"should prevent the app from loading other apps' classes." in {
-					val good = loader loadClass BasicDemo.uri
-					val wicked = loader loadClass WickedDemo.uri
-					val wickedLoader = wicked.getClassLoader
-
+				"should prevent the app from loading other apps' classes." in
 					intercept[ClassNotFoundException] {
-						wickedLoader loadClass BasicDemo.className
+						evil.getClassLoader loadClass BasicDemo.className
 					}
-				}
 
-				"should prevent the app from loading unauthorized resources." in {
-					val good = loader loadClass BasicDemo.uri
-					val wicked = loader loadClass WickedDemo.uri
-					val wickedLoader = wicked.getClassLoader
-
+				"should prevent the app from loading unauthorized resources." in
 					intercept[java.io.FileNotFoundException] {
-						wickedLoader getResource BasicDemo.classFile openStream
+						evil.getClassLoader getResource BasicDemo.classFile openStream
 					}
-				}
 			}
 		}
 	}
 
+	before {
+		loader = new FootlightsClassLoader(coreClasspaths map localPath map { new URL(_) } toSeq)
+		core = loader loadClass CoreClassName
+		good = loader loadClass BasicDemo.uri
+		evil = loader loadClass WickedDemo.uri
+	}
 
+
+	/** Classpaths: we require the API, Bootstrap and Core classpaths to be set correctly. */
+	val coreClasspaths = System getProperty "java.class.path" split ":" filter isCore
+
+	val CoreClassName = "me.footlights.core.Kernel"
+	val BasicDemo = App("Basic", "basic-demo", "me.footlights.demos.good.GoodApp")
+	val WickedDemo = App("Wicked", "wicked-app", "me.footlights.demos.wicked.WickedApp")
+
+
+	// Permissions which the ClassLoader can grant.
+	val allPermission = permission(new AllPermission)
+	val exitVM = new RuntimePermission("exitVM")
+	val readCore = coreClasspaths map { new java.io.FilePermission(_, "read") }
+
+
+	/** Build a {@link HavePropertyMatcher} for "x should not have permission(y)" clauses. */
 	def permission(p:Permission) = permissions(Seq(p))
 
+	/** Build a {@link HavePropertyMatcher} for "x should not have permissions(y)" clauses. */
 	def permissions(perms:Seq[Permission]) =
 		new HavePropertyMatcher[Class[_], Seq[Permission]] {
 			def apply(c:Class[_]) =
@@ -150,21 +153,6 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 		}
 
 
-	private var loader:FootlightsClassLoader = _
-
-	val coreClasspaths = System getProperty "java.class.path" split ":" filter isCore
-	val coreUrls = coreClasspaths map localPath map { new URL(_) } toList
-
-	val allPermission = permission(new AllPermission)
-	val exitVM = new RuntimePermission("exitVM")
-	val readCore = coreClasspaths map { new java.io.FilePermission(_, "read") }
-
-	/** A well-behaved demo app. */
-	val BasicDemo = App("Basic", "basic-demo", "me.footlights.demos.good.GoodApp")
-
-	/** A malicious demo app. */
-	val WickedDemo = App("Wicked", "wicked-app", "me.footlights.demos.wicked.WickedApp")
-
 	/** Class and path information for a Footlights application. */
 	case class App(projectDir:String, projectName:String, className:String) {
 		val classFile = className.replaceAll("\\.", "/") + ".class"
@@ -176,9 +164,6 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 			} map localPath get
 	}
 
-
-	/** An example of a core class name. */
-	val coreClassName = "me.footlights.core.Kernel"
 
 
 	/** Is the given classpath for core Footlights classes? */

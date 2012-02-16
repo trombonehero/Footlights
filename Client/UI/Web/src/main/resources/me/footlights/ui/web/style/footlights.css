@@ -154,20 +154,3 @@ a:followed
 	background-color: black;
 	color: grey;
 }
-
-.ajaxContext
-{
-	font-family: monospace;
-	font-size: smaller;
-	font-weight: bold;
-}
-
-.ajaxContext:before
-{
-	content: 'Ajax Context: "';
-}
-
-.ajaxContext:after
-{
-	content: '"';
-}

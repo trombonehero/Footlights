@@ -4,13 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import scala.Option;
-
-import com.google.common.collect.Maps;
 
 import me.footlights.api.File;
 import me.footlights.api.KernelInterface;
@@ -174,7 +173,7 @@ class DemoAjaxHandler extends Context
 
 
 	/** The number of times the user has clicked the 'local' button. */
-	private final Map<String,Integer> clicks = Maps.newHashMap();
+	private final Map<String,Integer> clicks = new HashMap<String,Integer>();
 
 
 	private static JavaScript makeDiv(String text)

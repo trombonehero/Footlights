@@ -2,9 +2,9 @@ package me.footlights.demos.tictactoe;
 
 import static me.footlights.demos.tictactoe.Game.Piece.*;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
+import java.util.LinkedList;
 
 
 /**
@@ -82,7 +82,7 @@ class Game
 
 	private Status result(Piece mySide)
 	{
-		List<Iterable<Piece>> sequences = Lists.newLinkedList();
+		List<Iterable<Piece>> sequences = new LinkedList<Iterable<Piece>>();
 		for (int i = 0; i < size; i++)
 		{
 			sequences.add(row(i));
@@ -115,21 +115,21 @@ class Game
 
 	private Iterable<Piece> row(int row)
 	{
-		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
+		List<Piece> pieces = new ArrayList<Game.Piece>(size);
 		for (int i = 0; i < size; i++) pieces.add(board[row][i]);
 		return pieces;
 	}
 
 	private Iterable<Piece> col(int col)
 	{
-		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
+		List<Piece> pieces = new ArrayList<Game.Piece>(size);
 		for (int i = 0; i < size; i++) pieces.add(board[i][col]);
 		return pieces;
 	}
 
 	private Iterable<Piece> diagonal(boolean positive)
 	{
-		List<Piece> pieces = Lists.newArrayListWithCapacity(size);
+		List<Piece> pieces = new ArrayList<Game.Piece>(size);
 		for (int i = 0; i < size; i++)
 		{
 			int j = positive ? i : size - i - 1;

@@ -49,6 +49,14 @@ function forwardAjaxResponse(xhr, request, context, callback)
 	if(xhr.status != 200)
 	{
 		context.log('Error serving Ajax request "' + request + '": HTTP status ' + xhr.status);
+		var err = context.root.appendElement('div');
+		err.class = 'error';
+		err.appendText('HTTP ' + xhr.status + ' serving request "' + request)
+
+		var stack = err.appendElement('div');
+		stack.class = 'stack';
+		stack.style['white-space'] = 'pre-wrap';
+		stack.appendText(xhr.responseXML ? xhr.responseXML : xhr.responseText);
 		return;
 	}
 

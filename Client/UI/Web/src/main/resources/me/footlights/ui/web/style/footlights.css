@@ -154,3 +154,18 @@ a:followed
 	background-color: black;
 	color: grey;
 }
+
+.error
+{
+	background: rgba(255, 201, 201, 0.8);
+	padding: 0.5em;
+}
+
+.error .stack
+{
+	font-family: "Ubuntu Mono";
+	white-space: pre-wrap;
+
+	border: 1px solid;
+	padding: 0.5em;
+}

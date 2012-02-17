@@ -296,7 +296,21 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 
 private[boot]
 object JARLoader {
-	def open(url:URL) = Option(new JARLoader((new JAROpener).open(url), url))
+	def open(url:URL) =
+		sudo { () => try {
+				makeJarUrl(url) openConnection match {
+					case c:java.net.JarURLConnection => Option(c.getJarFile)
+					case _ => None
+				}
+			} catch {
+				case e:IOException => None
+			}
+		} map {
+			new JARLoader(_, url)
+		}
+
+	private def makeJarUrl(url:URL) =
+		if (url.toExternalForm.startsWith("jar:")) url else new URL("jar:" + url + "!/")
 }
 
 }

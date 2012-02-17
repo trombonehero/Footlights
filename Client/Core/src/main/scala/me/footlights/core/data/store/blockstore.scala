@@ -245,22 +245,26 @@ class CASClient private(
 object CASClient {
 	def apply(prefs:Preferences, resolver:Resolver, cache:Option[LocalStore],
 			uploadSecret:Option[String] = None) = {
-		// A map of URLs for uploading and downloading CAS content.
-		//
-		// Building this map might mean retrieving default settings from footlights.me in
-		// the background, so we wrap the whole thing in a Future.
-		val urls = future {
-			val setupUrl = prefs getString PrefPrefix + "setup" map { new URL(_) }
 
+		// Asynchronously retrieve CAS configuration data from a (locally-configurable) URL.
+		val configData = future {
+			val setupUrl = prefs getString PrefPrefix + "setup" orElse {
+				Some("http://footlights.me/settings/cas.json")
+			} map { new URL(_) }
+
+			setupUrl foreach { log info "Retrieving CAS setup defaults from " + _ + "..." }
+			setupUrl flatMap { resolver fetchJSON }
+		}
+
+		// A map of URLs for uploading and downloading CAS content (asynchronous, in case we're
+		// not currently connected to the network).
+		val urls = future {
 			(List("uploadURL", "downloadURL") map { key =>
 				prefs getString PrefPrefix + key orElse {
-					setupUrl flatMap { url =>
-						log info "Retrieving CAS {up,down}load URLs from " + url + "..."
-						resolver fetchJSON url flatMap { _.get(key) } flatMap {
+					configData() flatMap { _.get(key) } flatMap {
 							case s:String => Option(s)
 							case _ => None
 						}
-					}
 				} map { url =>
 					log info key + ": " + url
 					(key, new URL(url))

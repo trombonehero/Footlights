@@ -125,11 +125,12 @@ h1, h2 { color: rgb(230, 221, 35); }
 	background: orange;
 }
 
-h1.main
+#banner
 {
-	float: right;
-	font-size: 150%;
-	margin-bottom: .25em;
+	position: fixed;
+	top: 0;
+
+	z-index: 1;
 }
 
 a

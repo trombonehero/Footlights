@@ -275,7 +275,9 @@ object CASClient {
 		// The key used to upload content. If None, we can still use the CASClient for downloading.
 		val uploadKey = uploadSecret orElse { prefs getString PrefPrefix + "secret" }
 
-		new CASClient(urls, uploadKey, resolver, cache)
+		val c = new CASClient(urls, uploadKey, resolver, cache)
+		me.footlights.core.Flusher(c).start
+		c
 	}
 
 	private val log = Logger.getLogger(classOf[CASClient].getCanonicalName)

@@ -266,7 +266,7 @@ object CASClient {
 							case _ => None
 						}
 				} map { url =>
-					log info key + ": " + url
+					log info classOf[CASClient].getSimpleName + " " + key + ": " + url
 					(key, new URL(url))
 				}
 			} flatten) toMap

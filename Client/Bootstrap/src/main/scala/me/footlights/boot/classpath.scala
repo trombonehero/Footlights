@@ -36,56 +36,38 @@ import Sudo.sudo
  *
  * @param parent            Parent ClassLoader.
  * @param classpath         The classpath (JAR or directory) that we are loading from
- * @param basePackage       The base package that we are responsible for. For instance,
+ * @param myBasePackage     The base package that we are responsible for. For instance,
  *                          if loading a plugin with packages com.foo.app and com.foo.support,
  *                          this parameter should be "com.foo".
  * @param depPaths          External classpaths (JAR files).
  * @param permissions       Permissions that should be granted to loaded classes.
  */
-class ClasspathLoader(parent:ClassLoader, classpath:Classpath, basePackage:String,
+class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:String,
 		depPaths:List[URL], permissions:PermissionCollection)
 	extends ClassLoader(parent) {
-
-	/** Classes that we've already loaded. */
-	private var loadedClasses = Map[String,Class[_]]()
-
-	/** Where we find our classes and resources (package name -> {@link Classpath}). */
-	private var classpaths = Map[String,Classpath]()
-	classpaths += (basePackage -> classpath)
-
-	/** External classpaths (which may not have been accessed yet). */
-	private var dependencies:Map[URL,Option[Classpath]] = depPaths map { (_,Option[Classpath](null)) } toMap
+	/**
+	 * Load a class, optionally short-circuiting the normal hierarchy.
+	 *
+	 * Unlike the usual model, we don't want the system ClassLoader to magically find classes
+	 * for us: if it's a core class, we want the common definition, otherwise we want every
+	 * sandboxed app to have its own version of everything (which can be thrown away easily).
+	 */
+	@throws(classOf[ClassNotFoundException])
+	protected[boot] override def loadClass(name:String) = loadClass(name, false)
 
 	@throws(classOf[ClassNotFoundException])
-	protected override def loadClass(name:String) = loadClass(name, false)
-
-	@throws(classOf[ClassNotFoundException])
-	protected override def loadClass(name:String, resolve:Boolean):Class[_] = synchronized {
-		if (name startsWith basePackage)
-			loadedClasses get name orElse {
-				classpathsFor(name) flatMap { _ readClass name } find { _ != None } map {
-					case Bytecode(bytes,source) =>
-						val domain = new ProtectionDomain(source, permissions)
-						defineClass(name, bytes, 0, bytes.length, domain)
-				} map { c =>
-					loadedClasses += (name -> c)
-					if (resolve) resolveClass(c)
-					c
-				}
+	protected override def loadClass(name:String, resolve:Boolean):Class[_] =
+		if (mustDeferToParent(name)) getParent loadClass name
+		else
+			findInClasspath(name) map { c =>
+				if (resolve) resolveClass(c)
+				c
 			} getOrElse { throw new ClassNotFoundException(name + " not in " + classpaths) }
-		else getParent.loadClass(name)
-	}
 
-	protected override def findClass(name:String):Class[_] =
-		throw new UnsupportedOperationException(
-			classOf[ClasspathLoader].getSimpleName + ".findClass('" + name + "')")
 
 	override def getResource(name:String) = findResource(name)
-	override def findResource(name:String) = {
-		classpath.url.toExternalForm match { case url =>
-			new URL(url + (if (!(url endsWith"/")) '/' else "") + name)
-		}
-	}
+	override def findResource(name:String) =
+		classpath.url.toExternalForm match { case url => new URL(ensureFinalSlash(url) + name) }
 
 	override def toString = {
 		classOf[ClasspathLoader].getSimpleName + " { " +
@@ -94,6 +76,20 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, basePackage:Strin
 			"permissions = " + permissions + ", " +
 			"dependencies = " + dependencies + " " +
 			"}"
+	}
+
+
+	/** Find a class within this classpath. */
+	private[boot] def findInClasspath(name:String):Option[Class[_]] = synchronized {
+		// Perhaps we've already loaded this class?
+		Option(findLoadedClass(name)) orElse {
+			// If not, search through the places that might contain it.
+			classpathsFor(name) flatMap { _ readClass name } find { _ != None } map {
+				case Bytecode(bytes,source) =>
+					val domain = new ProtectionDomain(source, permissions)
+					defineClass(name, bytes, 0, bytes.length, domain)
+			}
+		}
 	}
 
 
@@ -115,17 +111,39 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, basePackage:Strin
 
 		// As-yet-unloaded dependencies which might contain the class (lazily evaluated).
 		val unloadedDeps = (dependencies filter { _._2.isEmpty } keys).view flatMap { url =>
-			Classpath.open(url, packageName)
-		} map { cp =>
-			dependencies += (cp.url -> Some(cp))
+			val cp = Classpath.open(url, packageName)
+			dependencies += (url -> cp)
 			cp
-		} filter { _.readClass(className).isDefined } map { cp =>
+		} filter {
+			_.readClass(className).isDefined
+		} map { cp =>
 			classpaths += (packageName -> cp)
 			cp
 		}
 
 		knowns ++ loadedDeps ++ unloadedDeps
 	}
+
+	/** Should we defer to the parent {@link ClassLoader} for this class? */
+	private def mustDeferToParent(name:String) =
+		if (isCorePackage(myBasePackage)) !(name startsWith myBasePackage)
+		else isCorePackage(name)
+
+	/** Is the given class in a core library package (which we shouldn't try to load)? */
+	private def isCorePackage(className:String) =
+		List("java.", "javax.", "scala.",
+				"me.footlights.api", "me.footlights.core", "me.footlights.ui") exists className.startsWith
+
+	/** Ensure that a path finishes with a '/'. */
+	private def ensureFinalSlash(path:String) = path + (if (!(path endsWith"/")) '/' else "")
+
+
+	/** Where we find our classes and resources (package name -> {@link Classpath}). */
+	private var classpaths = Map[String,Classpath]()
+	classpaths += (myBasePackage -> classpath)
+
+	/** External classpaths (which may not have been accessed yet). */
+	private var dependencies:Map[URL,Option[Classpath]] = depPaths map { (_,Option[Classpath](null)) } toMap
 }
 
 object ClasspathLoader {
@@ -180,7 +198,7 @@ abstract class Classpath(val url:URL) {
 
 	protected def classPaths:List[String]
 	protected def makeDependencyURLs(paths:List[String]) =
-		paths filter { _.endsWith(".jar") } map { s => new URL("jar:" + s + "!/") }
+		paths filter { _.endsWith(".jar") } map { s => new URL("jar:file:" + s + "!/") }
 }
 
 private[boot]

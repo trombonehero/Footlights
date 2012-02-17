@@ -22,6 +22,8 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 
+import scala.Option;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
@@ -41,7 +43,11 @@ class FootlightsClassLoader extends ClassLoader
 	@Override protected synchronized Class<?> loadClass(String name, boolean resolve)
 		throws ClassNotFoundException
 	{
-		Class<?> c = findClass(name);
+		if (!(name.startsWith("me.footlights") || name.contains("!/")))
+			return getParent().loadClass(name);
+
+		Class<?> c = findLoadedClass(name);
+		if (c == null) c = findClass(name);
 		if (resolve) resolveClass(c);
 
 		return c;
@@ -107,31 +113,37 @@ class FootlightsClassLoader extends ClassLoader
 			}
 		}
 
-		// We must be loading a core Footlights class or a Java library class.
+		// We must be loading a core Footlights class.
 		if (!name.startsWith("me.footlights"))
-			return getParent().loadClass(name);
+			throw new IllegalArgumentException(
+					FootlightsClassLoader.class.getSimpleName() +
+					".findClass() is only used directly for loading core Footlights classes, not" +
+					name);
 
 		// Do we already know what classpath to find the class in?
 		String packageName = name.substring(0, name.lastIndexOf('.'));
-		ClassLoader packageLoader = knownPackages.get(packageName);
+		ClasspathLoader packageLoader = knownPackages.get(packageName);
 		if (packageLoader != null)
-			return packageLoader.loadClass(name);
+			return packageLoader.loadClass(name, true);
 
 		// Search known package sources.
 		for (String prefix : knownPackages.keySet())
 			if (packageName.startsWith(prefix))
-				return knownPackages.get(prefix).loadClass(name);
+			{
+				Option<Class<?>> c = knownPackages.get(prefix).findInClasspath(name);
+				if (c.isDefined()) return c.get();
+			}
 
 		// Fall back to exhaustive search of core classpaths.
 		for (URL url : classpaths)
-			try
-			{
-				ClasspathLoader loader = ClasspathLoader.create(this, url, packageName);
-				Class<?> c = loader.loadClass(name);
-				knownPackages.put(packageName, loader);
-				return c;
-			}
-			catch (ClassNotFoundException e) {}
+		{
+			ClasspathLoader loader = ClasspathLoader.create(this, url, packageName);
+			Option<Class<?>> c = loader.findInClasspath(name);
+			if (c.isEmpty()) continue;
+
+			knownPackages.put(packageName, loader);
+			return c.get();
+		}
 
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
 	}
@@ -141,5 +153,5 @@ class FootlightsClassLoader extends ClassLoader
 	private final Iterable<URL> classpaths;
 
 	/** Mapping of packages to classpaths. */
-	private final Map<String, ClassLoader> knownPackages;
+	private final Map<String, ClasspathLoader> knownPackages;
 }

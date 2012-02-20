@@ -139,7 +139,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 
 			"should be able to download a file" in {
 				prefs += DownloadUrl
-				try { cas get block.name should equal(block.getBytes) }
+				try { cas get block.name should equal(Some(block.getBytes)) }
 				catch {
 					case e:java.net.UnknownHostException =>
 						log.log(WARNING, "Failed to resolve CAS; connected to Internet?", e)

@@ -82,7 +82,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 		else cache.synchronized {
 			cache map { _.store(name, bytes.asReadOnlyBuffer) }
 			journal.synchronized { journal enqueue name }
-			cache.notify
+			synchronized { notify }
 		}
 	}
 

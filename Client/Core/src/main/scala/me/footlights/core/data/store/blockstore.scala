@@ -92,6 +92,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
 	 */
 	override def flush = if (cache != null) journal.synchronized {
+		log finer "Flushing Store: " + this
 		journal map { name =>
 			cache flatMap { _ get name } orElse {
 				log severe "Cache inconsistency: %s not in cache %s".format(name, this)

@@ -148,7 +148,7 @@ public class Block implements FootlightsPrimitive
 		short length = (short) keygen.getKeyLength();
 		byte[] hashBytes = fingerprint.copyBytes();
 		byte[] secret = new byte[length / 8];
-		System.arraycopy(secret, 0, hashBytes, 0, secret.length);
+		System.arraycopy(hashBytes, 0, secret, 0, secret.length);
 
 		SecretKey key = keygen
 				.setBytes(secret)

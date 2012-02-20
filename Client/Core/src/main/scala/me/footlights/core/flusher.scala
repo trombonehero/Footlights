@@ -44,19 +44,19 @@ object Flusher
 	private val log = java.util.logging.Logger.getLogger(Flusher.getClass().getCanonicalName())
 
 	def apply(f:Flushable) = new Flusher(
-			f.getClass().getSimpleName(),
-			() => f.flush(),
-			() => f.synchronized { f.wait() },
-			log)
+			name = f.getClass.getSimpleName,
+			flush = f.flush _,
+			wait = () => f.synchronized { f.wait },
+			log = log)
 
 	def apply(o:HasBytes, filename:java.io.File) = new Flusher(
-			o.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
-			() => {
 				val s = new FileOutputStream(filename)
 				s.getChannel().write(o.getBytes())
 				s.close()
+			name = o.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
+			flush = () => {
 			},
-			() => o.synchronized { o.wait() },
+			wait = () => o.synchronized { o.wait },
 			log)
 }
 

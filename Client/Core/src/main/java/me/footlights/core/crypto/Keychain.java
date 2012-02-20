@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 
 import com.google.common.collect.Maps;
 
@@ -250,23 +251,25 @@ public class Keychain implements HasBytes
 			throw new RuntimeException("Error creating KeyStore", e);
 		}
 
+		log.fine("Rebuilding keychain bytes");
 		for (Fingerprint fingerprint : privateKeys.keySet())
 		{
 			SigningIdentity identity = privateKeys.get(fingerprint);
 			PrivateKey key = identity.getPrivateKey();
 			Certificate certChain[] = { identity.getCertificate() };
 
-			store.setEntry(
-					"private:" + fingerprint.encode(),
-					new KeyStore.PrivateKeyEntry(key, certChain),
-					protection);
+			String name = "private:" + fingerprint.encode();
+			log.finer(name + " => " + key);
+			store.setEntry(name, new KeyStore.PrivateKeyEntry(key, certChain), protection);
 		}
 
 		for (Map.Entry<Fingerprint,SecretKey> secret : secretKeys.entrySet())
-			store.setEntry(
-					"secret:" + secret.getKey(),
-					new KeyStore.SecretKeyEntry(secret.getValue().keySpec),
-					protection);
+		{
+			String name = "secret:" + secret.getKey();
+			SecretKey key = secret.getValue();
+			log.finer(name + " => " + key);
+			store.setEntry(name, new KeyStore.SecretKeyEntry(key.keySpec), protection);
+		}
 
 		return store;
 	}
@@ -289,6 +292,8 @@ public class Keychain implements HasBytes
 	/** Retrieve the keystore password from somewhere trustworthy (the user?). */
 	private final String getPassword() { return "fubar"; }
 
+
+	private static final Logger log = Logger.getLogger(Keychain.class.getCanonicalName());
 
 	/** Separates the algorithm and hash in 'algorithm:hash'. */
 	private static final String	ALIAS_SEPARATOR  = ":";

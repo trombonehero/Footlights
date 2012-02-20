@@ -50,11 +50,15 @@ object Flusher
 			log = log)
 
 	def apply(o:HasBytes, filename:java.io.File) = new Flusher(
-				val s = new FileOutputStream(filename)
-				s.getChannel().write(o.getBytes())
-				s.close()
 			name = o.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
 			flush = () => {
+				val tmp = java.io.File.createTempFile("tmp-", "", filename.getParentFile)
+
+				val s = new FileOutputStream(tmp)
+				s.getChannel.write(o.getBytes)
+				s.close
+
+				tmp renameTo filename
 			},
 			wait = () => o.synchronized { o.wait },
 			log)

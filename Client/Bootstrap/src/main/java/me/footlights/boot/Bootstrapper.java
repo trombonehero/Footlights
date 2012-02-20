@@ -133,7 +133,7 @@ class Bootstrapper
 		// wait for the UI(s) to exit
 		for (Thread thread : uiThreads) 
 		{
-			log.info("Waiting for " + thread.getName() + " to end");
+			log.fine("Waiting for " + thread.getName() + " to end");
 			thread.join();
 		}
 

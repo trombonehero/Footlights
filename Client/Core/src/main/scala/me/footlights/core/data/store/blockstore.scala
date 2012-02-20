@@ -46,7 +46,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	def store(blocks:Iterable[EncryptedBlock]): Unit = blocks foreach { store(_) }
 
 	def retrieve(name:Fingerprint):Option[ByteBuffer] =
-		cache map { _ retrieve name } getOrElse { get(name) }
+		cache flatMap { _ retrieve name } orElse { get(name) }
 
 	def retrieveCiphertext(link:Link) = retrieve(link.fingerprint) map {
 		EncryptedBlock.newBuilder()

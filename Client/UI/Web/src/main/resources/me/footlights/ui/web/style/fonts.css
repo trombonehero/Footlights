@@ -1,0 +1,23 @@
+@font-face
+{
+	font-family: 'Abel';
+	font-style: normal;
+	font-weight: normal;
+	src: url('../fonts/Abel-Regular.ttf') format('truetype');
+}
+
+@font-face
+{
+	font-family: 'Gudea';
+	font-style: normal;
+	font-weight: 400;
+	src: url('../fonts/Gudea-Regular.ttf') format('truetype');
+}
+
+@font-face
+{
+	font-family: 'Ubuntu Mono';
+	font-style: normal;
+	font-weight: normal;
+	src: url('../fonts/UbuntuMono-Regular.ttf') format('truetype');
+}

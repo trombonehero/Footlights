@@ -149,7 +149,14 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 	}
 
 	/** Generate a new {@link CASClient} on demand to test. */
-	private def cas = CASClient(Preferences.wrap(prefs), resolver, cache)
+	private def cas:CASClient = {
+		def uploadUrl() = prefs get UploadUrl._1 map { new URL(_) }
+		def downloadUrl(f:Fingerprint) =
+			prefs get DownloadUrl._1 map { base =>
+				new URL(base + "/" + java.net.URLEncoder.encode(f.encode)) }
+
+		new CASClient(downloadUrl, uploadUrl, Option(SharedSecret), resolver, cache);
+	}
 
 
 	/** A fairly trivial (but deterministic) {@link Block} for testing purposes. */

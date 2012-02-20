@@ -127,9 +127,9 @@ class MemoryStore extends LocalStore {
 
 
 /** A client for the Footlights Content-Addressible Store (CAS). */
-class CASClient private(
-		urls:Future[Map[String,URL]], uploadKey:Option[String], resolver:Resolver,
-		cache:Option[LocalStore])
+class CASClient private[store](
+		downloadUrl:Fingerprint => Option[URL], uploadUrl:() => Option[URL],
+		uploadKey:Option[String], resolver:Resolver, cache:Option[LocalStore])
 	extends Store(cache) {
 
 	override protected[store] def get(name:Fingerprint) = {
@@ -152,7 +152,6 @@ class CASClient private(
 
 	override protected[store] def put(name:Fingerprint, bytes:ByteBuffer) = {
 		if (uploadKey.isEmpty) throw new IOException("No upload key set")
-		if (uploadUrl.isEmpty) throw new IOException("Upload URL not set")
 
 		val textFields = Map("AUTHENTICATOR" -> uploadKey.get, "EXPECTED_NAME" -> name.encode)
 		val files = Map("upload" -> bytes)
@@ -161,7 +160,7 @@ class CASClient private(
 		val boundary = "CASClientMIMEBoundary"
 		val boundaryLine = "--" + boundary
 
-		val c = uploadUrl.get.openConnection
+		val c = (uploadUrl() getOrElse { throw new IOException("No upload URL") }).openConnection
 		c setDoInput true
 		c setDoOutput true
 		c.setRequestProperty("Content-Type",
@@ -241,13 +240,6 @@ class CASClient private(
 		}
 	}
 
-	private def downloadUrl(name:Fingerprint) =
-		urls() get "downloadURL" map { base =>
-			new URL(base + "/" + URLEncoder.encode(name.encode, "utf-8"))
-		}
-
-	private def uploadUrl = urls() get "uploadURL"
-
 	private val log = CASClient.log
 }
 
@@ -282,10 +274,16 @@ object CASClient {
 			} flatten) toMap
 		}
 
+		def uploadUrl() = urls() get "uploadURL"
+		def downloadUrl(name:Fingerprint) =
+			urls() get "downloadURL" map { base =>
+				new URL(base + "/" + URLEncoder.encode(name.encode, "utf-8")) }
+
+
 		// The key used to upload content. If None, we can still use the CASClient for downloading.
 		val uploadKey = uploadSecret orElse { prefs getString PrefPrefix + "secret" }
 
-		val c = new CASClient(urls, uploadKey, resolver, cache)
+		val c = new CASClient(downloadUrl, uploadUrl, uploadKey, resolver, cache)
 		me.footlights.core.Flusher(c).start
 		c
 	}

@@ -86,16 +86,15 @@ object Kernel {
 
 		val keychain = Keychain create
 		val keychainFile = prefs getString { FileBackedPreferences.KEYCHAIN_KEY } map {
-			new java.io.File(_) } filter { _.exists }
+			new java.io.File(_) } get
 
-		if (keychainFile isDefined) {
-			try { keychain.importKeystoreFile(new FileInputStream(keychainFile get)) }
+		if (keychainFile.exists) {
+			try { keychain.importKeystoreFile(new FileInputStream(keychainFile)) }
 			catch {
 				case e:Exception => log.log(Level.SEVERE, "Error loading keychain", e)
 			}
-
-			Flusher(keychain, keychainFile get) start
 		}
+		Flusher(keychain, keychainFile) start
 
 		val apps = new mutable.HashMap[URI,AppWrapper]
 		val uis = new mutable.HashSet[UI]

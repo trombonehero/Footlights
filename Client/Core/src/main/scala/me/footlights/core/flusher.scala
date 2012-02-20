@@ -25,7 +25,7 @@ import data.File
 
 /** An object which periodically writes data to disk, the network, etc. */
 class Flusher(name:String, flush:()=>Unit, wait:()=>Unit, log:java.util.logging.Logger)
-	extends Thread(name)
+	extends Thread("%s: %s" format (classOf[Flusher].getSimpleName, name))
 {
 	override def run() =
 		try {

@@ -106,7 +106,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 		}
 		journal retain unflushed.contains
 
-		if (!journal.isEmpty) log info "Unable to flush %d blocks".format(journal size)
+		if (!journal.isEmpty) log info "%s unable to flush %d blocks".format(this, journal size)
 	}
 
 	private val journal = collection.mutable.Set[Fingerprint]()

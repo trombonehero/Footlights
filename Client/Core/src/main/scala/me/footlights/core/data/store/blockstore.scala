@@ -66,11 +66,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	/** Retrieve a stored (and encrypted) {@link File}. */
 	def fetch(link:Link):Option[File] = {
 		val encryptedHeader = retrieveCiphertext(link)
-		encryptedHeader map { _.plaintext } map { header => {
-				val blocks = header.links map retrieveCiphertext flatten
-				val f = File.from(encryptedHeader.get, blocks)
-				f
-			}
+		encryptedHeader map { _.plaintext } map {
+			_.links map retrieveCiphertext
+		} filter { _.size > 0 } filter { _ forall { _.isDefined } } map { _.flatten } map {
+			File.from(encryptedHeader.get, _)
 		}
 	}
 

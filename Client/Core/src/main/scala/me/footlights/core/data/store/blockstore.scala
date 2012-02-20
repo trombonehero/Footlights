@@ -17,6 +17,7 @@ import java.io.{IOException,PrintWriter}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.net.{HttpURLConnection,MalformedURLException,URL,URLConnection,URLEncoder}
+import java.util.logging.Level._
 import java.util.logging.Logger
 
 import scala.actors.Future
@@ -131,24 +132,12 @@ class CASClient private(
 
 	override protected[store] def get(name:Fingerprint) = {
 		downloadUrl(name) flatMap { _.openConnection match {
-				case http:HttpURLConnection =>
-					http.getResponseCode match {
-						case 200 =>
-							if (!http.getContentType.equals("application/octet-stream"))
-								throw new IOException("Unknown mime-type: " + http.getContentType)
-							Option(http)
-
-						case 404 => None
-						case 410 => None
-						case other =>
-							log severe "Unknown CAS HTTP response code: " + other
-							None
-					}
+				case http:HttpURLConnection => Option(http)
 				case _ =>
 					log severe "Non-HTTP response for block " + name
 					None
 			}
-		} map { connection =>
+		} filter validHttpResponse map { connection =>
 			val buffer = ByteBuffer allocate connection.getContentLength
 			val channel = Channels newChannel connection.getInputStream
 
@@ -229,6 +218,27 @@ class CASClient private(
 		}
 	}
 
+
+	private def validHttpResponse(http:HttpURLConnection) = {
+		try {
+			http.getResponseCode match {
+				case 200 =>
+					if (!http.getContentType.equals("application/octet-stream"))
+						throw new IOException("Unknown mime-type: " + http.getContentType)
+					true
+
+				case 404 => false
+				case 410 => false
+				case other =>
+					log severe "Unknown CAS HTTP response code: " + other
+					false
+			}
+		} catch {
+			case e:javax.net.ssl.SSLKeyException =>
+				log.log(SEVERE, "SSL error connecting to CAS", e)
+				false
+		}
+	}
 
 	private def downloadUrl(name:Fingerprint) =
 		urls() get "downloadURL" map { base =>

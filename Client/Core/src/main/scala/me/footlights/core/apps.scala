@@ -94,9 +94,7 @@ trait Applications extends Footlights {
 				map.put(key, value)
 
 				// Save updated preferences to the Store.
-				val saved = save(Preferences.encode(map)) map {
-					case f:data.File => f
-				}
+				val saved = save(Preferences.encode(map)) map { case f:data.File => f }
 				if (saved.isEmpty) log warning "Failed to save preferences for '" + appName + "'"
 
 				// Save the link to the updated preferences.

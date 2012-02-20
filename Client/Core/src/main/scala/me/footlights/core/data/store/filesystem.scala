@@ -42,7 +42,7 @@ trait Filesystem extends Footlights {
 			catch {
 				case e:NoSuchElementException => None
 			}
-		} flatMap { store.fetch }
+		} flatMap store.fetch
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
 	override def save(data:ByteBuffer):Option[api.File] = {

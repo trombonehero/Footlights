@@ -143,7 +143,7 @@ public class DiskStore extends LocalStore
 				return Option.apply(buffer.asReadOnlyBuffer());
 			}
 		}
-		catch(FileNotFoundException e) {}
+		catch(FileNotFoundException e) { log.log(Level.FINE, "Missing block", e); }
 		catch(FormatException e) { log.log(Level.WARNING, "Mangled block", e); }
 		catch(IOException e) { log.log(Level.WARNING, "Error reading file", e); }
 

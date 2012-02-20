@@ -36,13 +36,17 @@ trait Filesystem extends Footlights {
 	protected def store:Store
 
 	/** Open a file, named by its content, e.g. "sha-256:0123456789abcdef01234...". */
-	override def open(name:String):Option[api.File] =
+	override def open(name:String):Option[api.File] = {
+		log fine { "open('%s')" format name }
 		Option(Fingerprint decode name) flatMap { fingerprint =>
 			try { Option(keychain getLink fingerprint) }
 			catch {
-				case e:NoSuchElementException => None
+				case e:NoSuchElementException =>
+					log warning "No key stored for file " + name
+					None
 			}
 		} flatMap store.fetch
+	}
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
 	override def save(data:ByteBuffer):Option[api.File] = {
@@ -53,6 +57,8 @@ trait Filesystem extends Footlights {
 
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks
+
+	private val log = java.util.logging.Logger getLogger classOf[Filesystem].getCanonicalName
 }
 
 class Stat(val name: Fingerprint, val length: Long)

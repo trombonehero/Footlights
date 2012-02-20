@@ -167,7 +167,6 @@ class CASClient private(
 
 		val out = c.getOutputStream
 		val writer = new PrintWriter(out, true)
-//		val binaryChannel = Channels newChannel out
 
 		textFields foreach { case (key, value) =>
 			List(

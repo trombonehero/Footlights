@@ -263,7 +263,7 @@ object CASClient {
 		val urls = future {
 			(List("uploadURL", "downloadURL") map { key =>
 				prefs getString PrefPrefix + key orElse {
-					configData() flatMap { _.get(key) } flatMap {
+					configData() flatMap { _ get key } flatMap {
 							case s:String => Option(s)
 							case _ => None
 						}

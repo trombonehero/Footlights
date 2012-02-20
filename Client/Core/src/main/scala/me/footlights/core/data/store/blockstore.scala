@@ -95,7 +95,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 		log finer "Flushing %d blocks in %s".format (journal.size, this)
 
 		var unflushed = journal flatMap { name =>
-			cache flatMap { _ get name orElse {
+			cache flatMap { _ retrieve name orElse {
 					log severe "Cache inconsistency: %s not in cache %s".format(name, cache)
 					None
 				}

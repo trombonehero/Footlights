@@ -29,8 +29,6 @@ package me.footlights.boot {
 
 private case class Bytecode(bytes:Array[Byte], source:CodeSource)
 
-import Sudo.sudo
-
 /**
  * Loads classes and resources from a single classpath.
  *
@@ -84,7 +82,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 		// Perhaps we've already loaded this class?
 		Option(findLoadedClass(name)) orElse {
 			// If not, search through the places that might contain it.
-			classpathsFor(name) flatMap { _ readClass name } find { _ != None } map {
+			classpathsFor(name) flatMap { classpath =>
+				sudo { () => classpath readClass name }
+			} find { _ != None } map {
 				case Bytecode(bytes,source) =>
 					val domain = new ProtectionDomain(source, permissions)
 					defineClass(name, bytes, 0, bytes.length, domain)
@@ -111,7 +111,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 
 		// As-yet-unloaded dependencies which might contain the class (lazily evaluated).
 		val unloadedDeps = (dependencies filter { _._2.isEmpty } keys).view flatMap { url =>
-			val cp = Classpath.open(url, packageName)
+			val cp = sudo { () => Classpath.open(url, packageName) }
 			dependencies += (url -> cp)
 			cp
 		} filter {
@@ -137,6 +137,23 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 	/** Ensure that a path finishes with a '/'. */
 	private def ensureFinalSlash(path:String) = path + (if (!(path endsWith"/")) '/' else "")
 
+
+	/**
+	 * Execute a function with JVM privilege (using {@link AccessController}).
+	 *
+	 * The name "sudo" is meant to be evocative of privilege in general;
+	 * it does not refer specifically to system privilege as conferred by sudo(8).
+	 *
+	 * This is, unfortunately, duplicate code (as in "copy-and-paste"), but it should go away
+	 * once we load the Scala libraries with the same privilege as core Java libraries.
+	 */
+	private def sudo[T](code:() => T):T =
+		try java.security.AccessController.doPrivileged[T] {
+			new java.security.PrivilegedExceptionAction[T]() { override def run:T = code() }
+		}
+		catch {
+			case e:java.security.PrivilegedActionException => throw e getCause
+		}
 
 	/** Where we find our classes and resources (package name -> {@link Classpath}). */
 	private var classpaths = Map[String,Classpath]()
@@ -166,9 +183,7 @@ object ClasspathLoader {
 			else new FilePermission(path.toExternalForm, "read")
 		}
 
-		sudo { () =>
-			new ClasspathLoader(parent, classpath, basePackage, classpath.dependencies, permissions)
-		}
+		new ClasspathLoader(parent, classpath, basePackage, classpath.dependencies, permissions)
 	}
 
 
@@ -226,7 +241,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 	/** Open a file within the current classpath. */
 	private def open(path:List[String], extension:String) =
 		new File((dirName :: path).reduceLeft(_ + pathSep + _) + "." + extension) match {
-			case f:File if sudo { f.exists } => Option(f)
+			case f:File if f.exists => Option(f)
 			case _ => None
 		}
 
@@ -237,12 +252,12 @@ class FileLoader(url:URL) extends Classpath(url) {
 	 * in the range [129 B, 52 kB].
 	 */
 	private def read(file:File) = {
-		val bytes = new Array[Byte](sudo { file.length } toInt)
-		val stream = sudo { () => new FileInputStream(file) }
+		val bytes = new Array[Byte](file.length toInt)
+		val stream = new FileInputStream(file)
 
 		var offset = 0
 		while (offset < bytes.length)
-			offset += sudo { () => stream.read(bytes, offset, bytes.length - offset) }
+			offset += stream.read(bytes, offset, bytes.length - offset)
 		stream.close
 
 		bytes
@@ -251,8 +266,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 	/** The directory underneath which the classes are stored. */
 	private val dirName = url.getFile
 	private val dir = new java.io.File(dirName)
-	if (!sudo { dir.exists })
-		throw new java.io.FileNotFoundException("No such classpath '" + url + "'");
+	if (!dir.exists) throw new java.io.FileNotFoundException("No such classpath '" + url + "'");
 
 	/** Path component separator ('/' on UNIX, '\' on Windows). */
 	private val pathSep = File.separatorChar.toString
@@ -314,7 +328,8 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 private[boot]
 object JARLoader {
 	def open(url:URL) =
-		sudo { () => try {
+		{
+			try {
 				makeJarUrl(url) openConnection match {
 					case c:java.net.JarURLConnection => Option(c.getJarFile)
 					case _ => None

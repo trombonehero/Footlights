@@ -82,7 +82,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 		if (cache.isEmpty) put(name, bytes.asReadOnlyBuffer)
 		else cache.synchronized {
 			cache map { _.store(name, bytes.asReadOnlyBuffer) }
-			journal.synchronized { journal enqueue name }
+			journal.synchronized { journal add name }
 			synchronized { notify }
 		}
 	}
@@ -92,20 +92,24 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
 	 */
 	override def flush = if (cache != null) journal.synchronized {
-		log finer "Flushing Store: " + this
-		journal map { name =>
+		log finer "Flushing %d blocks in %s".format (journal.size, this)
+
+		var unflushed = journal flatMap { name =>
 			cache flatMap { _ get name orElse {
 					log severe "Cache inconsistency: %s not in cache %s".format(name, cache)
 					None
 				}
-			} foreach {
-				block => put(name, block)
-				journal.dequeue
+			} flatMap { bytes =>
+				try { put(name, bytes); None }
+				catch { case e:IOException => Option(name) }
 			}
 		}
+		journal retain unflushed.contains
+
+		if (!journal.isEmpty) log info "Unable to flush %d blocks".format(journal size)
 	}
 
-	private val journal = collection.mutable.Queue[Fingerprint]()
+	private val journal = collection.mutable.Set[Fingerprint]()
 	private val log = java.util.logging.Logger getLogger classOf[Store].getCanonicalName
 }
 

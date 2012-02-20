@@ -136,6 +136,8 @@ class CASClient private[store](
 		uploadKey:Option[String], resolver:Resolver, cache:Option[LocalStore])
 	extends Store(cache) {
 
+	override def toString() = "CASClient { }" format uploadUrl()
+
 	override protected[store] def get(name:Fingerprint) = {
 		downloadUrl(name) flatMap { _.openConnection match {
 				case http:HttpURLConnection => Option(http)

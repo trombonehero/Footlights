@@ -66,8 +66,12 @@ abstract class Kernel(
 	protected val store = CASClient(Preferences(prefs), resolver, Option(cache))    // TODO: don't wrap?
 
 	/** Read {@link Preferences} from a file. */
-	protected def readPrefs(filename:String) =
+	protected def readPrefs(filename:String) = {
+		log info ("Reading preferences: %s" format filename)
 		open(filename) map { case file:data.File => Map() ++ Preferences.parse(file.getContents) }
+	}
+
+	private val log = Logger getLogger classOf[Kernel].getCanonicalName
 }
 
 

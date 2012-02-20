@@ -216,11 +216,10 @@ object Classpath {
 private[boot]
 class FileLoader(url:URL) extends Classpath(url) {
 	/** Read a class from this filesystem hierarchy. */
-	override def readClass(className:String) = {
+	override def readClass(className:String) =
 		open(className.split("\\.").toList, "class") map read map {
 			Bytecode(_, new CodeSource(url, new Array[CodeSigner](0)))
 		}
-	}
 
 	override val toString = "FileLoader { %s }" format url
 
@@ -323,9 +322,7 @@ object JARLoader {
 			} catch {
 				case e:IOException => None
 			}
-		} map {
-			new JARLoader(_, url)
-		}
+		} map { new JARLoader(_, url) }
 
 	private def makeJarUrl(url:URL) =
 		if (url.toExternalForm.startsWith("jar:")) url else new URL("jar:" + url + "!/")

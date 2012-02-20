@@ -150,6 +150,8 @@ public class DiskStore extends LocalStore
 		return Option.apply(null);
 	}
 
+	@Override public String toString() { return "DiskStore { " + dir + " }"; }
+
 
 	/** The largest block file that we will open - positive 2s-complement. */
 	private static int MAX_FILE_SIZE = 0x7FFFFFFF;

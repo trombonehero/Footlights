@@ -55,12 +55,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 	@throws(classOf[ClassNotFoundException])
 	protected override def loadClass(name:String, resolve:Boolean):Class[_] =
-		if (mustDeferToParent(name)) getParent loadClass name
-		else
-			findInClasspath(name) map { c =>
-				if (resolve) resolveClass(c)
-				c
-			} getOrElse { throw new ClassNotFoundException(name + " not in " + classpaths) }
+		attemptLoadingClass(name, resolve) getOrElse {
+			throw new ClassNotFoundException(name + " not in " + classpaths)
+		}
 
 
 	override def getResource(name:String) = findResource(name)
@@ -76,6 +73,15 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 			"}"
 	}
 
+
+	/** Try to load a class. */
+	private def attemptLoadingClass(name:String, resolve:Boolean):Option[Class[_]] =
+		if (mustDeferToParent(name)) Some(getParent loadClass name)     // literal null is ok
+		else
+			findInClasspath(name) map { c =>
+				if (resolve) resolveClass(c)
+				c
+			}
 
 	/** Find a class within this classpath. */
 	private[boot] def findInClasspath(name:String):Option[Class[_]] = synchronized {

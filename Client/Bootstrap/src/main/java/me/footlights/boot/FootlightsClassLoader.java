@@ -17,9 +17,6 @@ package me.footlights.boot;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 
 import scala.Option;
@@ -103,40 +100,8 @@ class FootlightsClassLoader extends ClassLoader
 	Class<?> loadApplication(final URL classpath, final String className)
 			throws ClassNotFoundException
 	{
-		final String packageName = className.substring(0, className.lastIndexOf("."));
-		final ClasspathLoader loader;
-
-		try
-		{
-			loader = AccessController.doPrivileged(
-				new PrivilegedExceptionAction<ClasspathLoader>()
-				{
-					@Override public ClasspathLoader run() throws Exception
-					{
-						return ClasspathLoader.create(
-								FootlightsClassLoader.this, classpath, packageName);
-					}
-				});
-		}
-		catch (PrivilegedActionException e)
-		{
-			throw new ClassNotFoundException("Unable to load classpath: " + classpath, e);
-		}
-
-		try
-		{
-			return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>()
-				{
-					@Override public Class<?> run() throws Exception
-					{
-						return loader.loadClass(className);
-					}
-				});
-		}
-		catch (PrivilegedActionException e)
-		{
-			throw new ClassNotFoundException("Unable to load " + className, e);
-		}
+		String packageName = className.substring(0, className.lastIndexOf("."));
+		return ClasspathLoader.create(this, classpath, packageName).loadClass(className);
 	}
 
 	/** Where we can find core classes. */

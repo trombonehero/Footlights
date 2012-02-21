@@ -41,7 +41,7 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  * @param permissions       Permissions that should be granted to loaded classes.
  */
 class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:String,
-		depPaths:List[URL], permissions:PermissionCollection)
+		depPaths:Iterable[URL], permissions:PermissionCollection)
 	extends ClassLoader(parent) {
 	/**
 	 * Load a class, optionally short-circuiting the normal hierarchy.

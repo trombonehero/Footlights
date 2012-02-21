@@ -15,7 +15,7 @@
  */
 import java.io.{ByteArrayOutputStream, IOException}
 import java.nio.ByteBuffer
-import java.net.URI
+import java.net.{URI,URL}
 import java.util.logging.{Level, Logger}
 
 import scala.collection.JavaConversions._
@@ -47,24 +47,21 @@ trait Applications extends Footlights {
 	override def loadApplication(name:String, uri:URI) =
 		loadedApps get(uri) getOrElse {
 			val prefs = appPreferences(name)
-			val c = appLoader.loadClass(uri.toString)
-			val init = c.getMethod("init",
-					classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
 
-			val app = try {
-				init.invoke(null, this, prefs, Logger.getLogger(uri.toString())) match {
-					case a:Application => a
-					case o:Object => throw new ClassCastException(
-							name + ".init() returned non-application '" + o + "'")
+			parseApplicationUri(uri) flatMap loadAppClass flatMap findInit map { init =>
+				try { init.invoke(null, this, prefs, Logger.getLogger(name)) match {
+						case a:Application => a
+						case o:Object => throw new ClassCastException(
+								name + ".init() returned non-application '" + o + "'")
+					}
+				} catch {
+					case e:Throwable => throw new AppStartupException(uri, e)
 				}
-			} catch {
-				case e:Throwable => throw new AppStartupException(uri, e)
-			}
-
-			val wrapper = new AppWrapper(name, uri, app)
-			loadedApps.put(uri, wrapper)
-
-			wrapper
+			} map { app =>
+				val wrapper = new AppWrapper(name, uri, app)
+				loadedApps.put(uri, wrapper)
+				wrapper
+			} get
 		}
 
 	override def unloadApplication(app:AppWrapper) =
@@ -108,6 +105,63 @@ trait Applications extends Footlights {
 			}
 		}
 	}
+
+
+	/**
+	 * Split an application URI into a classpath URL and a class name to run.
+	 *
+	 * TODO: in the future, this will become unnecessary, as we will use manifest information from
+	 * the app's classpath to determine where we should start running.
+	 */
+	private def parseApplicationUri(uri:URI) =
+		uri.toString split "!/" match {
+			case Array(url:String, className:String) =>
+				val classpath = new URL(
+						if (url startsWith "jar") url + "!/"
+						else url
+					)
+
+				Some((classpath, className))
+
+			case _ => None
+		}
+
+	/** Load an application's main class from a given classpath. */
+	private def loadAppClass(classData:(URL,String)):Option[Class[_]] = classData match {
+		case (classpath:URL, className:String) =>
+			(try { loadApplicationMethod.invoke(appLoader, classpath, className) }
+			catch {
+				case t:Throwable => throw new AppStartupException(classpath.toURI, t)
+			}) match {
+				case c:Class[_] => Option(c)
+				case a:Any =>
+					throw new AppStartupException(classpath.toURI,
+							new IllegalArgumentException("%s returned '%s', not a Class" format (
+									loadApplicationMethod.getName, a))
+						)
+			}
+	}
+
+	/** Find the "init" method for an application's main class. */
+	private def findInit(c:Class[_]) =
+		try {
+			Some(c.getMethod("init",
+				classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
+			)
+		} catch {
+			case t:Throwable => None
+		}
+
+	/**
+	 * The method provided by the lower-level {@link ClassLoader} which actually loads applications.
+	 *
+	 * This will only succeed if we are running with appropriate JVM privileges (which we should,
+	 * since this is part of {@link Kernel} initialization).
+	 */
+	private val loadApplicationMethod = appLoader.getClass.getDeclaredMethod(
+			"loadApplication", classOf[URL], classOf[String])
+
+	loadApplicationMethod.setAccessible(true)
 
 	private val log = Logger getLogger { classOf[Applications] getCanonicalName }
 }

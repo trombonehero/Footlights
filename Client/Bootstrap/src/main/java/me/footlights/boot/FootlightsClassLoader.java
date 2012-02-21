@@ -58,61 +58,6 @@ class FootlightsClassLoader extends ClassLoader
 	@Override protected synchronized Class<?> findClass(String name)
 		throws ClassNotFoundException
 	{
-		// If the "class name" is very specially encoded, we actually want to load a plugin.
-		if (name.contains("!/"))
-		{
-			String[] tokens = name.split("!/");
-			if (tokens.length != 2)
-				throw new ClassNotFoundException("Invalid class name: '" + name + "'");
-
-			final URL classpath;
-			try
-			{
-				if (tokens[0].startsWith("jar")) classpath = new URL(tokens[0] + "!/");
-				else classpath = new URL(tokens[0]);
-			}
-			catch (MalformedURLException e)
-			{
-				throw new ClassNotFoundException("Invalid classpath: " + tokens[0], e);
-			}
-
-			final String className = tokens[1];
-			final String packageName = className.substring(0, className.lastIndexOf("."));
-			final ClasspathLoader loader;
-
-			try
-			{
-				loader = AccessController.doPrivileged(
-					new PrivilegedExceptionAction<ClasspathLoader>()
-					{
-						@Override public ClasspathLoader run() throws Exception
-						{
-							return ClasspathLoader.create(
-									FootlightsClassLoader.this, classpath, packageName);
-						}
-					});
-			}
-			catch (PrivilegedActionException e)
-			{
-				throw new ClassNotFoundException("Unable to load classpath: " + classpath, e);
-			}
-
-			try
-			{
-				return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>()
-					{
-						@Override public Class<?> run() throws Exception
-						{
-							return loader.loadClass(className);
-						}
-					});
-			}
-			catch (PrivilegedActionException e)
-			{
-				throw new ClassNotFoundException("Unable to load " + className, e);
-			}
-		}
-
 		// We must be loading a core Footlights class.
 		if (!name.startsWith("me.footlights"))
 			throw new IllegalArgumentException(
@@ -148,6 +93,51 @@ class FootlightsClassLoader extends ClassLoader
 		throw new ClassNotFoundException("No " + name + " in " + classpaths);
 	}
 
+
+	/**
+	 * Load an unprivileged application.
+	 *
+	 * In the future, we will simply specify a class path and let the manifest tell us what
+	 * class to execute. In the meantime, however, we want to be minimally disruptive.
+	 */
+	Class<?> loadApplication(final URL classpath, final String className)
+			throws ClassNotFoundException
+	{
+		final String packageName = className.substring(0, className.lastIndexOf("."));
+		final ClasspathLoader loader;
+
+		try
+		{
+			loader = AccessController.doPrivileged(
+				new PrivilegedExceptionAction<ClasspathLoader>()
+				{
+					@Override public ClasspathLoader run() throws Exception
+					{
+						return ClasspathLoader.create(
+								FootlightsClassLoader.this, classpath, packageName);
+					}
+				});
+		}
+		catch (PrivilegedActionException e)
+		{
+			throw new ClassNotFoundException("Unable to load classpath: " + classpath, e);
+		}
+
+		try
+		{
+			return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>()
+				{
+					@Override public Class<?> run() throws Exception
+					{
+						return loader.loadClass(className);
+					}
+				});
+		}
+		catch (PrivilegedActionException e)
+		{
+			throw new ClassNotFoundException("Unable to load " + className, e);
+		}
+	}
 
 	/** Where we can find core classes. */
 	private final Iterable<URL> classpaths;

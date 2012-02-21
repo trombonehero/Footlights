@@ -36,7 +36,7 @@ package me.footlights.boot {
 @RunWith(classOf[JUnitRunner])
 class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 
-	var loader:ClassLoader = _
+	var loader:FootlightsClassLoader = _
 
 	// Classes loaded by the ClassLoader under test.
 	var core:Class[_] = _
@@ -93,17 +93,12 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 				}
 
 				"should be able to load a second instance of the same app." in {
-					val c = loader loadClass BasicDemo.uri
+					val c = loader loadApplication (BasicDemo.classPath, BasicDemo.className)
 					c should not equal good
 				}
 			}
 
 			"malicious app, " - {
-				"should prevent the app from loading other apps' classes." in
-					intercept[ClassNotFoundException] {
-						evil.getClassLoader loadClass BasicDemo.className
-					}
-
 				"should prevent the app from loading unauthorized resources." in
 					intercept[java.io.FileNotFoundException] {
 						evil.getClassLoader getResource BasicDemo.classFile openStream
@@ -115,8 +110,8 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 	before {
 		loader = new FootlightsClassLoader(coreClasspaths map localPath map { new URL(_) } toSeq)
 		core = loader loadClass CoreClassName
-		good = loader loadClass BasicDemo.uri
-		evil = loader loadClass WickedDemo.uri
+		good = loader loadApplication (BasicDemo.classPath, BasicDemo.className)
+		evil = loader loadApplication (WickedDemo.classPath, WickedDemo.className)
 	}
 
 
@@ -156,12 +151,12 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 	/** Class and path information for a Footlights application. */
 	case class App(projectDir:String, projectName:String, className:String) {
 		val classFile = className.replaceAll("\\.", "/") + ".class"
-		val uri =
+		val classPath =
 			coreClasspaths find { _ contains "Bootstrap" } map {
 				_.replaceFirst("Bootstrap/.*", "Demos/")
 			} map {
-				_ + projectDir + "/target/" + projectName + "-HEAD.jar!/" + className
-			} map localPath get
+				_ + projectDir + "/target/" + projectName + "-HEAD.jar"
+			} map localPath map { new URL(_) } get
 	}
 
 

@@ -285,18 +285,17 @@ class FileLoader(url:URL) extends Classpath(url) {
 
 	/** Calculate the JAR files which we are depending on. */
 	override val classPaths =
-		open("META-INF" :: "MANIFEST" :: Nil, "MF") map read map { new String(_) } map { s=> {
+		open("META-INF" :: "MANIFEST" :: Nil, "MF") map read map { new String(_) } map { s =>
 				// Find the classpath line in the manifest file.
 				val target = "Class-Path: "
-				((s.indexOf(target) + target.length) match {
+				(s indexOf target + target.length) match {
 					case begin:Int if begin >= target.length =>
 						(s.indexOf('\n', begin) match {
 							case end:Int if end > 0 => s.substring(begin, end)
 							case _ => s.substring(begin)
 						}).split(" ").toList  // Split into class paths.
 					case _ => Nil
-				})
-			}
+				}
 		} getOrElse Nil
 }
 

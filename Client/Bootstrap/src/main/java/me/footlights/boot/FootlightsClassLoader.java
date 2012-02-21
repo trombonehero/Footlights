@@ -107,6 +107,6 @@ class FootlightsClassLoader extends ClassLoader
 	/** Where we can find core classes. */
 	private final Iterable<URL> classpaths;
 
-	/** Mapping of packages to classpaths. */
+	/** Mapping of (core) packages to classpaths. */
 	private final Map<String, ClasspathLoader> knownPackages;
 }

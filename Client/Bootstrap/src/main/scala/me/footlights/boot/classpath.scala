@@ -80,7 +80,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 	/** Find a class within this classpath. */
 	private[boot] def findInClasspath(name:String):Option[Class[_]] = synchronized {
 		// Perhaps we've already loaded this class?
-		Option(findLoadedClass(name)) orElse {
+		loaded get name orElse {
 			// If not, search through the places that might contain it.
 			classpathsFor(name) flatMap { classpath =>
 				sudo { () => classpath readClass name }
@@ -88,6 +88,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 				case Bytecode(bytes,source) =>
 					val domain = new ProtectionDomain(source, permissions)
 					defineClass(name, bytes, 0, bytes.length, domain)
+			} map { c =>
+				loaded += (name -> c)
+				c
 			}
 		}
 	}
@@ -158,6 +161,14 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 	/** Where we find our classes and resources (package name -> {@link Classpath}). */
 	private var classpaths = Map[String,Classpath]()
 	classpaths += (myBasePackage -> classpath)
+
+	/**
+	 * Classes we've already loaded.
+	 *
+	 * The default {@link #findLoadedClass} method provided by {@link ClassLoader} seems to block
+	 * at very inconvenient times; let's just do it ourselves.
+	 */
+	private var loaded = Map[String,Class[_]]()
 
 	/** External classpaths (which may not have been accessed yet). */
 	private var dependencies:Map[URL,Option[Classpath]] = depPaths map { (_,Option[Classpath](null)) } toMap

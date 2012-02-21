@@ -219,12 +219,18 @@ object ClasspathLoader {
 private[boot]
 abstract class Classpath(val url:URL) {
 	def externalURL = url.toExternalForm
-	def dependencies:List[URL] = makeDependencyURLs { classPaths }
+	def dependencies =
+		(getManifestAttribute("Class-Path") map { _ split ":" toList } flatten) filter isJar map {
+			s => new URL("jar:file:" + s + "!/")
+		}
+
 	def readClass(name:String): Option[Bytecode]
 
-	protected def classPaths:List[String]
-	protected def makeDependencyURLs(paths:List[String]) =
-		paths filter { _.endsWith(".jar") } map { s => new URL("jar:file:" + s + "!/") }
+	/** Extract a global attribute from the classpath's manifest file. */
+	protected def getManifestAttribute(key:String):Option[String]
+
+	/** Does the given string name a JAR file? */
+	private def isJar(s:String) = s endsWith ".jar"
 }
 
 private[boot]
@@ -248,6 +254,19 @@ class FileLoader(url:URL) extends Classpath(url) {
 		}
 
 	override val toString = "FileLoader { %s }" format url
+
+	override protected def getManifestAttribute(key:String) =
+		manifest flatMap { m =>
+			val target = "%s: " format key
+			(m indexOf target + target.length) match {
+				case begin:Int if begin >= target.length =>
+					m.indexOf('\n', begin) match {
+						case end:Int if end > 0 => Option(m.substring(begin, end))
+						case _ => Option(m substring begin)
+					}
+				case _ => None
+			}
+		}
 
 	/** Open a file within the current classpath. */
 	private def open(path:List[String], extension:String) =
@@ -282,21 +301,9 @@ class FileLoader(url:URL) extends Classpath(url) {
 	/** Path component separator ('/' on UNIX, '\' on Windows). */
 	private val pathSep = File.separatorChar.toString
 
-
-	/** Calculate the JAR files which we are depending on. */
-	override val classPaths =
-		open("META-INF" :: "MANIFEST" :: Nil, "MF") map read map { new String(_) } map { s =>
-				// Find the classpath line in the manifest file.
-				val target = "Class-Path: "
-				(s indexOf target + target.length) match {
-					case begin:Int if begin >= target.length =>
-						(s.indexOf('\n', begin) match {
-							case end:Int if end > 0 => s.substring(begin, end)
-							case _ => s.substring(begin)
-						}).split(" ").toList  // Split into class paths.
-					case _ => Nil
-				}
-		} getOrElse Nil
+	/** The manifest file, as a {@link String}. */
+	private val manifest =
+		open("META-INF" :: "MANIFEST" :: Nil, "MF") map read map { new String(_) }
 }
 
 private[boot]
@@ -308,7 +315,7 @@ object FileLoader {
 /** Loads classes from a single JAR file. */
 private[boot]
 class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
-	val classPaths = jar.getManifest match {
+	protected val classPaths = jar.getManifest match {
 		case null => throw new SecurityException("JAR file has no manifest (so it isn't signed)")
 		case m:Manifest => m.getMainAttributes.getValue("Class-Path") match {
 				case null => Nil
@@ -316,7 +323,7 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 			}
 	}
 
-	/** Read a class' bytecode. */
+
 	override def readClass(className:String) = {
 		val classPath = className.replace('.', '/') + ".class"
 		jar.entries find { _.getName.equals(classPath) } map { entry:JarEntry =>
@@ -332,6 +339,14 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 				Bytecode(bytes, source)
 			}
 		}
+	}
+
+	override def getManifestAttribute(key:String) = jar.getManifest match {
+		case null => throw new SecurityException("JAR file has no manifest (and isn't signed!)")
+		case m:Manifest => m.getMainAttributes.getValue(key) match {
+				case null => None
+				case s:String => Option(s)
+			}
 	}
 }
 

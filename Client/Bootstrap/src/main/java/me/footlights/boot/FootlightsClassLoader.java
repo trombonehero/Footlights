@@ -79,7 +79,7 @@ class FootlightsClassLoader extends ClassLoader
 		// Fall back to exhaustive search of core classpaths.
 		for (URL url : classpaths)
 		{
-			ClasspathLoader loader = ClasspathLoader.create(this, url, packageName);
+			ClasspathLoader loader = ClasspathLoader.create(this, url, Option.apply(packageName));
 			Option<Class<?>> c = loader.findInClasspath(name);
 			if (c.isEmpty()) continue;
 
@@ -100,8 +100,7 @@ class FootlightsClassLoader extends ClassLoader
 	Class<?> loadApplication(final URL classpath, final String className)
 			throws ClassNotFoundException
 	{
-		String packageName = className.substring(0, className.lastIndexOf("."));
-		return ClasspathLoader.create(this, classpath, packageName).loadClass(className);
+		return ClasspathLoader.create(this, classpath).loadClass(className);
 	}
 
 	/** Where we can find core classes. */

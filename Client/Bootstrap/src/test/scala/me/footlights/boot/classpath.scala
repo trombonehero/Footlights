@@ -37,11 +37,11 @@ package me.footlights.boot {
 class ClasspathLoaderTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 
 	var loader:ClasspathLoader = _
-	before { loader = new ClasspathLoader(parent, path, basePackage, deps, perms) }
+	before { loader = new ClasspathLoader(parent, path, deps, perms, basePackage) }
 
 	val parent = mock[ClassLoader]
 	val path = mock[Classpath]
-	val basePackage = "com.example.foo"
+	val basePackage = Some("me.footlights.foo")
 	val deps = List[URL]()
 	val perms = new Permissions
 
@@ -62,6 +62,7 @@ class ClasspathLoaderTest extends FreeSpec with BeforeAndAfter with MockitoSugar
 		"should never refer to the parent for non-core classes" in {
 			val name = "me.footlights.demo.Anything"
 
+			when { path readClass anyString } thenReturn None
 			intercept[ClassNotFoundException] { loader loadClass name }
 
 			verify(parent, times(0)) loadClass name

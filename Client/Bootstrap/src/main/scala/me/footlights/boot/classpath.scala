@@ -34,14 +34,14 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  *
  * @param parent            Parent ClassLoader.
  * @param classpath         The classpath (JAR or directory) that we are loading from
- * @param myBasePackage     The base package that we are responsible for. For instance,
- *                          if loading a plugin with packages com.foo.app and com.foo.support,
- *                          this parameter should be "com.foo".
  * @param depPaths          External classpaths (JAR files).
  * @param permissions       Permissions that should be granted to loaded classes.
+ * @param myBasePackage     The base package that we are responsible for. For instance,
+ *                          if loading a plugin with packages com.foo.app and com.foo.support,
+ *                          this parameter should be "com.foo". Only relevant for core classpaths.
  */
-class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:String,
-		depPaths:Iterable[URL], permissions:PermissionCollection)
+class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
+		depPaths:Iterable[URL], permissions:PermissionCollection, myBasePackage:Option[String])
 	extends ClassLoader(parent) {
 	/**
 	 * Load a class, optionally short-circuiting the normal hierarchy.
@@ -99,7 +99,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 	/** Build a view of all of the {@link Classpath}s which might be able to load a given class. */
 	private def classpathsFor(className:String) = synchronized {
 		// Classpaths that we already know contain the relevant package.
-		val knowns = classpaths.keys filter { className startsWith _ } flatMap { classpaths get _ }
+		val knowns = List(classpath) ++ (
+				classpaths.keys filter { className startsWith _ } flatMap { classpaths get _ }
+			)
 
 		// Full package name of the class to be loaded.
 		val packageName = className.substring(0, className.lastIndexOf('.'))
@@ -129,8 +131,10 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 
 	/** Should we defer to the parent {@link ClassLoader} for this class? */
 	private def mustDeferToParent(name:String) =
-		if (isCorePackage(myBasePackage)) !(name startsWith myBasePackage)
-		else isCorePackage(name)
+		myBasePackage flatMap { base =>
+			if (isCorePackage(base)) Some(!(name startsWith base))
+			else None
+		} getOrElse isCorePackage(name)
 
 	/** Is the given class in a core library package (which we shouldn't try to load)? */
 	private def isCorePackage(className:String) =
@@ -160,7 +164,6 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 
 	/** Where we find our classes and resources (package name -> {@link Classpath}). */
 	private var classpaths = Map[String,Classpath]()
-	classpaths += (myBasePackage -> classpath)
 
 	/**
 	 * Classes we've already loaded.
@@ -175,7 +178,8 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 }
 
 object ClasspathLoader {
-	def create(parent:ClassLoader, path:URL, basePackage:String) = {
+	/** Factory method for {@link ClasspathLoader}. */
+	def create(parent:ClassLoader, path:URL, basePackage:Option[String]) = {
 		// Adapt path URL. (TODO: do this elsewhere!)
 		val completePath =
 			if (!path.getProtocol().startsWith("jar:") && path.getPath().endsWith(".jar"))
@@ -194,13 +198,17 @@ object ClasspathLoader {
 			else new FilePermission(path.toExternalForm, "read")
 		}
 
-		new ClasspathLoader(parent, classpath, basePackage, classpath.dependencies, permissions)
+		new ClasspathLoader(parent, classpath, classpath.dependencies, permissions, basePackage)
 	}
+
+	/** Convenience method for Java interop (Java doesn't understand default arguments). */
+	def create(parent:ClassLoader, path:URL):ClasspathLoader = create(parent, path, None)
 
 
 	/** Should code from the given package be privileged? */
+	private def isPrivileged(name:Option[String]): Boolean = name map isPrivileged getOrElse false
 	private def isPrivileged(name:String): Boolean =
-		(name.startsWith("me.footlights.core") || name.startsWith("me.footlights.ui"))
+		List("me.footlights.core", "me.footlights.ui") exists { name startsWith _ }
 
 	/** Construct a read-only {@link PermissionCollection} with one {@link Permission} in it. */
 	private def makeCollection(perm:Permission) = {

@@ -224,6 +224,7 @@ abstract class Classpath(val url:URL) {
 			s => new URL("jar:file:" + s + "!/")
 		}
 
+	/** Read a class' bytecode. */
 	def readClass(name:String): Option[Bytecode]
 
 	/** Extract a global attribute from the classpath's manifest file. */

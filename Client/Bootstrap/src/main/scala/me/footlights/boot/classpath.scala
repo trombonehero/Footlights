@@ -114,7 +114,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath, myBasePackage:Str
 
 		// As-yet-unloaded dependencies which might contain the class (lazily evaluated).
 		val unloadedDeps = (dependencies filter { _._2.isEmpty } keys).view flatMap { url =>
-			val cp = sudo { () => Classpath.open(url, packageName) }
+			val cp = sudo { () => Classpath.open(url) }
 			dependencies += (url -> cp)
 			cp
 		} filter {
@@ -184,7 +184,7 @@ object ClasspathLoader {
 				path
 
 		// Open the classpath itself and make a note if we require dependencies.
-		val classpath = Classpath.open(completePath, basePackage).get
+		val classpath = Classpath.open(completePath).get
 		if (classpath.dependencies.size > 0)
 			log.info("Classpath '" + path + "' has dependencies: " + classpath.dependencies)
 
@@ -236,7 +236,7 @@ abstract class Classpath(val url:URL) {
 
 private[boot]
 object Classpath {
-	def open(url:URL, packageName:String):Option[Classpath] = {
+	def open(url:URL):Option[Classpath] = {
 		url.getProtocol match {
 			case "jar" => JARLoader.open(url)
 			case "file" => FileLoader.open(url)

@@ -110,6 +110,9 @@ class StaticContentServer implements WebServer
 		else if (Pattern.matches(".*\\.png", path))
 			return "image/png";
 
+		else if (Pattern.matches(".*\\.ttf", path))
+			return "font/ttf";
+
 		return "text/xml";
 	}
 

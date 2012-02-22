@@ -195,15 +195,8 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 object ClasspathLoader {
 	/** Factory method for {@link ClasspathLoader}. */
 	def create(parent:ClassLoader, path:URL, basePackage:Option[String]) = {
-		// Adapt path URL. (TODO: do this elsewhere!)
-		val completePath =
-			if (!path.getProtocol().startsWith("jar:") && path.getPath().endsWith(".jar"))
-				new URL("jar:" + path + "!/")
-			else
-				path
-
 		// Open the classpath itself and make a note if we require dependencies.
-		val classpath = Classpath.open(completePath).get
+		val classpath = Classpath.open(path).get
 		if (classpath.dependencies.size > 0)
 			log.info("Classpath '" + path + "' has dependencies: " + classpath.dependencies)
 
@@ -263,7 +256,9 @@ object Classpath {
 	def open(url:URL):Option[Classpath] = {
 		url.getProtocol match {
 			case "jar" => JARLoader.open(url)
-			case "file" => FileLoader.open(url)
+			case "file" =>
+				if (url.getPath endsWith "jar") JARLoader.open(url)
+				else FileLoader.open(url)
 		}
 	}
 }
@@ -377,17 +372,17 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 
 private[boot]
 object JARLoader {
-	def open(url:URL) =
-		{
-			try {
-				makeJarUrl(url) openConnection match {
+	def open(url:URL) = makeJarUrl(url) match {
+		case url:URL =>
+			(try {
+				url openConnection match {
 					case c:java.net.JarURLConnection => Option(c.getJarFile)
 					case _ => None
 				}
 			} catch {
 				case e:IOException => None
-			}
-		} map { new JARLoader(_, url) }
+			}) map { new JARLoader(_, url) }
+		}
 
 	private def makeJarUrl(url:URL) =
 		if (url.toExternalForm.startsWith("jar:")) url else new URL("jar:" + url + "!/")

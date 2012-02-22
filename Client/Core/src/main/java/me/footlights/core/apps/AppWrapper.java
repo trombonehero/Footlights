@@ -38,6 +38,8 @@ public final class AppWrapper
 	public Application getApp() { return app; }
 
 
+	@Override public String toString() { return "Application { '" + name + "' from " + url + " }"; }
+
 	/** The actual app. */
 	private final Application app;
 

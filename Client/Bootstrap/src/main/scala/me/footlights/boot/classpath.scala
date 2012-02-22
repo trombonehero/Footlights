@@ -277,7 +277,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 				case begin:Int if begin >= target.length =>
 					m.indexOf('\n', begin) match {
 						case end:Int if end > 0 => Option(m.substring(begin, end))
-						case _ => Option(m substring begin)
+						case -1 => Option(m substring begin)
 					}
 				case _ => None
 			}

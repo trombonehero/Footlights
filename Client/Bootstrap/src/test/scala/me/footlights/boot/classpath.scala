@@ -37,12 +37,11 @@ package me.footlights.boot {
 class ClasspathLoaderTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 
 	var loader:ClasspathLoader = _
-	before { loader = new ClasspathLoader(parent, path, deps, perms, basePackage) }
+	before { loader = new ClasspathLoader(parent, path, perms, basePackage) }
 
 	val parent = mock[ClassLoader]
 	val path = mock[Classpath]
 	val basePackage = Some("me.footlights.foo")
-	val deps = List[URL]()
 	val perms = new Permissions
 
 	// Classes loaded by the ClassLoader under test.

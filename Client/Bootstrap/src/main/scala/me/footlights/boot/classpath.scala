@@ -41,7 +41,7 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  *                          this parameter should be "com.foo". Only relevant for core classpaths.
  */
 class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
-		depPaths:Iterable[URL], permissions:PermissionCollection, myBasePackage:Option[String])
+		permissions:PermissionCollection, myBasePackage:Option[String])
 	extends ClassLoader(parent) {
 	/**
 	 * Load a class, optionally short-circuiting the normal hierarchy.
@@ -188,7 +188,8 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	private var loaded = Map[String,Class[_]]()
 
 	/** External classpaths (which may not have been accessed yet). */
-	private var dependencies:Map[URL,Option[Classpath]] = depPaths map { (_,Option[Classpath](null)) } toMap
+	private var dependencies:Map[URL,Option[Classpath]] =
+		classpath.dependencies map { (_,Option[Classpath](null)) } toMap
 }
 
 object ClasspathLoader {
@@ -212,7 +213,7 @@ object ClasspathLoader {
 			else new FilePermission(path.toExternalForm, "read")
 		}
 
-		new ClasspathLoader(parent, classpath, classpath.dependencies, permissions, basePackage)
+		new ClasspathLoader(parent, classpath, permissions, basePackage)
 	}
 
 	/** Convenience method for Java interop (Java doesn't understand default arguments). */

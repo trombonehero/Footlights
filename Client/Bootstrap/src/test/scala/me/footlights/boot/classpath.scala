@@ -41,6 +41,8 @@ class ClasspathLoaderTest extends FreeSpec with BeforeAndAfter with MockitoSugar
 
 	val parent = mock[ClassLoader]
 	val path = mock[Classpath]
+	when { path.dependencies } thenReturn List()
+
 	val basePackage = Some("me.footlights.foo")
 	val perms = new Permissions
 

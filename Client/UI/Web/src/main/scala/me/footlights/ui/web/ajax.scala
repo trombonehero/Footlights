@@ -190,7 +190,7 @@ dir.appendElement('div').appendText('%d files in local cache:');""" format files
 	private val APP_PATH = "file:" + CORE_PATH.replaceFirst("Bootstrap/.*", "Demos/")
 
 	private val GOOD_APP = APP_PATH + "Basic/target/classes"
-	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar"
+	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar!/"
 	private val TICTACTOE = APP_PATH + "TicTacToe/target/classes"
 }
 

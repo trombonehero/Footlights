@@ -78,9 +78,10 @@ object Bootstrapper extends App {
 		coreClass getMethod("init", classOf[ClassLoader]) invoke(null, classLoader)
 	} catch {
 		case t:Throwable =>
+			// If we fail to start Footlights, kill <b>all</b> threads.
 			log log (Level.SEVERE, "Unable to start Footlights", t)
 			System exit 1
-			null
+			null               // required to satisfy type checker; System.exit does not return.
 	}
 
 	// Load the UI(s).

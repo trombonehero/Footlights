@@ -1,10 +1,11 @@
 @import url("http://fonts.googleapis.com/css?family=Federo");
+@import url("fonts.css");
 
 html
 {
 	background: black;
 	color: white;
-	font-family: sans-serif;
+	font-family: Gudea, sans-serif;
 	margin: 0;
 	padding: 0;
 }
@@ -34,7 +35,7 @@ h1, h2 { color: #950f0f; }
 
         z-index: -1;
 
-        background-image: url('images/curtain-top.png');
+        background-image: url('../images/curtain-top.png');
         background-repeat: no-repeat;
         background-position: left;
 }
@@ -50,7 +51,7 @@ h1, h2 { color: #950f0f; }
 
         z-index: 0;
 
-        background-image: url('images/curtain-left.png');
+        background-image: url('../images/curtain-left.png');
         background-repeat: no-repeat;
         background-position: left;
 }
@@ -65,7 +66,7 @@ h1, h2 { color: #950f0f; }
 
         z-index: 0;
 
-        background-image: url('images/curtain-right.png');
+        background-image: url('../images/curtain-right.png');
         background-repeat: no-repeat;
         background-position: left;
 }

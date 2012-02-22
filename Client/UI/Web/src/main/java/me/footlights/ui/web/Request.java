@@ -32,6 +32,11 @@ public class Request implements WebRequest
 			throw new InvalidRequestException(rawRequest,
 					"does not begin with \"GET \"");
 
+		int newline = rawRequest.indexOf('\r');
+		if (newline > 0) rawRequest = rawRequest.substring(0, newline);
+		newline = rawRequest.indexOf('\n');
+		if (newline > 0) rawRequest = rawRequest.substring(0, newline);
+
 		if (!rawRequest.matches(".* HTTP/1.[01]$"))
 			throw new InvalidRequestException(rawRequest,
 					"does not end with \" HTTP/1.[01]\"");

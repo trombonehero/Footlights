@@ -20,8 +20,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
+
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 import static me.footlights.ui.web.HttpResponseCode.*;
 
@@ -114,34 +118,41 @@ class Response
 	public String statusMessage() { return http.toString(); }
 	public Throwable errorCause() { return errorCause; }
 
-	public void write(OutputStream out) throws IOException
+
+	public void write(WritableByteChannel out) throws IOException
 	{
-		StringBuffer headers = new StringBuffer();
-		headers.append("HTTP/1.1 ");
-		headers.append(http.toString());
-		headers.append("\n");
+		byte[] headers = new StringBuffer()
+			.append("HTTP/1.1 ")
+			.append(http.toString())
+			.append("\n")
 
-		headers.append("Content-Type: ");
-		headers.append(mimeType);
-		headers.append("\n");
+			.append("Content-Type: ")
+			.append(mimeType)
+			.append("\n")
 
-		headers.append("\n");
+			.append("\n")
+			.toString()
+			.getBytes();
 
-		out.write(headers.toString().getBytes());
-	
+		out.write(ByteBuffer.wrap(headers));
 		if (content != null)
 		{
-			byte[] data = new byte[10240];
+			ByteBuffer buffer = ByteBuffer.allocateDirect(4096);
+			ReadableByteChannel channel = Channels.newChannel(content);
+
 			while (true)
 			{
-				int bytes = content.read(data);
+				int read = channel.read(buffer);
+				if (read <= 0) break;
 
-				if (bytes <= 0) break;
-				else out.write(data, 0, bytes);
+				buffer.flip();
+				out.write(buffer);
+				buffer.rewind();
+				buffer.limit(buffer.capacity());
 			}
 		}
-		out.flush();
 	}
+
 
 	@Override public String toString()
 	{

@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import java.io._
-import java.net.{ServerSocket,Socket}
+import java.io.FileNotFoundException
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+import java.nio.channels.{ServerSocketChannel,SocketChannel}
 import java.util.logging.Level.{FINE,INFO,WARNING,SEVERE}
 import java.util.logging.Logger
 
@@ -40,29 +41,27 @@ class MasterServer(
 	private var done = false
 
 	override def run = {
-		val serverSocket = new ServerSocket(port)
+		val serverSocket = ServerSocketChannel.open.socket
+		serverSocket bind new InetSocketAddress(port)
 
 		do {
 			log fine "Waiting for connection..."
-			val socket = serverSocket.accept
-			log fine "Accepted conncetion from " + socket
+			val client = serverSocket.getChannel.accept
+			log fine "Accepted conncetion from " + client
 
-			val request = Option(socket.getInputStream) map { in =>
-				new BufferedReader(new InputStreamReader(in))
-			} flatMap { reader =>
-				Option(reader.readLine)
-			} map {
-				Request parse
-			}
+			val buffer = ByteBuffer allocate 1024
+			val request = Option(client) map { _ read buffer } filter { _ > 0 } map {
+				new String(buffer.array, 0, _)
+			} map Request.parse
 
-			server ! (request,socket)
+			server ! (request,client)
 		} while (!done)
 	}
 
 	private val server = actor {
 		loop {
 			react {
-				case (Some(request:Request), socket:Socket) => future {
+				case (Some(request:Request), client:SocketChannel) => future {
 					log fine "Request: " + request
 
 					servers.get(request.prefix) map { server =>
@@ -81,22 +80,22 @@ class MasterServer(
 						Some(Response.error(new FileNotFoundException(request toString)))
 					} foreach { response =>
 						log fine "Response: " + response
-						try { response write socket.getOutputStream }
+						try { response write client }
 						catch {
-							case e:java.net.SocketException =>
+							case e:java.io.IOException =>
 								log fine "Can't write response: " + e
 
 							case t:Throwable =>
 								log.log(WARNING,
 									"Error responding to " + request + " with " + response, t)
 						}
-						socket.close
+						client.close
 					}
 				}
 
-				case (None, socket:Socket) =>
-					log info "Received 'None' request from client, closing socket"
-					socket.close
+				case (None, client:SocketChannel) =>
+					log info "Received 'None' request from client, closing channel"
+					client.close
 
 				case a:Any => log severe "Web UI server received unknown event: " + a
 			}

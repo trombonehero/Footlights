@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
 Class-Path: http://footlights.me/demo/library.jar /etc/passwd
-
+Footlights-App: me.footlights.demos.wicked.WickedApp

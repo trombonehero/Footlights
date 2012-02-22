@@ -1,2 +1,3 @@
 Manifest-Version: 1.0
 Class-Path: http://footlights.me/demo/library-v1
+Footlights-App: me.footlights.demos.good.GoodApp

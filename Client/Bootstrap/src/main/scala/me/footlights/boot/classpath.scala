@@ -64,6 +64,13 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	override def findResource(name:String) =
 		classpath.url.toExternalForm match { case url => new URL(ensureFinalSlash(url) + name) }
 
+
+	/** Load the "main" class, if one is specified in the manifest. */
+	private[boot] def loadMainClass = classpath.mainClassName flatMap attemptLoadingClass orElse {
+		throw new ClassNotFoundException(
+			"%s does not specify a main Footlights class" format classpath.externalURL)
+	}
+
 	override def toString = {
 		classOf[ClasspathLoader].getSimpleName + " { " +
 			"base url = '" + classpath.url + "', " +
@@ -75,7 +82,8 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 
 	/** Try to load a class. */
-	private def attemptLoadingClass(name:String, resolve:Boolean):Option[Class[_]] =
+	private def attemptLoadingClass(name:String):Option[Class[_]] = attemptLoadingClass(name, false)
+	private def attemptLoadingClass(name:String, resolve:Boolean = false):Option[Class[_]] =
 		if (mustDeferToParent(name)) Some(getParent loadClass name)     // literal null is ok
 		else
 			findInClasspath(name) map { c =>
@@ -233,6 +241,7 @@ object ClasspathLoader {
 private[boot]
 abstract class Classpath(val url:URL) {
 	def externalURL = url.toExternalForm
+	def mainClassName = getManifestAttribute("Footlights-App")
 	def dependencies =
 		(getManifestAttribute("Class-Path") map { _ split ":" toList } flatten) filter isJar map {
 			s => new URL("jar:file:" + s + "!/")

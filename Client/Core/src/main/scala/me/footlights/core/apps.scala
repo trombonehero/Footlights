@@ -44,21 +44,21 @@ trait Applications extends Footlights {
 
 	def runningApplications():_root_.java.util.Collection[AppWrapper] = loadedApps.values
 
-	override def loadApplication(name:String, uri:URI) =
+	override def loadApplication(uri:URI) =
 		loadedApps get(uri) getOrElse {
-			val prefs = appPreferences(name)
+			val prefs = appPreferences(uri.toString)
 
-			parseApplicationUri(uri) flatMap loadAppClass flatMap findInit map { init =>
-				try { init.invoke(null, this, prefs, Logger.getLogger(name)) match {
+			loadAppClass(uri.toURL) flatMap findInit map { init =>
+				try { init.invoke(null, this, prefs, Logger.getLogger(uri.toString)) match {
 						case a:Application => a
 						case o:Object => throw new ClassCastException(
-								name + ".init() returned non-application '" + o + "'")
+								"init() returned non-application '" + o + "'")
 					}
 				} catch {
 					case e:Throwable => throw new AppStartupException(uri, e)
 				}
 			} map { app =>
-				val wrapper = new AppWrapper(name, uri, app)
+				val wrapper = new AppWrapper(uri.toString, uri, app)
 				loadedApps.put(uri, wrapper)
 				wrapper
 			} get
@@ -107,40 +107,19 @@ trait Applications extends Footlights {
 	}
 
 
-	/**
-	 * Split an application URI into a classpath URL and a class name to run.
-	 *
-	 * TODO: in the future, this will become unnecessary, as we will use manifest information from
-	 * the app's classpath to determine where we should start running.
-	 */
-	private def parseApplicationUri(uri:URI) =
-		uri.toString split "!/" match {
-			case Array(url:String, className:String) =>
-				val classpath = new URL(
-						if (url startsWith "jar") url + "!/"
-						else url
-					)
-
-				Some((classpath, className))
-
-			case _ => None
-		}
-
 	/** Load an application's main class from a given classpath. */
-	private def loadAppClass(classData:(URL,String)):Option[Class[_]] = classData match {
-		case (classpath:URL, className:String) =>
-			(try { loadApplicationMethod.invoke(appLoader, classpath, className) }
-			catch {
-				case t:Throwable => throw new AppStartupException(classpath.toURI, t)
-			}) match {
-				case c:Class[_] => Option(c)
-				case a:Any =>
-					throw new AppStartupException(classpath.toURI,
-							new IllegalArgumentException("%s returned '%s', not a Class" format (
-									loadApplicationMethod.getName, a))
-						)
-			}
-	}
+	private def loadAppClass(classpath:URL):Option[Class[_]] =
+		(try { loadApplicationMethod.invoke(appLoader, classpath) }
+		catch {
+			case t:Throwable => throw new AppStartupException(classpath.toURI, t)
+		}) match {
+			case c:Some[Class[_]] => c
+			case a:Any =>
+				throw new AppStartupException(classpath.toURI,
+						new IllegalArgumentException("%s returned '%s', not a Class" format (
+								loadApplicationMethod.getName, a))
+					)
+		}
 
 	/** Find the "init" method for an application's main class. */
 	private def findInit(c:Class[_]) =
@@ -160,7 +139,7 @@ trait Applications extends Footlights {
 	 * since this is part of {@link Kernel} initialization).
 	 */
 	private val loadApplicationMethod = appLoader.getClass.getDeclaredMethod(
-			"loadApplication", classOf[URL], classOf[String])
+			"loadApplication", classOf[URL])
 
 	loadApplicationMethod.setAccessible(true)
 

@@ -113,12 +113,12 @@ var contents =
 				}
 
 			case LoadApplication(path) =>
-				val name = path.substring(path.lastIndexOf('/') + 1);
 				val uri = new java.net.URI(request.shift().path())
-				val app = footlights.loadApplication(name, uri)
+				val app = footlights.loadApplication(uri)
+				val name = java.net.URLEncoder.encode(app.getName, "utf-8")
 
 				server.register(name, app.getApp.ajaxHandler)
-				createUISandbox(app.getName)
+				createUISandbox(name)
 
 			case FillPlaceholder(name) => {
 				me.footlights.api.ajax.JSON.newBuilder()
@@ -189,14 +189,9 @@ dir.appendElement('div').appendText('%d files in local cache:');""" format files
 	private val CORE_PATH = System.getProperty("java.class.path").split(":")(0)
 	private val APP_PATH = "file:" + CORE_PATH.replaceFirst("Bootstrap/.*", "Demos/")
 
-	private val GOOD_APP = APP_PATH +
-		"Basic/target/classes!/me.footlights.demos.good.GoodApp"
-
-	private val WICKED_APP = "jar:" + APP_PATH +
-		"Wicked/target/wicked-app-HEAD.jar!/me.footlights.demos.wicked.WickedApp"
-
-	private val TICTACTOE = APP_PATH +
-		"TicTacToe/target/classes!/me.footlights.demos.tictactoe.TicTacToe"
+	private val GOOD_APP = APP_PATH + "Basic/target/classes"
+	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar"
+	private val TICTACTOE = APP_PATH + "TicTacToe/target/classes"
 }
 
 }

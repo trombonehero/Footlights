@@ -46,6 +46,6 @@ public interface Footlights extends KernelInterface
 	public Collection<Stat> listFiles();
 
 	public Collection<AppWrapper> runningApplications();
-	public AppWrapper loadApplication(String name, URI uri) throws AppStartupException;
+	public AppWrapper loadApplication(URI uri) throws AppStartupException;
 	public void unloadApplication(AppWrapper plugin);
 }

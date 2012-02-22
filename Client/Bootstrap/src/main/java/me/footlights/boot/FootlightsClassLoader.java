@@ -94,13 +94,12 @@ class FootlightsClassLoader extends ClassLoader
 	/**
 	 * Load an unprivileged application.
 	 *
-	 * In the future, we will simply specify a class path and let the manifest tell us what
-	 * class to execute. In the meantime, however, we want to be minimally disruptive.
+	 * Open the given classpath and load its main class, as specified in its manifest file
+	 * (see {@link Classpath#mainClassName}).
 	 */
-	Class<?> loadApplication(final URL classpath, final String className)
-			throws ClassNotFoundException
+	Option<Class<?>> loadApplication(final URL classpath) throws ClassNotFoundException
 	{
-		return ClasspathLoader.create(this, classpath).loadClass(className);
+		return ClasspathLoader.create(this, classpath).loadMainClass();
 	}
 
 	/** Where we can find core classes. */

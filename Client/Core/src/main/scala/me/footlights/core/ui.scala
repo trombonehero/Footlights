@@ -82,8 +82,8 @@ trait UIManager extends Footlights {
 		f
 	}
 
-	abstract override def loadApplication(name:String, uri:URI) = {
-		val wrapper = super.loadApplication(name, uri)
+	abstract override def loadApplication(uri:URI) = {
+		val wrapper = super.loadApplication(uri)
 		fire(new AppLoadedEvent(wrapper))
 		wrapper
 	}

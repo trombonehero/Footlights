@@ -51,10 +51,6 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 		"when loading a " - {
 			"well-behaved app," - {
-				"should load the correct app." in {
-					good.getCanonicalName should equal (BasicDemo.className)
-				}
-
 				"should not grant the AllPermission." in {
 					good should not have allPermission
 				}
@@ -82,18 +78,18 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 				"should be able to load resources from a JAR file." in {
 					val appLoader = good.getClassLoader
-					val url = appLoader getResource BasicDemo.classFile
+					val url = appLoader getResource "META-INF/MANIFEST.MF"
 					url should not equal null
 
-					// Check the Java class file magic (0xCAFEBABE).
-					val buffer = ByteBuffer allocate 4
+					// Check that we've opened a manifest file.
+					val magic = "Manifest-Version" getBytes
+					val buffer = ByteBuffer allocate magic.length
 					Channels newChannel url.openStream read buffer
-					buffer.flip should equal(
-							ByteBuffer.wrap(Seq(0xCA, 0xFE, 0xBA, 0xBE) map { _.toByte } toArray))
+					buffer.flip should equal(ByteBuffer.wrap(magic))
 				}
 
 				"should be able to load a second instance of the same app." in {
-					val c = loader loadApplication (BasicDemo.classPath, BasicDemo.className)
+					val c = loader loadApplication BasicDemo.classPath
 					c should not equal good
 				}
 			}
@@ -101,7 +97,9 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 			"malicious app, " - {
 				"should prevent the app from loading unauthorized resources." in
 					intercept[java.io.FileNotFoundException] {
-						evil.getClassLoader getResource BasicDemo.classFile openStream
+						evil.getClassLoader getResource {
+							"me.footlights.demos.good.Helper.class"
+						} openStream
 					}
 			}
 		}
@@ -110,8 +108,14 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 	before {
 		loader = new FootlightsClassLoader(coreClasspaths map localPath map { new URL(_) } toSeq)
 		core = loader loadClass CoreClassName
-		good = loader loadApplication (BasicDemo.classPath, BasicDemo.className)
-		evil = loader loadApplication (WickedDemo.classPath, WickedDemo.className)
+		good = loader loadApplication BasicDemo.classPath getOrElse {
+			System.err println "Unable to load " + BasicDemo
+			null
+		}
+		evil = loader loadApplication WickedDemo.classPath getOrElse {
+			System.err println "Unable to load " + WickedDemo
+			null
+		}
 	}
 
 
@@ -119,8 +123,8 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 	val coreClasspaths = System getProperty "java.class.path" split ":" filter isCore
 
 	val CoreClassName = "me.footlights.core.Kernel"
-	val BasicDemo = App("Basic", "basic-demo", "me.footlights.demos.good.GoodApp")
-	val WickedDemo = App("Wicked", "wicked-app", "me.footlights.demos.wicked.WickedApp")
+	val BasicDemo = App("Basic", "basic-demo")
+	val WickedDemo = App("Wicked", "wicked-app")
 
 
 	// Permissions which the ClassLoader can grant.
@@ -149,8 +153,7 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 
 	/** Class and path information for a Footlights application. */
-	case class App(projectDir:String, projectName:String, className:String) {
-		val classFile = className.replaceAll("\\.", "/") + ".class"
+	case class App(projectDir:String, projectName:String) {
 		val classPath =
 			coreClasspaths find { _ contains "Bootstrap" } map {
 				_.replaceFirst("Bootstrap/.*", "Demos/")

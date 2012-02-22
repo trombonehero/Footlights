@@ -23,7 +23,8 @@ import java.util.logging.Logger
 import scala.actors.Actor._
 import scala.actors.Futures._
 
-import me.footlights.core.Footlights;
+import me.footlights.core.Footlights
+
 
 package me.footlights.ui.web {
 

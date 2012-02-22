@@ -149,7 +149,8 @@ trait Applications extends Footlights {
 				classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
 			)
 		} catch {
-			case t:Throwable => None
+			case t:Throwable =>
+				throw new AppStartupException(new URI("class:" + c.getCanonicalName), t)
 		}
 
 	/**

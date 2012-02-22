@@ -273,7 +273,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 	override protected def getManifestAttribute(key:String) =
 		manifest flatMap { m =>
 			val target = "%s: " format key
-			(m indexOf target + target.length) match {
+			(m.indexOf(target) + target.length) match {
 				case begin:Int if begin >= target.length =>
 					m.indexOf('\n', begin) match {
 						case end:Int if end > 0 => Option(m.substring(begin, end))

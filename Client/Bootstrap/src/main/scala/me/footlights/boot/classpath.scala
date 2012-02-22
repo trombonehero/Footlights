@@ -189,7 +189,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 	/** External classpaths (which may not have been accessed yet). */
 	private var dependencies:Map[URL,Option[Classpath]] =
-		classpath.dependencies map { (_,Option[Classpath](null)) } toMap
+		classpath.dependencies map { (_,None) } toMap
 }
 
 object ClasspathLoader {

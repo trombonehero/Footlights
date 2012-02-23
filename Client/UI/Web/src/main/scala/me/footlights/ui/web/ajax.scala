@@ -84,7 +84,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 					.append(createClickableText(launcher, "Basic Demo", "load_app/" + GOOD_APP))
 					.append(createClickableText(launcher, "Tic-Tac-Toe", "load_app/" + TICTACTOE))
 					.append(createClickableText(launcher, "Wicked Demo", "load_app/" + WICKED_APP))
-					.append(createClickableText(launcher, "File Uploader", "load_app/" + WICKED_APP))
+					.append(createClickableText(launcher, "File Uploader", "load_app/" + UPLOADER))
 					.append(setupAsyncChannel)
 
 					.append("""
@@ -192,6 +192,7 @@ dir.appendElement('div').appendText('%d files in local cache:');""" format files
 	private val GOOD_APP = APP_PATH + "Basic/target/classes"
 	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar!/"
 	private val TICTACTOE = APP_PATH + "TicTacToe/target/classes"
+	private val UPLOADER = APP_PATH + "Uploader/target/classes"
 }
 
 }

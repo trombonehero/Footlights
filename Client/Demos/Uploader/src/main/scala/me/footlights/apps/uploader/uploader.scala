@@ -36,13 +36,13 @@ class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) 
 	}
 
 	private[uploader] def storedNames =
-		prefs.getString(SAVE_LIST) map { _ split ";" toList } getOrElse Nil map { new URI(_) }
+		prefs getString SaveList map { _ split ";" toList } getOrElse Nil map { new URI(_) }
 
 	private def storeName(name:URI) = prefs.synchronized {
-		prefs.set(SAVE_LIST, storedNames :+ name map { _.toString } reduce { _ + ";" + _ })
+		prefs.set(SaveList, storedNames :+ name map { _.toString } reduce { _ + ";" + _ })
 	}
 
-	private val SAVE_LIST = "saved_files"
+	private val SaveList = "saved_files"
 }
 
 

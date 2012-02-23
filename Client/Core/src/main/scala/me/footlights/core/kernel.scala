@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.FileInputStream
+import java.io.{FileInputStream,FileOutputStream}
 import java.net.{URI,URL}
 import java.security.{AccessController, AllPermission}
 import java.util.logging.Level
@@ -31,7 +31,7 @@ import me.footlights.core.data.store.CASClient
 package me.footlights.core {
 
 import apps.AppWrapper
-import crypto.Keychain
+import crypto.{Fingerprint,Keychain}
 import data.store.{CASClient, DiskStore, Store}
 
 
@@ -65,6 +65,30 @@ abstract class Kernel(
 	private val resolver = Resolver(io, keychain)
 	protected val store = CASClient(Preferences(prefs), resolver, Option(cache))    // TODO: don't wrap?
 
+	/**
+	 * Fetch the JAR file named by a {@link URI} (either directly by CAS hash-name or
+	 * indirectly by an indirection {@link URL}) and store it locally as a conventional
+	 * JAR file inside the OS' filesystem.
+	 */
+	override def localizeJar(uri:URI) = security.Privilege.sudo { () =>
+		val absoluteLink =
+			if (uri.isOpaque) Option(uri) map Fingerprint.decode map keychain.getLink
+			else if (uri.getScheme != null) resolver.resolve(uri.toURL)
+			else {
+				log warning ("Tried to localize scheme-less URI '%s'" format uri.toString)
+				None
+			}
+
+		absoluteLink flatMap store.fetch map { _.getInputStream } map {
+			java.nio.channels.Channels.newChannel
+		} map { in =>
+			val tmpFile = java.io.File.createTempFile("footlights-dep", ".jar")
+			tmpFile.setWritable(true)
+			new FileOutputStream(tmpFile).getChannel.transferFrom(in, 0, MaxJarSize)
+			tmpFile
+		} map { new java.util.jar.JarFile(_) }
+	}
+
 	/** Read {@link Preferences} from a file. */
 	protected def readPrefs(filename:String) = {
 		log info ("Reading preferences: %s" format filename)
@@ -72,6 +96,9 @@ abstract class Kernel(
 	}
 
 	private val log = Logger getLogger classOf[Kernel].getCanonicalName
+
+	/** The largest JAR file which we are happy to open. */
+	private val MaxJarSize = 1024 * 1024 * 1024
 }
 
 

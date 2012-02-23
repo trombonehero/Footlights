@@ -18,6 +18,8 @@ package me.footlights.core;
 import java.net.URI;
 import java.util.Collection;
 
+import scala.Option;
+
 import me.footlights.api.KernelInterface;
 import me.footlights.core.apps.*;
 import me.footlights.core.data.store.Stat;
@@ -37,6 +39,8 @@ public interface Footlights extends KernelInterface
 
 	public void registerUI(UI ui);
 	public void deregisterUI(UI ui);
+
+	public Option<java.util.jar.JarFile> localizeJar(URI uri);
 
 	/**
 	 * List some of the {@link File} names which are known to exist in the {@link Store}.

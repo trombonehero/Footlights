@@ -34,7 +34,6 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  *
  * @param parent            Parent ClassLoader.
  * @param classpath         The classpath (JAR or directory) that we are loading from
- * @param depPaths          External classpaths (JAR files).
  * @param permissions       Permissions that should be granted to loaded classes.
  * @param myBasePackage     The base package that we are responsible for. For instance,
  *                          if loading a plugin with packages com.foo.app and com.foo.support,

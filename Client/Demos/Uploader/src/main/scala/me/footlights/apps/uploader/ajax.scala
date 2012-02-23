@@ -26,6 +26,9 @@ class Ajax(app:Uploader) extends AjaxHandler
 	{
 		request.path() match
 		{
+			case "init" =>
+				new JavaScript().append("context.load('scripts/init.js')")
+
 			case "do_upload" =>
 				app.upload map { file =>
 					new JavaScript()

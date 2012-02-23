@@ -106,7 +106,10 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 	}
 
 	before {
-		loader = new FootlightsClassLoader(coreClasspaths map localPath map { new URL(_) } toSeq)
+		loader = new FootlightsClassLoader(
+				coreClasspaths map localPath map { new URL(_) } toSeq,
+				localizeJar)
+
 		core = loader loadClass CoreClassName
 		good = loader loadApplication BasicDemo.classPath getOrElse {
 			System.err println "Unable to load " + BasicDemo
@@ -121,6 +124,7 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 	/** Classpaths: we require the API, Bootstrap and Core classpaths to be set correctly. */
 	val coreClasspaths = System getProperty "java.class.path" split ":" filter isCore
+	def localizeJar(uri:java.net.URI) = None
 
 	val CoreClassName = "me.footlights.core.Kernel"
 	val BasicDemo = App("Basic", "basic-demo")

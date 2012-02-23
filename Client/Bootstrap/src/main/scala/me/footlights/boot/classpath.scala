@@ -35,12 +35,14 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  * @param parent            Parent ClassLoader.
  * @param classpath         The classpath (JAR or directory) that we are loading from
  * @param permissions       Permissions that should be granted to loaded classes.
+ * @param resolveDependency Resolves dependency URIs into locally-cached JAR files.
  * @param myBasePackage     The base package that we are responsible for. For instance,
  *                          if loading a plugin with packages com.foo.app and com.foo.support,
  *                          this parameter should be "com.foo". Only relevant for core classpaths.
  */
 class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
-		permissions:PermissionCollection, myBasePackage:Option[String])
+		permissions:PermissionCollection, resolveDependency:URI => Option[JarFile],
+		myBasePackage:Option[String])
 	extends ClassLoader(parent) {
 	/**
 	 * Load a class, optionally short-circuiting the normal hierarchy.
@@ -74,8 +76,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 		classOf[ClasspathLoader].getSimpleName + " { " +
 			"base url = '" + classpath.url + "', " +
 			"classpaths = " + classpaths + ", " +
-			"permissions = " + permissions + ", " +
-			"dependencies = " + dependencies + " " +
+			"permissions = " + permissions + " " +
 			"}"
 	}
 
@@ -91,7 +92,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 			}
 
 	/** Find a class within this classpath. */
-	private[boot] def findInClasspath(name:String):Option[Class[_]] = synchronized {
+	private[boot] def findInClasspath(name:String):Option[Class[_]] = {
 		// Perhaps we've already loaded this class?
 		loaded get name orElse {
 			// If not, search through the places that might contain it.
@@ -119,27 +120,22 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 		// Full package name of the class to be loaded.
 		val packageName = className.substring(0, className.lastIndexOf('.'))
 
-		// Already-loaded dependencies which can load the desired class (lazily evaluated).
-		val loadedDeps = (dependencies.values filter { _.isDefined } flatten).view filter {
+		// Already-loaded paths which might be able to load the desired class.
+		val loadedDeps = classpaths.values
+
+		// As-yet-unloaded dependencies which might contain the class (lazily evaluated).
+		val unloadedDeps = classpath.dependencies.view flatMap {
+			uri => resolveDependency(uri)
+		} map JARLoader.wrap
+
+		val allDeps = (loadedDeps ++ unloadedDeps) filter {
 			_ readClass className isDefined
 		} map { cp =>
 			classpaths += (packageName -> cp)
 			cp
 		}
 
-		// As-yet-unloaded dependencies which might contain the class (lazily evaluated).
-		val unloadedDeps = (dependencies filter { _._2.isEmpty } keys).view flatMap { url =>
-			val cp = sudo { () => Classpath.open(url) }
-			dependencies += (url -> cp)
-			cp
-		} filter {
-			_.readClass(className).isDefined
-		} map { cp =>
-			classpaths += (packageName -> cp)
-			cp
-		}
-
-		knowns ++ loadedDeps ++ unloadedDeps
+		knowns ++ allDeps
 	}
 
 	/** Should we defer to the parent {@link ClassLoader} for this class? */
@@ -185,18 +181,17 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	 * at very inconvenient times; let's just do it ourselves.
 	 */
 	private var loaded = Map[String,Class[_]]()
-
-	/** External classpaths (which may not have been accessed yet). */
-	private var dependencies:Map[URL,Option[Classpath]] = Map()
 }
 
 object ClasspathLoader {
 	/** Factory method for {@link ClasspathLoader}. */
-	def create(parent:ClassLoader, path:URL, basePackage:Option[String]) = {
-		// Open the classpath itself and make a note if we require dependencies.
+	def create(parent:ClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
+			basePackage:Option[String] = None) =
+	{
 		val classpath = Classpath.open(path).get
-		if (classpath.dependencies.size > 0)
-			log.info("Classpath '" + path + "' has dependencies: " + classpath.dependencies)
+		classpath.dependencies foreach { dep =>
+			log fine ("Dependency for %s: %s => %s" format (path, dep, resolveDependencyJar(dep)))
+		}
 
 		// Only grant privileges to core Footlights code.
 		val permissions = makeCollection {
@@ -204,11 +199,8 @@ object ClasspathLoader {
 			else new FilePermission(path.toExternalForm, "read")
 		}
 
-		new ClasspathLoader(parent, classpath, permissions, basePackage)
+		new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, basePackage)
 	}
-
-	/** Convenience method for Java interop (Java doesn't understand default arguments). */
-	def create(parent:ClassLoader, path:URL):ClasspathLoader = create(parent, path, None)
 
 
 	/** Should code from the given package be privileged? */

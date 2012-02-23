@@ -15,9 +15,10 @@
  */
 import java.io.{File,FileNotFoundException}
 import java.lang.reflect.Method
-import java.net.{MalformedURLException,URL}
+import java.net.{MalformedURLException,URI,URL}
 import java.security.{AccessController,AllPermission,Policy,Security}
 import java.util.{ArrayList,LinkedHashSet,List}
+import java.util.jar.JarFile
 import java.util.logging.{Level,LogManager,Logger}
 
 import scala.collection.JavaConversions._
@@ -58,7 +59,20 @@ object Bootstrapper extends App {
 		corePaths map { path replace (bootPath, _) } filter pathExists map { "file:" + _ } map toUrl
 	}).flatten.toSet
 
-	val classLoader = new FootlightsClassLoader(coreClasspaths)
+	/** Uses the loaded {@link me.footlights.core.Kernel} to resolve a dependency URI. */
+	def resolveDependencyJar(uri:URI):Option[JarFile] =
+		if (localizeJar == null) None
+		else localizeJar.invoke(footlights, uri) match {
+			case jar:Some[JarFile] => jar
+			case None =>
+				log warning "Unable to resolve dependency %s".format(uri)
+				None
+			case a:Any =>
+				log severe "Kernel method %s returned non-JAR: %s".format(footlights, a)
+				None
+		}
+
+	val classLoader = new FootlightsClassLoader(coreClasspaths, resolveDependencyJar)
 
 	// Install crypto provider.
 	Security addProvider new BouncyCastleProvider()
@@ -73,6 +87,7 @@ object Bootstrapper extends App {
 	// Load the Footlights class.
 	val footlightsClass = classLoader.loadClass("me.footlights.core.Footlights")
 	val coreClass = classLoader.loadClass("me.footlights.core.Kernel")
+	val localizeJar = coreClass.getMethod("localizeJar", classOf[URI])
 
 	val footlights:Object = try {
 		coreClass getMethod("init", classOf[ClassLoader]) invoke(null, classLoader)

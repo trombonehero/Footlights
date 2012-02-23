@@ -66,13 +66,13 @@ class DemoAjaxHandler extends Context
 				Helper h = new Helper();
 
 				response.append(makeDiv("And a regular method... "+ h.help()));
-/*
+
 				response.append(
 					makeDiv("Test static method from a library: '" + Library.staticMethod() + "'"));
 
 				response.append(
 					makeDiv("Test regular library method: '" + new Library().method() + "'"));
-*/
+
 				response.append(ajax(AjaxRequest.CONTENT.name()));
 				return response;
 			}

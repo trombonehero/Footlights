@@ -37,11 +37,14 @@ package me.footlights.boot {
 class ClasspathLoaderTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 
 	var loader:ClasspathLoader = _
-	before { loader = new ClasspathLoader(parent, path, perms, basePackage) }
+	before { loader = new ClasspathLoader(parent, path, perms, resolveDepJar, basePackage) }
 
 	val parent = mock[ClassLoader]
 	val path = mock[Classpath]
 	when { path.dependencies } thenReturn List()
+
+	def resolveDepJar(uri:java.net.URI) =
+		throw new IllegalStateException("ClassLoader under test should not call resolveDepJar()")
 
 	val basePackage = Some("me.footlights.foo")
 	val perms = new Permissions

@@ -16,6 +16,7 @@
 package me.footlights.api;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 
@@ -47,7 +48,7 @@ public interface File
 	 * Client code should treat filenames as opaque identifiers; they are certainly not guaranteed
 	 * to be human-readable.
 	 */
-	public String name();
+	public URI name();
 
 	/**
 	 * The content of the file, transformed into an {@link InputStream}.

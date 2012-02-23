@@ -33,7 +33,7 @@ class Ajax(app:Uploader) extends AjaxHandler
 				val js = new JavaScript().append("var list = context.globals['list'];")
 				app.storedNames foreach { name =>
 					js.append("list.appendElement('div').appendText('%s');"
-							format JavaScript.sanitizeText(name))
+							format JavaScript.sanitizeText(name.toString))
 				}
 				js
 
@@ -41,7 +41,7 @@ class Ajax(app:Uploader) extends AjaxHandler
 				app.upload map { file =>
 					new JavaScript()
 						.append("context.globals['list'].appendElement('div').appendText('%s');"
-								format JavaScript.sanitizeText(file.name))
+								format JavaScript.sanitizeText(file.name.toString))
 				} getOrElse {
 					new JavaScript()
 						.append("""

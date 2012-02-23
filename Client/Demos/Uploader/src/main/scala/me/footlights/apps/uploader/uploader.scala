@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.net.URI
 import java.util.NoSuchElementException
 import java.util.logging.Logger
 
@@ -35,10 +36,10 @@ class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) 
 	}
 
 	private[uploader] def storedNames =
-			prefs.getString(SAVE_LIST) map { _ split ";" toList } getOrElse Nil
+		prefs.getString(SAVE_LIST) map { _ split ";" toList } getOrElse Nil map { new URI(_) }
 
-	private def storeName(name:String) = prefs.synchronized {
-		prefs.set(SAVE_LIST, name :: storedNames reduceLeft { _ + ";" + _ })
+	private def storeName(name:URI) = prefs.synchronized {
+		prefs.set(SAVE_LIST, storedNames :+ name map { _.toString } reduce { _ + ";" + _ })
 	}
 
 	private val SAVE_LIST = "saved_files"

@@ -17,6 +17,7 @@ package me.footlights.core.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
@@ -108,7 +109,7 @@ public class File implements me.footlights.api.File
 		private int desiredBlockSize = 4096;
 	}
 
-	@Override public String name() { return header.name().encode(); }
+	@Override public URI name() { return header.name().toURI(); }
 
 
 	/**

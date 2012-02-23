@@ -16,6 +16,7 @@
 package me.footlights.core.crypto;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,6 +30,7 @@ import me.footlights.core.HasBytes;
 import me.footlights.core.Preconditions;
 import me.footlights.core.Preferences;
 import me.footlights.core.ConfigurationError;
+import me.footlights.core.ProgrammerError;
 
 
 /** A fingerprint for a number of bytes. */
@@ -54,10 +56,18 @@ public class Fingerprint
 		throws NoSuchAlgorithmException
 	{
 		MessageDigest algorithm = MessageDigest.getInstance(algorithmName);
-		return new Fingerprint(algorithm, ByteBuffer.wrap(new Base32().decode(hash.getBytes())));
+		final URI uri;
+		try { uri = new URI(algorithmName, hash, null); }
+		catch (URISyntaxException e) { throw new IllegalArgumentException(e); }
+
+		return new Fingerprint(algorithm,
+				ByteBuffer.wrap(new Base32().decode(hash.getBytes())),
+				uri);
 	}
 
 	public static Builder newBuilder() { return new Builder(Preferences.getDefaultPreferences()); }
+
+	public URI toURI() { return uri; }
 
 	public String encode()
 	{
@@ -91,7 +101,19 @@ public class Fingerprint
 			Preconditions.notNull(bytes);
 
 			ByteBuffer hash = ByteBuffer.wrap(algorithm.digest(bytes));
-			return new Fingerprint(algorithm, hash);
+
+			final URI uri;
+			try
+			{
+				uri = new URI(algorithm.getAlgorithm().toLowerCase(),
+						new String(new Base32().encode(hash.array())).replaceAll("/", "+"), null);
+			}
+			catch (URISyntaxException e)
+			{
+				throw new ProgrammerError("Failed to make URI for Fingerprint", e);
+			}
+
+			return new Fingerprint(algorithm, hash, uri);
 		}
 
 		public Builder setAlgorithm(String a) throws NoSuchAlgorithmException
@@ -149,12 +171,14 @@ public class Fingerprint
 
 	@VisibleForTesting String hex() { return Hex.encodeHexString(bytes.array()); }
 
-	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes)
+	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes, URI uri)
 	{
 		this.algorithm = hashAlgorithm;
 		this.bytes = fingerprintBytes;
+		this.uri = uri;
 	}
 
 	private MessageDigest algorithm;
 	private ByteBuffer bytes;
+	private URI uri;
 }

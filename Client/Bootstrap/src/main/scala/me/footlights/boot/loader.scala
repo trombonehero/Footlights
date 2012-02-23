@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.net.URL
+import java.net.{URI,URL}
+import java.util.jar.JarFile
 
 
 package me.footlights.boot {
 
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
-class FootlightsClassLoader(classpaths:Iterable[URL]) extends ClassLoader {
+class FootlightsClassLoader(
+		classpaths:Iterable[URL], resolveDep:URI=>Option[JarFile]) extends ClassLoader {
 	/**
 	 * Load an unprivileged application.
 	 *
 	 * Open the given classpath and load its main class, as specified in its manifest file
 	 * (see {@link Classpath#mainClassName}).
 	 */
-	def loadApplication(classpath:URL) = ClasspathLoader.create(this, classpath).loadMainClass
+	def loadApplication(classpath:URL) =
+		ClasspathLoader.create(this, classpath, resolveDep).loadMainClass
 
 
 	/** Load either a core Footlights class or a core library (e.g. Java or Scala) class. */
@@ -63,7 +66,7 @@ class FootlightsClassLoader(classpaths:Iterable[URL]) extends ClassLoader {
 			// Exhaustive search of unopened core classpaths.
 			val unknown = {
 				for (url <- classpaths) yield {
-					val loader = ClasspathLoader.create(this, url, Option.apply(packageName));
+					val loader = ClasspathLoader.create(this, url, resolveDep, Some(packageName))
 					loader findInClasspath className
 				}
 			}

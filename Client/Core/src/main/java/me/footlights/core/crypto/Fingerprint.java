@@ -15,6 +15,7 @@
  */
 package me.footlights.core.crypto;
 
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,6 +34,12 @@ import me.footlights.core.ConfigurationError;
 /** A fingerprint for a number of bytes. */
 public class Fingerprint
 {
+	public static Fingerprint decode(URI uri)
+		throws NoSuchAlgorithmException
+	{
+		return decode(uri.getScheme(), uri.getSchemeSpecificPart());
+	}
+
 	public static Fingerprint decode(String name)
 		throws NoSuchAlgorithmException
 	{
@@ -40,9 +47,12 @@ public class Fingerprint
 		if (parts.length != 2)
 			throw new IllegalArgumentException("Invalid fingerprint '" + name + "'");
 
-		String algorithmName = parts[0].toLowerCase();
-		String hash = parts[1].toUpperCase();
+		return decode(parts[0].toLowerCase(), parts[1].toUpperCase());
+	}
 
+	public static Fingerprint decode(String algorithmName, String hash)
+		throws NoSuchAlgorithmException
+	{
 		MessageDigest algorithm = MessageDigest.getInstance(algorithmName);
 		return new Fingerprint(algorithm, ByteBuffer.wrap(new Base32().decode(hash.getBytes())));
 	}

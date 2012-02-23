@@ -27,10 +27,10 @@ class Ajax(app:Uploader) extends AjaxHandler
 		request.path() match
 		{
 			case "do_upload" =>
-				app.upload map { filename =>
+				app.upload map { file =>
 					new JavaScript()
 						.append("""
-context.root.appendElement('div').appendText('Uploaded %s');""" format sanitizeText(filename))
+context.root.appendElement('div').appendText('Uploaded %s');""" format sanitizeText(file.name))
 				} getOrElse {
 					new JavaScript()
 						.append("""

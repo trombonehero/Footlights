@@ -28,8 +28,11 @@ class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) 
 {
 	def ajaxHandler = new Ajax(this)
 
-	private[uploader] def upload() =
-		kernel.openLocalFile map { _.name } map { n => storeName(n); n }
+	private[uploader] def upload() = {
+		val file = kernel.openLocalFile
+		file map { _.name } foreach storeName
+		file
+	}
 
 	private def storedNames = prefs.getString(SAVE_LIST) map { _ split ":" toList } getOrElse Nil
 

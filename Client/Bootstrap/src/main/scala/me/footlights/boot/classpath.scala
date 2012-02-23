@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import java.io.{File,FileInputStream,FilePermission,IOException}
-import java.net.{MalformedURLException,URL}
+import java.net.{MalformedURLException,URI,URL}
 import java.security.{AllPermission,Permission,PermissionCollection,Permissions}
 import java.security.{CodeSigner,CodeSource,ProtectionDomain}
 import java.util.jar.{JarEntry,JarFile,Manifest}
@@ -187,8 +187,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	private var loaded = Map[String,Class[_]]()
 
 	/** External classpaths (which may not have been accessed yet). */
-	private var dependencies:Map[URL,Option[Classpath]] =
-		classpath.dependencies map { (_,None) } toMap
+	private var dependencies:Map[URL,Option[Classpath]] = Map()
 }
 
 object ClasspathLoader {
@@ -236,9 +235,8 @@ abstract class Classpath(val url:URL) {
 	def externalURL = url.toExternalForm
 	def mainClassName = getManifestAttribute("Footlights-App")
 	def dependencies =
-		(getManifestAttribute("Class-Path") map { _ split ":" } flatten) filter isJar map {
-			"jar:file:" + _ + "!/"
-		} map { new URL(_) }
+		(getManifestAttribute("Class-Path") map { _ split " " } flatten) filter isJar map {
+			new URI(_) }
 
 	/** Read a class' bytecode. */
 	def readClass(name:String): Option[Bytecode]

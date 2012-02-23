@@ -86,13 +86,6 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 					.append(createClickableText(launcher, "Wicked Demo", "load_app/" + WICKED_APP))
 					.append(createClickableText(launcher, "File Uploader", "load_app/" + UPLOADER))
 					.append(setupAsyncChannel)
-
-					.append("""
-var contents =
-	context.globals['sandboxes'].create(
-		'content', context.globals['content'], context.log, { x: 0, y: 0 });
-""")
-					.append(listFiles)
 					.append("context.log('UI initialized.');")
 
 			case Reset =>
@@ -148,25 +141,6 @@ var sb = context.globals['sandboxes'].create(
 sb.ajax('init');
 """ format (JavaScript.sanitizeText(name), "100%"))
 
-
-	private def listFiles = {
-		val files = footlights.listFiles
-
-		val js = new JavaScript()
-		js.append("""
-var dir = contents.root.appendElement('div');
-dir.class = 'console';
-dir.style['font-family'] = 'monospace';
-dir.style['white-space'] = 'pre-wrap';
-dir.clear();
-dir.appendElement('div').appendText('%d files in local cache:');""" format files.size)
-
-		for (stat <- files take 5)
-			js.append("dir.appendText('%10d B   %s\\n');"
-					format (stat.length, JavaScript.sanitizeText(stat.name.encode)))
-
-		js
-	}
 
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()
 

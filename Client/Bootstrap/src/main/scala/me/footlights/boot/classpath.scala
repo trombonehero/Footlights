@@ -236,9 +236,9 @@ abstract class Classpath(val url:URL) {
 	def externalURL = url.toExternalForm
 	def mainClassName = getManifestAttribute("Footlights-App")
 	def dependencies =
-		(getManifestAttribute("Class-Path") map { _ split ":" toList } flatten) filter isJar map {
-			s => new URL("jar:file:" + s + "!/")
-		}
+		(getManifestAttribute("Class-Path") map { _ split ":" } flatten) filter isJar map {
+			"jar:file:" + _ + "!/"
+		} map { new URL(_) }
 
 	/** Read a class' bytecode. */
 	def readClass(name:String): Option[Bytecode]

@@ -107,7 +107,7 @@ trait SwingPowerboxes extends Footlights {
 			case _ => { log.fine("User cancelled file open dialog"); None }
 		}
 
-		io.read(filename) map { data.File.newBuilder().setContent(_).freeze() }
+		io read filename flatMap save
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }

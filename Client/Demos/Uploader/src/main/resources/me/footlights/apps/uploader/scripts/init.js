@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-context.log('hello');
-
 var a = context.root.appendElement('a');
 a.onclick = function() { context.ajax('do_upload'); }
 a.appendText('Upload Something');
+
+context.root.appendElement('div').appendText('Uploaded files:');
+var list = context.root.appendElement('div');
+list.class = 'console';
+context.globals['list'] = list;
+
+context.ajax('populate');

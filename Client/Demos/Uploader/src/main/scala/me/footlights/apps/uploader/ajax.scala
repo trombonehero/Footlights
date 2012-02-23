@@ -27,13 +27,21 @@ class Ajax(app:Uploader) extends AjaxHandler
 		request.path() match
 		{
 			case "init" =>
-				new JavaScript().append("context.load('scripts/init.js')")
+				new JavaScript().append("context.load('scripts/init.js');")
+
+			case "populate" =>
+				val js = new JavaScript().append("var list = context.globals['list'];")
+				app.storedNames foreach { name =>
+					js.append("list.appendElement('div').appendText('%s');"
+							format JavaScript.sanitizeText(name))
+				}
+				js
 
 			case "do_upload" =>
 				app.upload map { file =>
 					new JavaScript()
-						.append("""
-context.root.appendElement('div').appendText('Uploaded %s');""" format sanitizeText(file.name))
+						.append("context.globals['list'].appendElement('div').appendText('%s');"
+								format JavaScript.sanitizeText(file.name))
 				} getOrElse {
 					new JavaScript()
 						.append("""

@@ -381,6 +381,8 @@ object JARLoader {
 			}) map { new JARLoader(_, url) }
 		}
 
+	def wrap(jar:JarFile) = new JARLoader(jar, new URL("jar:file:" + jar.getName + "!/"))
+
 	private def makeJarUrl(url:URL) =
 		if (url.toExternalForm.startsWith("jar:")) url else new URL("jar:" + url + "!/")
 }

@@ -75,4 +75,22 @@ public class FileTest
 		assertEquals(orig.length, bytes);
 		assertArrayEquals(orig, copy);
 	}
+
+	/** Cowardly refuse to read past the end of a file. */
+	@Test public void doNotReadPastEnd() throws Throwable
+	{
+		byte[] orig = new byte[16];
+		for (byte i = 0; i < orig.length; i++) orig[i] = i;
+
+		File f = File.newBuilder()
+			.setContent(Lists.newArrayList(ByteBuffer.wrap(orig)))
+			.setDesiredBlockSize(32)
+			.freeze();
+
+		assertTrue(f.content().size() == 1);
+
+		byte[] copy = new byte[orig.length + 1];
+		int bytes = f.getInputStream().read(copy);
+		assertEquals(orig.length, bytes);
+	}
 }

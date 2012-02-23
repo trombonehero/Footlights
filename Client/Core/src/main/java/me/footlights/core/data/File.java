@@ -158,22 +158,16 @@ public class File implements me.footlights.api.File
 				if (blockIndex >= plaintext.size()) return -1;
 
 				int pos = offset;
-				while (pos < (offset + len))
+				while ((pos < (offset + len)) && (blockIndex < buffers.length))
 				{
+					int leftToRead = len - (pos - offset);
 					ByteBuffer next = buffers[blockIndex];
-					if (next.remaining() > len)
-					{
-						next.get(buffer, pos, len);
-						pos += len;
-					}
-					else if (next.remaining() > 0)
-					{
-						int bytes = next.remaining();
-						next.get(buffer, pos, bytes);
-						pos += bytes;
-						blockIndex++;
-					}
 
+					int bytes = Math.min(leftToRead, next.remaining());
+					next.get(buffer, pos, bytes);
+					pos += bytes;
+
+					if (next.remaining() == 0) blockIndex++;
 					if (pos == offset) return -1;
 				}
 
@@ -267,6 +261,7 @@ public class File implements me.footlights.api.File
 				if (next.remaining() == chunkSize)
 				{
 					chunked.add(next);
+					next = null;
 					continue;
 				}
 			}

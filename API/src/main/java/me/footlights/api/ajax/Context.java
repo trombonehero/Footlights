@@ -15,11 +15,10 @@
  */
 package me.footlights.api.ajax;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import me.footlights.api.WebRequest;
-
-import com.google.common.collect.Maps;
 
 
 /** Handle to a client-side context (ECMAScript sandbox or 'window'). */ 
@@ -29,7 +28,7 @@ public class Context implements AjaxHandler
 	public Context(AjaxHandler defaultHandler)
 	{
 		this.defaultHandler = defaultHandler;
-		handlers = Maps.newLinkedHashMap();
+		handlers = new LinkedHashMap<String, AjaxHandler>();
 	}
 
 	/**

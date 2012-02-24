@@ -17,7 +17,8 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 
 import me.footlights.api.WebRequest
-import me.footlights.api.ajax.{AjaxHandler, AjaxResponse, JavaScript}
+import me.footlights.api.ajax.{AjaxHandler, AjaxResponse, JavaScript, JSON}
+import me.footlights.api.ajax.JSON._
 
 import me.footlights.core.Footlights
 
@@ -114,10 +115,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 				createUISandbox(name)
 
 			case FillPlaceholder(name) => {
-				me.footlights.api.ajax.JSON.newBuilder()
-					.put("key", name)
-					.put("value", footlights.evaluate(name))
-					.build
+				JSON("key" -> name, "value" -> footlights.evaluate(name))
 			}
 		}
 	}

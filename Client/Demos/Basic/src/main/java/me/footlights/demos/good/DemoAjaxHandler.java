@@ -30,6 +30,7 @@ class DemoAjaxHandler extends Context
 	{
 		INIT,
 		TEST_METHODS,
+		LIBRARY_CALLS,
 		SYSCALL,
 		CONTENT,
 		ALL_DONE,
@@ -67,13 +68,28 @@ class DemoAjaxHandler extends Context
 
 				response.append(makeDiv("And a regular method... "+ h.help()));
 
-				response.append(
-					makeDiv("Test static method from a library: '" + Library.staticMethod() + "'"));
+				response.append(ajax(AjaxRequest.LIBRARY_CALLS.name()));
+				return response;
+			}
+		});
 
-				response.append(
-					makeDiv("Test regular library method: '" + new Library().method() + "'"));
+		register(LIBRARY_CALLS.name(), new AjaxHandler()
+		{
+			@Override public JavaScript service(WebRequest request)
+			{
+				JavaScript response = new JavaScript();
+				try
+				{
+					response.append(makeDiv("Test static method from library v" + Library.version()));
 
-				response.append(ajax(AjaxRequest.CONTENT.name()));
+					Library lib = new Library();
+					response.append(makeDiv("Test regular library method: '" + lib.method() + "'"));
+					response.append(makeDiv("Library-generated JSON: '" + lib.json(42, "foo") + "'"));
+
+					response.append(ajax(AjaxRequest.CONTENT.name()));
+				}
+				catch (Throwable t) { response.append(makeDiv("Error: " + t)); }
+
 				return response;
 			}
 		});

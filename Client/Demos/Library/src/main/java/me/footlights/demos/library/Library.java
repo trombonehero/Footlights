@@ -15,6 +15,9 @@
  */
 package me.footlights.demos.library;
 
+import me.footlights.api.ajax.JSON;
+
+
 /**
  * Contains methods that might be useful to an app.
  *
@@ -22,8 +25,12 @@ package me.footlights.demos.library;
  */
 public class Library
 {
+	public static String version() { return "1.0-alpha0"; }
 	public String method() { return NAME + ": regular method"; }
-	public static String staticMethod() { return NAME + ": static method"; }
+	public JSON json(int foo, String bar)
+	{
+		return new JSON().plus("int echo", foo).plus("String echo", bar);
+	}
 
 	private static String NAME = Library.class.getSimpleName();
 }

@@ -22,8 +22,6 @@ import java.util.logging.Logger
 
 import collection.JavaConversions._
 
-import com.google.common.collect.ImmutableList
-
 
 package me.footlights.boot {
 

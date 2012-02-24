@@ -44,6 +44,13 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+
+		<!-- Miscellaneous collections niceties (e.g. Maps.newHashMap()). -->
+		<dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

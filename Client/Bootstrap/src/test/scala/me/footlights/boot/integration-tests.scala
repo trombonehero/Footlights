@@ -30,6 +30,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers._
 import org.scalatest.mock.MockitoSugar
 
+import java.io.FilePermission
+
+
 package me.footlights.boot {
 
 /** Integration tests for {@link FootlightsClassLoader}. */
@@ -51,6 +54,14 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 		"when loading a " - {
 			"well-behaved app," - {
+				"should grant the read permission." in {
+					good should have (permission { BasicDemo.read })
+				}
+
+				"should not grant the write permission." in {
+					good should not have permission { BasicDemo.write }
+				}
+
 				"should not grant the AllPermission." in {
 					good should not have allPermission
 				}
@@ -158,12 +169,16 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 	/** Class and path information for a Footlights application. */
 	case class App(projectDir:String, projectName:String) {
-		val classPath =
+		val filename =
 			coreClasspaths find { _ contains "Bootstrap" } map {
 				_.replaceFirst("Bootstrap/.*", "Demos/")
 			} map {
 				_ + projectDir + "/target/" + projectName + "-HEAD.jar"
-			} map localPath map { new URL(_) } get
+			} map localPath get
+
+		val classPath = new URL(filename)
+		val read = new FilePermission(filename, "read")
+		val write = new FilePermission(filename, "write")
 	}
 
 

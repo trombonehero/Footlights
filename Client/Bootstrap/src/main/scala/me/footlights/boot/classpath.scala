@@ -194,7 +194,7 @@ object ClasspathLoader {
 			// Only grant privileges to core Footlights code.
 			val permissions = makeCollection {
 				if (isPrivileged(basePackage)) new AllPermission
-				else new FilePermission(path.toExternalForm, "read")
+				else classpath.readPermission
 			}
 
 			new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, basePackage)
@@ -232,6 +232,9 @@ abstract class Classpath(val url:URL) {
 	/** Read a class' bytecode. */
 	def readClass(name:String): Option[Bytecode]
 
+	/** Build a {@link FilePermission} representing the right to read this {@link Classpath}. */
+	def readPermission: Permission
+
 	/** Extract a global attribute from the classpath's manifest file. */
 	protected def getManifestAttribute(key:String):Option[String]
 
@@ -267,6 +270,12 @@ class FileLoader(url:URL) extends Classpath(url) {
 		}
 
 	override val toString = "FileLoader { %s }" format url
+
+	override val readPermission = {
+		val dirname = url.getPath
+		val path = if (dirname endsWith "/") dirname else (dirname + "/")
+		new FilePermission(path + "-", "read")
+	}
 
 	override protected def getManifestAttribute(key:String) =
 		manifest flatMap { m =>
@@ -336,6 +345,7 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 			}
 	}
 
+	override val readPermission = new FilePermission(url getPath, "read")
 
 	override def readClass(className:String) = {
 		val classPath = className.replace('.', '/') + ".class"

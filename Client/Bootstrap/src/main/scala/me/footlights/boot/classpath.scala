@@ -242,11 +242,16 @@ abstract class Classpath(val url:URL) {
 private[boot]
 object Classpath {
 	def open(url:URL):Option[Classpath] = {
-		url.getProtocol match {
-			case "jar" => JARLoader.open(url)
-			case "file" =>
-				if (url.getPath endsWith "jar") JARLoader.open(url)
-				else FileLoader.open(url)
+		try {
+			url.getProtocol match {
+				case "jar" => JARLoader.open(url)
+				case "file" =>
+					if (url.getPath endsWith "jar") JARLoader.open(url)
+					else FileLoader.open(url)
+			}
+		} catch {
+			case e:java.security.AccessControlException => None
+			case e:IOException => None
 		}
 	}
 }
@@ -362,13 +367,9 @@ private[boot]
 object JARLoader {
 	def open(url:URL) = makeJarUrl(url) match {
 		case url:URL =>
-			(try {
-				url openConnection match {
-					case c:java.net.JarURLConnection => Option(c.getJarFile)
-					case _ => None
-				}
-			} catch {
-				case e:IOException => None
+			(url openConnection match {
+				case c:java.net.JarURLConnection => Option(c.getJarFile)
+				case _ => None
 			}) map { new JARLoader(_, url) }
 		}
 

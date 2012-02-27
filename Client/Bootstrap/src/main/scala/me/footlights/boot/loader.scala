@@ -29,7 +29,7 @@ class FootlightsClassLoader(
 	 * (see {@link Classpath#mainClassName}).
 	 */
 	def loadApplication(classpath:URL) =
-		ClasspathLoader.create(this, classpath, resolveDep).loadMainClass
+		ClasspathLoader.create(this, classpath, resolveDep) flatMap { _.loadMainClass }
 
 
 	/** Load either a core Footlights class or a core library (e.g. Java or Scala) class. */
@@ -64,12 +64,11 @@ class FootlightsClassLoader(
 			}
 
 			// Exhaustive search of unopened core classpaths.
-			val unknown = {
-				for (url <- classpaths) yield {
-					val loader = ClasspathLoader.create(this, url, resolveDep, Some(packageName))
-					loader findInClasspath className
-				}
-			}
+			val unknown =
+				for (url <- classpaths) yield
+					ClasspathLoader.create(this, url, resolveDep, Some(packageName)) flatMap {
+						_ findInClasspath className
+					}
 
 			// Stream the two together, find the first success, note the correct loader and return.
 			(known ++ unknown).flatten match {

@@ -186,18 +186,19 @@ object ClasspathLoader {
 	def create(parent:ClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
 			basePackage:Option[String] = None) =
 	{
-		val classpath = Classpath.open(path).get
-		classpath.dependencies foreach { dep =>
-			log fine ("Dependency for %s: %s => %s" format (path, dep, resolveDependencyJar(dep)))
-		}
+		Classpath open path map { classpath =>
+			classpath.dependencies foreach { dep =>
+				log fine ("Dependency for %s: %s => %s" format (path, dep, resolveDependencyJar(dep)))
+			}
 
-		// Only grant privileges to core Footlights code.
-		val permissions = makeCollection {
-			if (isPrivileged(basePackage)) new AllPermission
-			else new FilePermission(path.toExternalForm, "read")
-		}
+			// Only grant privileges to core Footlights code.
+			val permissions = makeCollection {
+				if (isPrivileged(basePackage)) new AllPermission
+				else new FilePermission(path.toExternalForm, "read")
+			}
 
-		new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, basePackage)
+			new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, basePackage)
+		}
 	}
 
 

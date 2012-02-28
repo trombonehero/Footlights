@@ -19,13 +19,12 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import scala.Option;
-
-import com.google.common.collect.Lists;
 
 import me.footlights.core.FileBackedPreferences;
 import me.footlights.core.Preferences;
@@ -85,7 +84,7 @@ public class DiskStore extends LocalStore
 	{
 		String names[] = dir.list();
 
-		Collection<Stat> l = Lists.newArrayListWithCapacity(names.length);
+		Collection<Stat> l = new ArrayList<Stat>(names.length);
 		for (String name : names)
 		{
 			name = dir + File.separator + name;

@@ -29,11 +29,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
-
-import com.google.common.collect.Maps;
 
 import me.footlights.core.HasBytes;
 import me.footlights.core.Preferences;
@@ -302,10 +301,11 @@ public class Keychain implements HasBytes
 	private static final Preferences PREFERENCES = Preferences.getDefaultPreferences();
 
 	/** Public/private keypairs. */
-	private final Map<Fingerprint, SigningIdentity> privateKeys = Maps.newHashMap();
+	private final Map<Fingerprint, SigningIdentity> privateKeys =
+		new HashMap<Fingerprint, SigningIdentity>();
 
 	/** Secret keys for decrypting blocks */
-	private final Map<Fingerprint, SecretKey> secretKeys = Maps.newHashMap();
+	private final Map<Fingerprint, SecretKey> secretKeys = new HashMap<Fingerprint, SecretKey>();
 
 	/** Byte-level representation (mutable, tied to {@link #dirty}). */
 	private ByteBuffer bytes = ByteBuffer.allocate(0);

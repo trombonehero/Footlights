@@ -16,11 +16,10 @@
 package me.footlights.ui.web;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import me.footlights.api.WebRequest;
-
-import com.google.common.collect.Maps;
 
 
 /** A request from the client, broken into path, query and fragment. */
@@ -52,7 +51,7 @@ public class Request implements WebRequest
 		else fragment = null;
 
 		// Parse the query, if it exists
-		Map<String,String> query = Maps.newLinkedHashMap();
+		Map<String,String> query = new LinkedHashMap<String,String>();
 		tmp = tmp[0].split("\\?");
 		if (tmp.length > 1)
 		{

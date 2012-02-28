@@ -16,13 +16,12 @@
 package me.footlights.core.data;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 import me.footlights.core.data.File;
 
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -42,8 +41,7 @@ public class FileTest
 	{
 		byte[] rawData = new byte[] { 1, 2, 3, 4 };
 
-		List<ByteBuffer> data = Lists.newArrayList();
-		data.add(ByteBuffer.wrap(rawData));
+		List<ByteBuffer> data = Arrays.asList(ByteBuffer.wrap(rawData));
 
 		File f = File.newBuilder()
 			.setContent(data)
@@ -64,7 +62,7 @@ public class FileTest
 		for (byte i = 0; i < orig.length; i++) orig[i] = i;
 
 		File f = File.newBuilder()
-			.setContent(Lists.newArrayList(ByteBuffer.wrap(orig)))
+			.setContent(Arrays.asList(ByteBuffer.wrap(orig)))
 			.setDesiredBlockSize(32)
 			.freeze();
 
@@ -83,7 +81,7 @@ public class FileTest
 		for (byte i = 0; i < orig.length; i++) orig[i] = i;
 
 		File f = File.newBuilder()
-			.setContent(Lists.newArrayList(ByteBuffer.wrap(orig)))
+			.setContent(Arrays.asList(ByteBuffer.wrap(orig)))
 			.setDesiredBlockSize(32)
 			.freeze();
 

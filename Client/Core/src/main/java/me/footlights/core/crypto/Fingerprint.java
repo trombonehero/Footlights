@@ -24,8 +24,6 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import me.footlights.core.HasBytes;
 import me.footlights.core.Preconditions;
 import me.footlights.core.Preferences;
@@ -169,7 +167,7 @@ public class Fingerprint
 		return true;
 	}
 
-	@VisibleForTesting String hex() { return Hex.encodeHexString(bytes.array()); }
+	String hex() { return Hex.encodeHexString(bytes.array()); }
 
 	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes, URI uri)
 	{

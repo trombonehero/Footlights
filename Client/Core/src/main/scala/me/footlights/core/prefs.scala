@@ -256,7 +256,7 @@ final class FileBackedPreferences(properties:java.util.Properties, configFile:ja
 	with java.io.Flushable with ModifiablePreferences {
 
 	// PreferenceStorageEngine implementation
-	private[core] override def getAll = com.google.common.collect.Maps.fromProperties(properties)
+	private[core] override def getAll = asMap
 	override def getRaw(name:String) = Option(properties.getProperty(name))
 
 	// ModifiablePreferences implementation
@@ -285,6 +285,11 @@ final class FileBackedPreferences(properties:java.util.Properties, configFile:ja
 	// Object override
 	override def finalize = { flush; super.finalize }
 
+	/** Convert the {@link Properties} object into a {@link Map}. */
+	private def asMap =
+		properties.propertyNames map { _.toString } map { key =>
+			(key, properties getProperty key)
+		} toMap
 
 	/** Have any options changed? */
 	private var dirty = false

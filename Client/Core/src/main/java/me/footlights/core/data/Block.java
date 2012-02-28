@@ -17,14 +17,13 @@ package me.footlights.core.data;
 
 import java.nio.ByteBuffer;
 import java.security.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import javax.crypto.Cipher;
-
-import com.google.common.collect.Lists;
 
 import me.footlights.core.Preconditions;
 import me.footlights.core.crypto.Fingerprint;
@@ -123,7 +122,7 @@ public class Block implements FootlightsPrimitive
 		private Builder() {}
 
 		private int desiredSize = 0;
-		private List<Link> links = Lists.newArrayList();
+		private List<Link> links = new ArrayList<Link>();
 		private ByteBuffer content = ByteBuffer.allocate(0);
 		private ByteBuffer padding;
 		private Fingerprint.Builder fingerprintBuilder = Fingerprint.newBuilder();

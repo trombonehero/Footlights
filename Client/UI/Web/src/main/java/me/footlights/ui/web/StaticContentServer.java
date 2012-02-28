@@ -19,10 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.Maps;
 
 import me.footlights.api.WebRequest;
 import me.footlights.core.apps.AppWrapper;
@@ -33,7 +32,7 @@ class StaticContentServer implements WebServer
 {
 	StaticContentServer(Map<String,AppWrapper> apps)
 	{
-		paths = Maps.newHashMap();
+		paths = new HashMap<String, Class<?>>();
 		this.apps = apps;
 
 		for (Map.Entry<String,AppWrapper> app : apps.entrySet())

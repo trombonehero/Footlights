@@ -21,15 +21,14 @@ import java.net.URI;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import me.footlights.core.data.store.Stat;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 
 /**
@@ -41,7 +40,7 @@ public class File implements me.footlights.api.File
 {
 	public static File from(EncryptedBlock header, Collection<EncryptedBlock> ciphertext)
 	{
-		List<Block> plaintext = Lists.newArrayListWithCapacity(ciphertext.size());
+		List<Block> plaintext = new ArrayList<Block>(ciphertext.size());
 		for (EncryptedBlock e : ciphertext) plaintext.add(e.plaintext());
 
 		return new File(header, plaintext, ciphertext);
@@ -52,21 +51,21 @@ public class File implements me.footlights.api.File
 	{
 		public MutableFile setContent(ByteBuffer content)
 		{
-			this.content = ImmutableList.of(content);
+			this.content = Arrays.asList(content);
 			return this;
 		}
 
 		public MutableFile setContent(Collection<ByteBuffer> content)
 		{
-			this.content = ImmutableList.copyOf(content);
+			this.content = content;
 			return this;
 		}
 
 		MutableFile setBlocks(Collection<Block> content)
 		{
-			List<ByteBuffer> bytes = Lists.newLinkedList();
+			List<ByteBuffer> bytes = new ArrayList<ByteBuffer>(content.size());
 			for (Block b : content) bytes.add(b.content());
-			this.content = ImmutableList.copyOf(bytes);
+			this.content = bytes;
 
 			return this;
 		}
@@ -88,7 +87,7 @@ public class File implements me.footlights.api.File
 				rechunk(content, desiredBlockSize - Block.OVERHEAD_BYTES);
 
 			// Next, create {@link EncryptedBlock} objects.
-			List<EncryptedBlock> ciphertext = Lists.newLinkedList();
+			List<EncryptedBlock> ciphertext = new ArrayList<EncryptedBlock>(chunked.size());
 
 			for (ByteBuffer b : chunked)
 				ciphertext.add(
@@ -107,7 +106,7 @@ public class File implements me.footlights.api.File
 
 		private MutableFile() {}
 
-		private Iterable<ByteBuffer> content = Lists.newArrayList();
+		private Iterable<ByteBuffer> content = new ArrayList<ByteBuffer>();
 		private int desiredBlockSize = 4096;
 	}
 
@@ -202,7 +201,7 @@ public class File implements me.footlights.api.File
 	/** Encrypted blocks to be saved in a {@link Store}. */
 	public List<EncryptedBlock> toSave()
 	{
-		LinkedList<EncryptedBlock> everything = Lists.newLinkedList(ciphertext);
+		LinkedList<EncryptedBlock> everything = new LinkedList<EncryptedBlock>(ciphertext);
 		everything.push(header);
 
 		return everything;
@@ -219,7 +218,7 @@ public class File implements me.footlights.api.File
 	 */
 	List<ByteBuffer> content() throws IOException
 	{
-		List<ByteBuffer> content = Lists.newLinkedList();
+		List<ByteBuffer> content = new ArrayList<ByteBuffer>(plaintext.size());
 		for (Block b : plaintext) content.add(b.content());
 
 		return content;
@@ -251,7 +250,7 @@ public class File implements me.footlights.api.File
 		Iterator<ByteBuffer> i = content.iterator();
 		ByteBuffer next = null;
 
-		List<ByteBuffer> chunked = Lists.newLinkedList();
+		List<ByteBuffer> chunked = new LinkedList<ByteBuffer>();
 		ByteBuffer current = ByteBuffer.allocate(chunkSize);
 
 		while (true)
@@ -300,8 +299,8 @@ public class File implements me.footlights.api.File
 		Collection<Block> plaintext, Collection<EncryptedBlock> ciphertext)
 	{
 		this.header = header;
-		this.plaintext = ImmutableList.<Block>builder().addAll(plaintext).build();
-		this.ciphertext = ImmutableList.<EncryptedBlock>builder().addAll(ciphertext).build();
+		this.plaintext = new ArrayList<Block>(plaintext);
+		this.ciphertext = new ArrayList<EncryptedBlock>(ciphertext);
 
 		long len = 0;
 		for (Block b : plaintext) len += b.bytes();
@@ -310,7 +309,7 @@ public class File implements me.footlights.api.File
 
 
 	private final EncryptedBlock header;
-	private final ImmutableList<Block> plaintext;
-	private final ImmutableList<EncryptedBlock> ciphertext;
+	private final List<Block> plaintext;
+	private final List<EncryptedBlock> ciphertext;
 	private final Stat stat;
 }

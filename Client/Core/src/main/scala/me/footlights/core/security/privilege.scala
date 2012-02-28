@@ -33,7 +33,6 @@ trait KernelPrivilege extends KernelInterface {
 	abstract override def open(name:String)        = Privilege.sudo { () => super.open(name) }
 	abstract override def openLocalFile()          = Privilege.sudo { () => super.openLocalFile() }
 	abstract override def save(data:ByteBuffer)    = Privilege.sudo { () => super.save(data) }
-
 }
 
 /**

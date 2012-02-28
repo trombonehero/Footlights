@@ -17,7 +17,8 @@ import java.net.URI
 import java.util.NoSuchElementException
 import java.util.logging.Logger
 
-import me.footlights.api.{Application,KernelInterface,ModifiablePreferences}
+import me.footlights.api.{Application,File,KernelInterface,ModifiablePreferences}
+import me.footlights.api.support.Tee._
 
 package me.footlights.apps.uploader {
 
@@ -29,18 +30,19 @@ class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) 
 {
 	def ajaxHandler = new Ajax(this)
 
-	private[uploader] def upload() = {
-		val file = kernel.openLocalFile
-		file map { _.name } foreach storeName
-		file
-	}
+	private[uploader] def upload() = kernel.openLocalFile tee store
+	private[uploader] def download(name:String) =
+		kernel open name tee kernel.saveLocalFile
 
 	private[uploader] def storedNames =
-		prefs getString SaveList map { _ split ";" toList } getOrElse Nil map { new URI(_) }
+		(prefs getString SaveList map split flatten) map { new URI(_) }
 
-	private def storeName(name:URI) = prefs.synchronized {
-		prefs.set(SaveList, storedNames :+ name map { _.toString } reduce { _ + ";" + _ })
+	private def store(file:File) = prefs.synchronized {
+		prefs.set(SaveList, (storedNames toList) :+ file.name map { _.toString } reduce join)
 	}
+
+	private def join(x:String, y:String) = x + ";" + y
+	private def split(x:String) = x split ";" toList
 
 	private val SaveList = "saved_files"
 }

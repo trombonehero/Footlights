@@ -17,6 +17,9 @@ import me.footlights.api.{Preferences,WebRequest}
 import me.footlights.api.ajax.{AjaxHandler,JavaScript}
 import me.footlights.api.ajax.JavaScript.sanitizeText
 
+import java.net.URLEncoder
+import java.net.URLDecoder
+
 package me.footlights.apps.uploader {
 
 /** Translates Ajax events to/from model events. */
@@ -32,8 +35,14 @@ class Ajax(app:Uploader) extends AjaxHandler
 			case "populate" =>
 				val js = new JavaScript().append("var list = context.globals['list'];")
 				app.storedNames foreach { name =>
-					js.append("list.appendElement('div').appendText('%s');"
-							format JavaScript.sanitizeText(name.toString))
+					val sanitized = JavaScript sanitizeText name.toString
+					val encoded = JavaScript sanitizeText (URLEncoder encode name.toString)
+
+					js.append("""
+var a = list.appendElement('div').appendElement('a');
+a.appendText('%s');
+a.onclick = function() { context.ajax('download/%s)'); };
+""" format (sanitized, encoded))
 				}
 				js
 
@@ -41,6 +50,14 @@ class Ajax(app:Uploader) extends AjaxHandler
 				setStatus {
 					app.upload map { _.name.toString } map { "Downloaded '%s'." format _ } getOrElse
 						"Uploaded nothing (user may have clicked cancel)."
+				}
+
+			case DownloadRequest(name) =>
+				setStatus {
+					app download (URLDecoder decode name) map {
+						"Downloaded '%s'" format _.name.toString
+					} getOrElse
+						"Downloaded nothing (user cancelled?)."
 				}
 		}
 	}

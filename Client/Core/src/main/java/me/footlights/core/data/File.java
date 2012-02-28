@@ -111,7 +111,7 @@ public class File implements me.footlights.api.File
 		private int desiredBlockSize = 4096;
 	}
 
-	@Override public URI name() { return header.name().toURI(); }
+	@Override public URI name() { return stat.name().toURI(); }
 	public Stat stat() { return stat; }
 	public URI key() { return header.link().key().toUri(); }
 

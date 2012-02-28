@@ -39,6 +39,14 @@
 				<version>140</version>
 			</dependency>
 
+			<!-- Dependency injection. -->
+			<dependency>
+				<groupId>com.google.inject</groupId>
+				<artifactId>guice</artifactId>
+				<version>3.0</version>
+				<classifier>no_aop</classifier>
+			</dependency>
+
 			<!-- Base64 encoding / decoding. -->
 			<dependency>
 				<groupId>commons-codec</groupId>

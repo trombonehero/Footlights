@@ -19,10 +19,8 @@ import java.util.List;
 
 import com.google.inject.Module;
 
-import roboguice.application.RoboApplication;
 
-
-public class Footlights extends RoboApplication
+public class Footlights extends android.app.Application
 {
     protected void addApplicationModules(List<Module> modules)
     {

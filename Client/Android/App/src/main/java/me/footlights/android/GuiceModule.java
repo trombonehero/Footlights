@@ -22,5 +22,19 @@ public class GuiceModule extends AbstractModule
 {
 	@Override protected void configure()
 	{
+		/*
+		ClassLoader loader = GuiceModule.class.getClassLoader();
+		Class<?> kernelClass = Kernel.class;
+
+		Kernel kernel = null;
+		try { kernel = Kernel.init(loader); }
+		catch (Exception e)
+		{
+			System.err.println("Error creating kernel: " + e);
+			e.printStackTrace(System.err);
+		}
+
+		bind(Kernel.class).toInstance(kernel);
+		*/
 	}
 }

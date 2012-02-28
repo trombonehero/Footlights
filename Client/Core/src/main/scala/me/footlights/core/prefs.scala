@@ -133,9 +133,9 @@ class Preferences(engine:Option[PreferenceStorageEngine])
 		cipher foreach { c => defaults += ("crypto.sym.algorithm" -> c.getAlgorithm()) }
  
 		preferred = List("CBC", "CTR")
-		val modes = cipher map { _.getAttribute("SupportedModes") } filter {
-			_ != null } map { _.split("\\|") } map { List.fromArray(_)
-		} filter { preferred.contains } getOrElse preferred
+		val modes = cipher map { _.getAttribute("SupportedModes") } filter { _ != null } map {
+			_ split "\\|" toList } filter { preferred.contains } getOrElse preferred
+
 		preferred find { modes.contains } foreach { m => defaults += ("crypto.sym.mode" -> m) }
 
 		// Also find a reasonable asymmetric-key cipher.
@@ -215,7 +215,7 @@ object Preferences {
 		val magic = {
 			val a = new Array[Byte](MAGIC.length)
 			bytes.get(a)
-			List.fromArray(a)
+			a toList
 		}
 		if (magic != MAGIC) throw new IOException("Incorrect Preferences magic");
 

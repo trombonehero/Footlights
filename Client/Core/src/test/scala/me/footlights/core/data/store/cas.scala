@@ -153,7 +153,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 		def uploadUrl() = prefs get UploadUrl._1 map { new URL(_) }
 		def downloadUrl(f:Fingerprint) =
 			prefs get DownloadUrl._1 map { base =>
-				new URL(base + "/" + java.net.URLEncoder.encode(f.encode)) }
+				new URL(base + "/" + java.net.URLEncoder.encode(f.encode, "utf-8")) }
 
 		new CASClient(downloadUrl, uploadUrl, Option(SharedSecret), resolver, cache);
 	}

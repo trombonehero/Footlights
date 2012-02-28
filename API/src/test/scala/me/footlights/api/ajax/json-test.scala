@@ -37,6 +37,10 @@ import JSONData._
 @RunWith(classOf[JUnitRunner])
 class JSONTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 	"A JSON object should be able to hold " - {
+		"the empty set" in {
+			JSON().toString should fullyMatch regex """\{[ ]*\}"""
+		}
+
 		"primitive members" in {
 			val json = JSON("foo" -> 42, "bar" -> 3.1415926, "baz" -> "Hello, world!")
 			json.toString should equal (

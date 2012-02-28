@@ -63,7 +63,7 @@ final class JSON private(members:Map[String,JSONData]) extends JSONData with Aja
 
 	override val repr = {
 		val fields = for ((key, value) <- members) yield JSON.quote(key) + ": " + value.repr
-		"{ " + (fields reduce { _ + ", " + _ }) + " }"
+		"{ " + commaSeparate(fields) + " }"
 	}
 
 	lazy val getBytes = repr getBytes
@@ -79,6 +79,11 @@ final class JSON private(members:Map[String,JSONData]) extends JSONData with Aja
 	def plus(key:String, value:String) = this + (key -> value)
 
 	def merge(map:Map[String,JSONData]) = this ++ map
+
+	// Helpers.
+	private def commaSeparate(fields: Iterable[String]) =
+		if (fields isEmpty) ""
+		else fields reduce { _ + ", " + _ }
 }
 
 }

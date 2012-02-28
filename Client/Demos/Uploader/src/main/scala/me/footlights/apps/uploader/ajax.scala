@@ -38,17 +38,19 @@ class Ajax(app:Uploader) extends AjaxHandler
 				js
 
 			case "do_upload" =>
-				app.upload map { file =>
-					new JavaScript()
-						.append("context.globals['list'].appendElement('div').appendText('%s');"
-								format JavaScript.sanitizeText(file.name.toString))
-				} getOrElse {
-					new JavaScript()
-						.append("""
-context.root.appendElement('div').appendText('Nothing uploaded!');""")
+				setStatus {
+					app.upload map { _.name.toString } map { "Downloaded '%s'." format _ } getOrElse
+						"Uploaded nothing (user may have clicked cancel)."
 				}
 		}
 	}
+
+	private def setStatus(unsafeText:String) =
+		new JavaScript()
+			.append("var status = context.globals['status']; status.clear();")
+			.append("status.appendText('%s');" format (JavaScript sanitizeText unsafeText))
+
+	private val DownloadRequest = """download/(\S+)""".r
 }
 
 }

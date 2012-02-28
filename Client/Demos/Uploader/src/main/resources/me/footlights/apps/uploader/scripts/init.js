@@ -17,6 +17,9 @@ var a = context.root.appendElement('a');
 a.onclick = function() { context.ajax('do_upload'); }
 a.appendText('Upload Something');
 
+var status = context.root.appendElement('div');
+context.globals['status'] = status;
+
 context.root.appendElement('div').appendText('Uploaded files:');
 var list = context.root.appendElement('div');
 list.class = 'console';

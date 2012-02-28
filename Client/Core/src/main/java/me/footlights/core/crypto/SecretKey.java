@@ -169,15 +169,14 @@ public class SecretKey
 		this.keySpec = key;
 		this.fingerprint = fingerprint;
 
-		try
-		{
-			String algorithm = keySpec.getAlgorithm();
-			String keyData = new String(Hex.encodeHex(keySpec.getEncoded()));
-			this.uri = new URI(algorithm, keyData, null);
-		}
+		String algorithm = keySpec.getAlgorithm();
+		String keyData = new String(Hex.encodeHex(keySpec.getEncoded()));
+
+		try { this.uri = new URI(algorithm, keyData, null); }
 		catch (URISyntaxException e)
 		{
-			throw new IllegalArgumentException("Unable to generate URI for " + keySpec);
+			throw new IllegalArgumentException(
+				"Unable to generate symmetric key URI " + algorithm + ":" + keyData, e);
 		}
 	}
 

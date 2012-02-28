@@ -23,6 +23,7 @@ import java.util.logging.Logger
 import scala.actors.Future
 import scala.actors.Futures.future
 import scala.collection.JavaConversions._
+import scala.math.min
 
 import me.footlights.core.{Kernel,Preferences,Resolver}
 import me.footlights.core.crypto.Fingerprint
@@ -200,10 +201,10 @@ class CASClient private[store](
 			writer.flush
 
 			val copy = bytes.asReadOnlyBuffer
-			val buffer = new Array[Byte](Math.min(4096, copy.remaining))
+			val buffer = new Array[Byte](min(4096, copy.remaining))
 			while (copy.hasRemaining) //binaryChannel write copy
 			{
-				val count = Math.min(copy.remaining, buffer.length)
+				val count = min(copy.remaining, buffer.length)
 				copy.get(buffer, 0, count)
 				out.write(buffer, 0, count)
 			}

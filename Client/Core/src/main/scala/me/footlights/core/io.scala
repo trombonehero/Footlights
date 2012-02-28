@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.{FileInputStream, IOException}
+import java.io.{FileInputStream, FileOutputStream, IOException}
 import java.net.URL
 import java.nio.{Buffer,ByteBuffer}
+import java.nio.channels.ReadableByteChannel
 import java.nio.channels.FileChannel.MapMode
 
 import java.util.logging.Logger
@@ -83,6 +84,8 @@ class IO(proxy:java.net.Proxy) {
 			}
 		} }
 	}
+
+	def writer(file:java.io.File) = new FileOutputStream(file).getChannel
 
 
 	def fetch(url: URL) = {

@@ -125,7 +125,6 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 		new JavaScript()
 			.append("""
 var a = %s.appendElement('div').appendElement('a');
-a.href='#';
 a.appendText('%s');
 a.onclick = function onClickHandler() { context.ajax('%s'); };
 """ format (parent, JavaScript.sanitizeText(name), ajax))

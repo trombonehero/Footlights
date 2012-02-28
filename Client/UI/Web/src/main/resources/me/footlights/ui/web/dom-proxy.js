@@ -123,7 +123,6 @@ function proxy(node, context)
 
 		set alt(text)       { node.alt = text; },
 		set class(name)     { node.setAttribute("class", name); },
-		set href(ref)       { node.href = ref; },
 		set type(t)         { node.type = t; },
 		set value(v)        { node.value = v; },
 		set height(x)       { node.height = x; },

@@ -18,6 +18,7 @@
 	<modules>
 		<module>Basic</module>
 		<module>BlockStoreClient</module>
+		<module>Library</module>
 		<module>TicTacToe</module>
 		<module>Uploader</module>
 		<module>Wicked</module>

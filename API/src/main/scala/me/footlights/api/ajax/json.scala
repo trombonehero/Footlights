@@ -61,10 +61,7 @@ final class JSON private(members:Map[String,JSONData]) extends JSONData with Aja
 	override lazy val data = new java.io.ByteArrayInputStream(getBytes)
 	override lazy val toString = repr
 
-	override val repr = {
-		val fields = for ((key, value) <- members) yield JSON.quote(key) + ": " + value.repr
-		"{ " + commaSeparate(fields) + " }"
-	}
+	override val repr = "{ " + commaSeparate { members map colonSeparate } + " }"
 
 	lazy val getBytes = repr getBytes
 
@@ -81,6 +78,9 @@ final class JSON private(members:Map[String,JSONData]) extends JSONData with Aja
 	def merge(map:Map[String,JSONData]) = this ++ map
 
 	// Helpers.
+	private def colonSeparate(field:(String,JSONData)) =
+		JSON.quote(field._1) + ": " + field._2.repr
+
 	private def commaSeparate(fields: Iterable[String]) =
 		if (fields isEmpty) ""
 		else fields reduce { _ + ", " + _ }

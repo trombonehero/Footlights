@@ -52,6 +52,7 @@ trait Filesystem extends Footlights {
 	override def save(data:ByteBuffer):Option[api.File] = {
 			val f = File.newBuilder.setContent(data).freeze
 			store.store(f.toSave())
+			f.link saveTo keychain
 			Some(f)
 		}
 

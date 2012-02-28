@@ -95,11 +95,7 @@ trait Applications extends Footlights {
 				if (saved.isEmpty) log warning "Failed to save preferences for '" + appName + "'"
 
 				// Save the link to the updated preferences.
-				saved map { _.link } foreach { l => {
-						l.saveTo(keychain)
-						prefs.set(appKey, l.fingerprint.encode())
-					}
-				}
+				saved map { _.link.fingerprint.encode } foreach { prefs.set(appKey, _) }
 
 				this
 			}

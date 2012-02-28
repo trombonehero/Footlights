@@ -78,20 +78,16 @@ class DemoAjaxHandler extends Context
 			@Override public JavaScript service(WebRequest request)
 			{
 				JavaScript response = new JavaScript();
-				try
-				{
-					response.append(makeDiv("Loaded library class: " + Library.class));
+				response.append(makeDiv("Loaded library class: " + Library.class));
 
-					Library lib = new Library();
-					response.append(makeDiv("Instantiated: " + lib));
+				Library lib = new Library();
+				response.append(makeDiv("Instantiated: " + lib));
 
-					response.append(makeDiv("Test static method: v" + Library.version()));
-					response.append(makeDiv("Test regular library method: '" + lib.method() + "'"));
-					response.append(makeDiv("Library-generated JSON: '" + lib.json(42, "foo") + "'"));
+				response.append(makeDiv("Test static method: v" + Library.version()));
+				response.append(makeDiv("Test regular library method: '" + lib.method() + "'"));
+				response.append(makeDiv("Library-generated JSON: '" + lib.json(42, "foo") + "'"));
 
-					response.append(ajax(AjaxRequest.CONTENT.name()));
-				}
-				catch (Throwable t) { response.append(makeDiv("Error: " + t)); }
+				response.append(ajax(AjaxRequest.CONTENT.name()));
 
 				return response;
 			}

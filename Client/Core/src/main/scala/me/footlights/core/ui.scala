@@ -15,6 +15,7 @@
  */
 import java.net.URI
 import java.nio.ByteBuffer
+import java.nio.channels.Channels
 import java.util.logging.Logger
 
 import javax.swing.JFileChooser
@@ -108,6 +109,19 @@ trait SwingPowerboxes extends Footlights {
 		}
 
 		io read filename flatMap save
+	}
+
+	override def saveLocalFile(file:me.footlights.api.File) = {
+		val f = file match { case f:me.footlights.core.data.File => f }
+
+		val d = new JFileChooser
+		val filename = d.showSaveDialog(null) match {
+			case JFileChooser.APPROVE_OPTION => Option(d.getSelectedFile)
+			case _ => { log.fine("User cancelled save file dialog"); None }
+		}
+
+		val in = Channels newChannel f.getInputStream
+		filename map io.writer map { _.transferFrom(in, 0, f.stat().length) }
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }

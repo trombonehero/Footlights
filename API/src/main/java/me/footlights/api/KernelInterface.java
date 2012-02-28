@@ -34,4 +34,7 @@ public interface KernelInterface
 
 	/** Open a file on the local machine (e.g. a photo to upload). */
 	public Option<File> openLocalFile() throws IOException;
+
+	/** Save data into a local file. */
+	public void saveLocalFile(File file) throws IOException;
 }

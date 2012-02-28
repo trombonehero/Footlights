@@ -85,11 +85,12 @@ public class LinkTest
 		final byte[] bytes = new byte[]
 		{
 			'L', 'I', 'N', 'K', '\r', '\n',       // magic
-			0x27, 0x00,                           // link length: 39 B
+			0x28, 0x00,                           // link length: 40 B
 			0x07, 0x00,                           // fingerprint: 7 bytes
-			0, 0,                                 // algorithm unspecified
+			1, 0,                                 // algorithm: 1 B
 			0x00, 0x01,                           // key length: 256b (0x0100)
 			's', 'o', 'm', 'e', '_', 'I', 'D',    // ID: "some_ID"
+			'A',                                  // crypto algorithm: "A"
 		};
 		
 		ByteBuffer buffer = ByteBuffer.allocate(bytes.length + key.length)
@@ -104,7 +105,7 @@ public class LinkTest
 		PowerMockito.verifyStatic();
 
 		assertEquals(fingerprint, l.fingerprint());
-		assertEquals("", l.key().getAlgorithm());
+		assertEquals("A", l.key().getAlgorithm());
 	}
 
 	public static Fingerprint foo(String p)
@@ -183,7 +184,7 @@ public class LinkTest
 
 	private static final byte[] LINK_MAGIC = { 'L', 'I', 'N', 'K', '\r', '\n' };
 	private static final String FAKE_ID = "some_ID";
-	private static final String ALGORITHM = "FOO encryption algorithm";
+	private static final String ALGORITHM = "FOOalgorithm";
 	private static final byte[] KEY_BYTES = { 1, 2, 3, 4, 42, 79 };
 
 	private Fingerprint fingerprint;

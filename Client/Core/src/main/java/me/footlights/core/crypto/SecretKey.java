@@ -15,6 +15,9 @@
  */
 package me.footlights.core.crypto;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -24,6 +27,8 @@ import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.binary.Hex;
 
 import me.footlights.core.Preferences;
 import me.footlights.core.data.Link;
@@ -46,6 +51,7 @@ public class SecretKey
 	public String getAlgorithm() { return keySpec.getAlgorithm(); }
 	public Fingerprint getFingerprint() { return fingerprint; }
 	public SecretKeySpec getKey() { return keySpec; }
+	public URI toUri() { return uri; }
 
 	/** Generate a new secret key. */
 	public static Generator newGenerator() { return new Generator(); }
@@ -162,10 +168,22 @@ public class SecretKey
 	{
 		this.keySpec = key;
 		this.fingerprint = fingerprint;
+
+		try
+		{
+			String algorithm = keySpec.getAlgorithm();
+			String keyData = new String(Hex.encodeHex(keySpec.getEncoded()));
+			this.uri = new URI(algorithm, keyData, null);
+		}
+		catch (URISyntaxException e)
+		{
+			throw new IllegalArgumentException("Unable to generate URI for " + keySpec);
+		}
 	}
 
 	final SecretKeySpec keySpec;
 	private final Fingerprint fingerprint;
+	private final URI uri;
 
 	/** Footlights-wide preferences. */
 	private static Preferences preferences = Preferences.getDefaultPreferences();

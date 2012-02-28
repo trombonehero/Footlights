@@ -113,6 +113,7 @@ public class File implements me.footlights.api.File
 
 	@Override public URI name() { return header.name().toURI(); }
 	public Stat stat() { return stat; }
+	public URI key() { return header.link().key().toUri(); }
 
 
 	/**

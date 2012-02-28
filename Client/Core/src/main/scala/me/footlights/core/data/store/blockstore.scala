@@ -63,7 +63,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	 * This is not guaranteed to be an exhaustive list; we only list files in the cache (if we
 	 * have one), and even that isn't guaranteed to exhaustively list anything.
 	 */
-	def listBlocks:Collection[Stat] = cache map { _.list } flatten
+	def listBlocks:Iterable[Stat] = cache map { _.list } flatten
 
 	/** Retrieve a stored (and encrypted) {@link File}. */
 	def fetch(link:Link):Option[File] = {

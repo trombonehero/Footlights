@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import me.footlights.core.data.store.Stat;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -110,6 +112,7 @@ public class File implements me.footlights.api.File
 	}
 
 	@Override public URI name() { return header.name().toURI(); }
+	public Stat stat() { return stat; }
 
 
 	/**
@@ -298,10 +301,15 @@ public class File implements me.footlights.api.File
 		this.header = header;
 		this.plaintext = ImmutableList.<Block>builder().addAll(plaintext).build();
 		this.ciphertext = ImmutableList.<EncryptedBlock>builder().addAll(ciphertext).build();
+
+		long len = 0;
+		for (Block b : plaintext) len += b.bytes();
+		this.stat = Stat.apply(header.name(), len);
 	}
 
 
 	private final EncryptedBlock header;
 	private final ImmutableList<Block> plaintext;
 	private final ImmutableList<EncryptedBlock> ciphertext;
+	private final Stat stat;
 }

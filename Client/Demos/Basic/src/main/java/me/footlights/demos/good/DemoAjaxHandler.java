@@ -80,9 +80,12 @@ class DemoAjaxHandler extends Context
 				JavaScript response = new JavaScript();
 				try
 				{
-					response.append(makeDiv("Test static method from library v" + Library.version()));
+					response.append(makeDiv("Loaded library class: " + Library.class));
 
 					Library lib = new Library();
+					response.append(makeDiv("Instantiated: " + lib));
+
+					response.append(makeDiv("Test static method: v" + Library.version()));
 					response.append(makeDiv("Test regular library method: '" + lib.method() + "'"));
 					response.append(makeDiv("Library-generated JSON: '" + lib.json(42, "foo") + "'"));
 

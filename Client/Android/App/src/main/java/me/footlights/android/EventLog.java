@@ -27,15 +27,13 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.google.common.collect.Lists;
-
 
 /** An event log which displays events and the times they occurred. */
 class EventLog
 {
 	public EventLog(final Context context)
 	{
-		items = Lists.newLinkedList();
+		items = new LinkedList<EventLog.Event>();
 		adapter = createAdapter(context);
 	}
 

@@ -345,7 +345,8 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 			}
 	}
 
-	override val readPermission = new FilePermission(url getPath, "read")
+	private val fileName = url.getPath match { case s => s.substring(0, s.length - 2) }
+	override val readPermission = new FilePermission(fileName, "read")
 
 	override def readClass(className:String) = {
 		val classPath = className.replace('.', '/') + ".class"

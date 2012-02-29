@@ -185,7 +185,7 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 
 	/** Is the given classpath for core Footlights classes? */
 	private def isCore(path:String) =
-		List("API", "Bootstrap", "Core") map { path contains _} reduce { _ || _ }
+		List("api", "bootstrap", "core") map { path.toLowerCase contains _} reduce { _ || _ }
 
 	/** Ensure that a path refers to a local file (uses the 'file' protocol). */
 	private def localPath(path:String) = if (path startsWith "/") "file:" + path else path

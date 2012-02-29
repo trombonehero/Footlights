@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="me.footlights.android" android:versionCode="1" android:versionName="HEAD">
 
-  <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true" android:name="Footlights" android:theme="@android:style/Theme.Black">
+  <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true" android:name="Footlights" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
     <activity android:name=".FootlightsActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

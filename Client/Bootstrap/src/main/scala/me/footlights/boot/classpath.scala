@@ -338,7 +338,7 @@ object FileLoader {
 private[boot]
 class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 	protected val classPaths = jar.getManifest match {
-		case null => throw new SecurityException("JAR file has no manifest (so it isn't signed)")
+		case null => throw new SecurityException(url + " has no manifest (so it isn't signed)")
 		case m:Manifest => m.getMainAttributes.getValue("Class-Path") match {
 				case null => Nil
 				case s:String => s split(" ") toList

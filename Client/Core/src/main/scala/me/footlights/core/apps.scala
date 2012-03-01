@@ -26,6 +26,9 @@ import me.footlights.api.File
 import me.footlights.api.KernelInterface
 import me.footlights.api.ModifiablePreferences
 
+import me.footlights.api.support.Tee._
+
+
 package me.footlights.core {
 
 import apps.AppStartupException
@@ -57,10 +60,10 @@ trait Applications extends Footlights {
 				} catch {
 					case e:Throwable => throw new AppStartupException(uri, e)
 				}
-			} map { app =>
-				val wrapper = new AppWrapper(uri.toString, uri, app)
-				loadedApps.put(uri, wrapper)
-				wrapper
+			} map {
+				new AppWrapper(uri.toString, uri, _)
+			} tee {
+				loadedApps put (uri, _)
 			} get
 		}
 

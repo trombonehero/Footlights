@@ -11,9 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1">
-        <Button android:text="A" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonA"></Button>
-        <Button android:text="B" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonB"></Button>
-        <Button android:text="C" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonC"></Button>
-        <Button android:text="D" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/buttonD"></Button>
+        <Button android:text="A" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/buttonA"></Button>
+        <Button android:text="B" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/buttonB"></Button>
+        <Button android:text="C" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/buttonC"></Button>
+        <Button android:text="D" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/buttonD"></Button>
     </LinearLayout>
 </LinearLayout>

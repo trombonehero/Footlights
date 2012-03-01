@@ -49,7 +49,7 @@ trait Applications extends Footlights {
 
 	override def loadApplication(uri:URI) =
 		loadedApps get(uri) getOrElse {
-			val prefs = appPreferences(uri.toString)
+			val prefs = appPreferences(uri)
 
 			loadAppClass(uri.toURL) flatMap findInit map { init =>
 				try { init.invoke(null, this, prefs, Logger.getLogger(uri.toString)) match {
@@ -77,7 +77,7 @@ trait Applications extends Footlights {
 	 * This {@link ModifiablePreferences} object will start populated with saved preferences,
 	 * if any exist, but it will also have the ability to save new preferences to a {@link File}.
 	 */
-	private def appPreferences(appName:String) = {
+	private def appPreferences(appName:URI) = {
 		val appKey = "app.prefs." + appName
 		val map = mutable.Map() ++ (prefs getString appKey flatMap readPrefs getOrElse Map())
 

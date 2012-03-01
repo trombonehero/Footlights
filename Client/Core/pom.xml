@@ -18,7 +18,6 @@
 			<groupId>me.footlights</groupId>
 			<artifactId>api</artifactId>
 			<version>${project.version}</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<dependency>

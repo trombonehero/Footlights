@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
 import org.mockito.Matchers._
 import org.mockito.Mockito.when
 
-import org.scalatest.{BeforeAndAfter,Spec}
+import org.scalatest.{BeforeAndAfter,FreeSpec}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
@@ -36,9 +36,9 @@ import me.footlights.core.data.{File,Link}
 package me.footlights.core {
 
 @RunWith(classOf[JUnitRunner])
-class ResolverTest extends Spec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
-	describe("A Resolver") {
-		it("should resolve names with a specified key") {
+class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
+	"A Resolver" - {
+		"should resolve names with a specified key" in {
 			val key = new Array[Byte](16); key(15) = 0x42
 			val file = mockFile(f, Option("AES:00000000000000000000000000000042"))
 			when(io.fetch(url)) thenReturn { file }
@@ -54,7 +54,7 @@ class ResolverTest extends Spec with BeforeAndAfter with MockitoSugar with Shoul
 				)
 		}
 
-		it("should resolve names with no key specified") {
+		"should resolve names with no key specified" in {
 			val file = mockFile(f)
 			when(io.fetch(url)).thenReturn { file }
 

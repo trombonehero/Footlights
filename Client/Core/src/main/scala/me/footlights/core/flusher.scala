@@ -49,6 +49,13 @@ object Flusher
 			wait = () => f.synchronized { f.wait },
 			log = log)
 
+	def apply(o:HasBytes, save:ByteBuffer => Any) = new Flusher(
+			name = "%s => %s" format (o.getClass.getSimpleName, save),
+			flush = () => save(o.getBytes),
+			wait = () => o.synchronized { o.wait },
+			log
+		)
+
 	def apply(o:HasBytes, filename:java.io.File) = new Flusher(
 			name = o.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
 			flush = () => {

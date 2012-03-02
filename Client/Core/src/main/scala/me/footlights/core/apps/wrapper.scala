@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Jonathan Anderson
+ * Copyright 2012 Jonathan Anderson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,39 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.core.apps;
 
 import java.net.URI;
 
 import me.footlights.api.Application;
 
 
+package me.footlights.core.apps {
 
 /** Wrapper for applications; ensures consistent exception handling */
-public final class AppWrapper
-{
-	/** Constructor */
-	public AppWrapper(String name, URI url, Application app)
-	{
-		this.name = name;
-		this.url = url;
-		this.app = app;
-	}
-
-
-	public final String getName() { return name; }
-	URI getOrigin() { return url; }
-	public Application getApp() { return app; }
-
-
-	@Override public String toString() { return "Application { '" + name + "' from " + url + " }"; }
-
-	/** The actual app. */
-	private final Application app;
-
-	/** The human-readable name that we know the app by. */
-	private final String name;
-
-	/** Where the application came from. */
-	private final URI url;
+final class AppWrapper(val name:String, val uri:URI, val app:Application) {
+	override lazy val toString = "Application { '" + name + "' from " + uri + " }"
 }
+
+}
+

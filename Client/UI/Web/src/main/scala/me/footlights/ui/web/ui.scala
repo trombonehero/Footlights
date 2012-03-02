@@ -35,17 +35,17 @@ class WebUI(
 	override def run = new Thread(null, server, "Web Server").run
 	override def handleEvent(e:UI.Event) = e match {
 		case e:AppLoadedEvent =>
-			apps put(e.app.getName, e.app)
+			apps put(e.app.name, e.app)
 			ajax fireEvent {
 				new JavaScript()
-					.append("context.log('Loaded app: %s');" format e.app.getName)
+					.append("context.log('Loaded app: %s');" format e.app.name)
 			}
 
 		case e:AppUnloadingEvent =>
-			apps remove e.app.getName
+			apps remove e.app.name
 			ajax fireEvent {
 				new JavaScript()
-					.append("context.log('Unloaded app: %s');" format e.app.getName)
+					.append("context.log('Unloaded app: %s');" format e.app.name)
 			}
 
 		case e:FileOpenedEvent =>

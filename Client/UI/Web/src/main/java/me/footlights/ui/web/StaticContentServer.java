@@ -65,7 +65,7 @@ class StaticContentServer implements WebServer
 			if (app == null)
 				throw new FileNotFoundException("No such app " + request.prefix());
 
-			resourceLoader = app.getApp().getClass();
+			resourceLoader = app.app().getClass();
 		}
 		else if (request.prefix().equals("footlights"))
 		{

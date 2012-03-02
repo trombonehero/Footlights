@@ -67,6 +67,25 @@ abstract class ModifiableStorageEngine extends PreferenceStorageEngine with Modi
 	override def set(key:String, value:Float)   = { set(key, value.toString); this }
 }
 
+object ModifiableStorageEngine {
+	/** Create a {@link ModifiableStorageEngine} which wraps a {@link Map} and saves itself. */
+	def apply(map:Map[String,String], save:Option[ByteBuffer => Any] = None) = {
+		val reader = PreferenceStorageEngine wrap map
+
+		// Create an anonymous mutable version which can save itself
+		new ModifiableStorageEngine {
+			override def getAll = reader.getAll
+			override def getRaw(name:String) = reader.getRaw(name)
+
+			override def set(key:String, value:String): ModifiableStorageEngine = synchronized {
+				map.put(key, value)
+				save foreach { _(Preferences encode map) }
+				this
+			}
+		}
+	}
+}
+
 
 /** Serves preference information to clients. */
 class Preferences(engine:Option[PreferenceStorageEngine])

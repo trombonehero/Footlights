@@ -81,28 +81,18 @@ trait Applications extends Footlights {
 		val appKey = "app.prefs." + appName
 		val map = mutable.Map() ++ (prefs getString appKey flatMap readPrefs getOrElse Map())
 
-		val reader = PreferenceStorageEngine wrap map
-
-		// Create an anonymous mutable version which can save itself
-		new ModifiableStorageEngine {
-			override def getAll = reader.getAll
-			override def getRaw(name:String) = reader.getRaw(name)
-
-			override def set(key:String, value:String): ModifiableStorageEngine = synchronized
-			{
-				// Update the preferences.
-				map.put(key, value)
-
-				// Save updated preferences to the Store.
-				val saved = save(Preferences.encode(map)) map { case f:data.File => f }
-				if (saved.isEmpty) log warning "Failed to save preferences for '" + appName + "'"
-
-				// Save the link to the updated preferences.
-				saved map { _.link.fingerprint.encode } foreach { prefs.set(appKey, _) }
-
-				this
+		// Save updated preferences to the Store.
+		def savePrefs(bytes:ByteBuffer) =
+			save(bytes) map { case f:data.File => f } map {
+				_.link.fingerprint.encode
+			} tee {
+				prefs.set(appKey, _)
+			} orElse {
+				log warning "Failed to save preferences for '" + appName + "'"
+				None
 			}
-		}
+
+		ModifiableStorageEngine(map, Some(savePrefs))
 	}
 
 

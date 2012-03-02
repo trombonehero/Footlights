@@ -43,7 +43,6 @@ object Bootstrapper extends App {
 
 	private val log = Logger getLogger Bootstrapper.getClass.getName
 
-	val bootPath = "Bootstrap"
 	val WebUI = UI("Local Web UI", "UI/Web", "me.footlights.ui.web", "WebUI")
 	val SwingUI = UI("Local Swing UI", "UI/Swing", "me.footlights.ui.swing", "SwingUI")
 	val uis = WebUI ::
@@ -53,6 +52,7 @@ object Bootstrapper extends App {
 	def pathExists(path:String) = new File(path).exists
 	def toUrl(s:String) = new URL(s)
 
+	val bootPath = "Bootstrap"
 	val corePaths = "Core" :: (uis map { _.sourceDirectory })
 	val coreClasspaths = (System.getProperty("java.class.path") split ":" map { path =>
 		corePaths map { path replace (bootPath, _) } filter pathExists map { "file:" + _ } map toUrl

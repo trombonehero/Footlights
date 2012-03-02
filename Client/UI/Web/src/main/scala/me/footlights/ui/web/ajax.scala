@@ -108,10 +108,10 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 
 			case LoadApplication(path) =>
 				val uri = new java.net.URI(request.shift().path())
-				val app = footlights.loadApplication(uri)
-				val name = java.net.URLEncoder.encode(app.name, "utf-8")
+				val wrapper = footlights.loadApplication(uri)
+				val name = java.net.URLEncoder.encode(wrapper.name, "utf-8")
 
-				server.register(name, app.app.ajaxHandler)
+				server.register(name, wrapper.app.ajaxHandler)
 				createUISandbox(name)
 
 			case FillPlaceholder(name) => {

@@ -61,11 +61,11 @@ class StaticContentServer implements WebServer
 		if (request.prefix().equals("app"))
 		{
 			request = request.shift();
-			AppWrapper app = apps.get(java.net.URLDecoder.decode(request.prefix(), "utf-8"));
-			if (app == null)
+			AppWrapper wrapper = apps.get(java.net.URLDecoder.decode(request.prefix(), "utf-8"));
+			if (wrapper == null)
 				throw new FileNotFoundException("No such app " + request.prefix());
 
-			resourceLoader = app.app().getClass();
+			resourceLoader = wrapper.app().getClass();
 		}
 		else if (request.prefix().equals("footlights"))
 		{

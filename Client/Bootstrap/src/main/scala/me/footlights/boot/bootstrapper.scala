@@ -30,9 +30,6 @@ package me.footlights.boot {
 
 case class UI(name:String, sourceDirectory:String, packageName:String, className:String)
 
-case object WebUI extends UI("Local Web UI", "UI/Web", "me.footlights.ui.web", "WebUI")
-case object SwingUI extends UI("Local Swing UI", "UI/Swing", "me.footlights.ui.swing", "SwingUI")
-
 
 /**
  * Bootstraps the Footlights system.
@@ -47,6 +44,8 @@ object Bootstrapper extends App {
 	private val log = Logger getLogger Bootstrapper.getClass.getName
 
 	val bootPath = "Bootstrap"
+	val WebUI = UI("Local Web UI", "UI/Web", "me.footlights.ui.web", "WebUI")
+	val SwingUI = UI("Local Swing UI", "UI/Swing", "me.footlights.ui.swing", "SwingUI")
 	val uis = WebUI ::
 //		SwingUI ::
 		Nil

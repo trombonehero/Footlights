@@ -28,16 +28,16 @@ import me.footlights.api.ModifiablePreferences
 
 import me.footlights.api.support.Tee._
 
+import me.footlights.core.{Footlights,ModifiableStorageEngine}
+import me.footlights.core.crypto.Keychain
+import me.footlights.core.data
 
-package me.footlights.core {
 
-import apps.AppStartupException
-import apps.AppWrapper
-import crypto.Keychain
+package me.footlights.core.apps {
 
 
 /** Provides plugin [un]loading. */
-trait Applications extends Footlights {
+trait ApplicationManagement extends Footlights {
 	protected def keychain:Keychain
 	protected def loadedApps:mutable.Map[URI,AppWrapper]
 	protected def appLoader:ClassLoader
@@ -132,7 +132,7 @@ trait Applications extends Footlights {
 
 	loadApplicationMethod.setAccessible(true)
 
-	private val log = Logger getLogger { classOf[Applications] getCanonicalName }
+	private val log = Logger getLogger { classOf[ApplicationManagement] getCanonicalName }
 }
 
 }

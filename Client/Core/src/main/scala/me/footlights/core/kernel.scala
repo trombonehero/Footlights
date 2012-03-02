@@ -58,7 +58,7 @@ abstract class Kernel(
 
 	extends Footlights
 		with data.store.Filesystem
-		with Applications
+		with apps.ApplicationManagement
 		with Placeholders
 		with UIManager
 {

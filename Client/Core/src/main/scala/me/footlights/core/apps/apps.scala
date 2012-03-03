@@ -98,18 +98,16 @@ trait ApplicationManagement extends Footlights {
 		val appKey = "app.prefs." + appName
 		val map = mutable.Map() ++ (prefs getString appKey flatMap readPrefs getOrElse Map())
 
-		// Save updated preferences to the Store.
-		def savePrefs(bytes:ByteBuffer) =
-			save(bytes) map { case f:data.File => f } map {
-				_.link.fingerprint.encode
-			} tee {
-				prefs.set(appKey, _)
-			} orElse {
-				log warning "Failed to save preferences for '" + appName + "'"
-				None
-			}
+		ModifiableStorageEngine(map, Some(remember(appKey)))
+	}
 
-		ModifiableStorageEngine(map, Some(savePrefs))
+	/** Create a {@link Keychain} for an application which can save itself. */
+	private def appKeychain(appName:URI) = {
+		val appKey = "app.keychain." + appName
+		val appKeychain = prefs getString appKey flatMap readKeychain getOrElse Keychain.create
+
+		Flusher(appKeychain, save = remember(appKey)).start
+		appKeychain
 	}
 
 
@@ -125,6 +123,20 @@ trait ApplicationManagement extends Footlights {
 						new IllegalArgumentException("%s returned '%s', not a Class" format (
 								loadApplicationMethod.getName, a))
 					)
+		}
+
+
+	/** Save some data, its {@link Link} (including symmetric key) and name. */
+	private def remember(prefKey:String)(bytes:ByteBuffer) =
+		save(bytes) map { case f:data.File => f } map { _.link } tee {
+			_ saveTo keychain
+		} map {
+			_.fingerprint.encode
+		} tee {
+			prefs.set(prefKey, _)
+		} orElse {
+			log warning "Failed to save '" + prefKey + "'"
+			None
 		}
 
 

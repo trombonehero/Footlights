@@ -19,7 +19,7 @@ import scala.collection.JavaConversions._
 
 import me.footlights.core.Footlights
 import me.footlights.core.crypto.{Fingerprint,Keychain}
-import me.footlights.core.data.File
+import me.footlights.core.data.{File,Link}
 
 import me.footlights.api
 
@@ -35,6 +35,8 @@ trait Filesystem extends Footlights {
 	protected def keychain:Keychain
 	protected def store:Store
 
+	override def open(link:Link):Option[File] = store fetch link
+
 	/** Open a file, named by its content, e.g. "sha-256:0123456789abcdef01234...". */
 	override def open(name:String):Option[api.File] = {
 		log fine { "open('%s')" format name }
@@ -45,7 +47,7 @@ trait Filesystem extends Footlights {
 					log warning "No key stored for file " + name
 					None
 			}
-		} flatMap store.fetch
+		} flatMap open
 	}
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */

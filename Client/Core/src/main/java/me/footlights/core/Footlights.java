@@ -22,12 +22,17 @@ import scala.Option;
 
 import me.footlights.api.KernelInterface;
 import me.footlights.core.apps.*;
+import me.footlights.core.data.File;
+import me.footlights.core.data.Link;
 import me.footlights.core.data.store.Stat;
 
 
 /** Interface to the software core */
 public interface Footlights extends KernelInterface
 {
+	/** Open a particular {@link Link}. */
+	public Option<File> open(Link link);
+
 	/**
 	 * Convert a placeholder name (e.g. "user.name") into a meaningful value.
 	 *

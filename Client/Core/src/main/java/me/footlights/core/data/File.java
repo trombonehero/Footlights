@@ -303,7 +303,7 @@ public class File implements me.footlights.api.File
 		this.ciphertext = new ArrayList<EncryptedBlock>(ciphertext);
 
 		long len = 0;
-		for (Block b : plaintext) len += b.bytes();
+		for (Block b : plaintext) len += b.content().remaining();
 		this.stat = Stat.apply(header.name(), len);
 	}
 

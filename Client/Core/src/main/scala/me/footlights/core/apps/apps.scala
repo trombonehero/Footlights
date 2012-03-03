@@ -37,8 +37,27 @@ package me.footlights.core.apps {
 
 
 /** Wrapper for applications; ensures consistent exception handling */
-final class AppWrapper(val name:URI, val app:Application) {
+case class AppWrapper(
+		mainClass:Class[_], val name:URI,
+		val kernel:KernelInterface, val prefs:ModifiablePreferences, val log:Logger) {
 	override lazy val toString = "Application { '" + name + "' }"
+
+	/** The application itself (lazily initialized). */
+	lazy val app:Application = {
+		try {
+			init.invoke(null, kernel, prefs, log) match {
+				case app:Application => app
+				case a:Any => throw new ClassCastException(
+						"init() returned non-application '%s'" format a)
+			}
+		} catch {
+			case t:Throwable => throw new AppStartupException(name, t)
+		}
+	}
+
+	/** The application's {@link Application#init} method. */
+	private lazy val init = mainClass.getMethod("init",
+			classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
 }
 
 
@@ -56,18 +75,10 @@ trait ApplicationManagement extends Footlights {
 	override def loadApplication(uri:URI) =
 		loadedApps get(uri) getOrElse {
 			val prefs = appPreferences(uri)
+			val appLog = Logger getLogger uri.toString
 
-			loadAppClass(uri.toURL) flatMap findInit map { init =>
-				try { init.invoke(null, this, prefs, Logger.getLogger(uri.toString)) match {
-						case a:Application => a
-						case o:Object => throw new ClassCastException(
-								"init() returned non-application '" + o + "'")
-					}
-				} catch {
-					case e:Throwable => throw new AppStartupException(uri, e)
-				}
-			} map {
-				new AppWrapper(uri, _)
+			loadAppClass(uri.toURL) map {
+				AppWrapper(_, uri, this, prefs, appLog)
 			} tee {
 				loadedApps put (uri, _)
 			} get
@@ -116,16 +127,6 @@ trait ApplicationManagement extends Footlights {
 					)
 		}
 
-	/** Find the "init" method for an application's main class. */
-	private def findInit(c:Class[_]) =
-		try {
-			Some(c.getMethod("init",
-				classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
-			)
-		} catch {
-			case t:Throwable =>
-				throw new AppStartupException(new URI("class:" + c.getCanonicalName), t)
-		}
 
 	/**
 	 * The method provided by the lower-level {@link ClassLoader} which actually loads applications.

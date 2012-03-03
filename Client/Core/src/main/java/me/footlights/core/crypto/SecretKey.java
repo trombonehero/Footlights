@@ -53,6 +53,16 @@ public class SecretKey
 	public SecretKeySpec getKey() { return keySpec; }
 	public URI toUri() { return uri; }
 
+	/** Parse a hexadecimal URI. */
+	public static SecretKey parse(URI uri)
+		throws NoSuchAlgorithmException, org.apache.commons.codec.DecoderException
+	{
+		return newGenerator()
+			.setAlgorithm(uri.getScheme())
+			.setBytes(Hex.decodeHex(uri.getSchemeSpecificPart().toCharArray()))
+			.generate();
+	}
+
 	/** Generate a new secret key. */
 	public static Generator newGenerator() { return new Generator(); }
 

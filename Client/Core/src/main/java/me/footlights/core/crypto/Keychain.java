@@ -101,6 +101,7 @@ public class Keychain implements HasBytes
 
 		KeyStore store = KeyStore.getInstance(type);
 		store.load(input, password);
+		log.fine("Loaded " + store.size() + " KeyStore entries.");
 
 		Enumeration<String> aliases = store.aliases();
 		while (aliases.hasMoreElements())
@@ -195,6 +196,7 @@ public class Keychain implements HasBytes
 		}
 
 		this.bytes = ByteBuffer.wrap(bytes.toByteArray());
+		log.fine("Generated " + this.bytes.remaining() + " B");
 		dirty = false;
 		return this.bytes;
 	}
@@ -270,6 +272,9 @@ public class Keychain implements HasBytes
 			log.finer(name + " => " + key);
 			store.setEntry(name, new KeyStore.SecretKeyEntry(key.keySpec), protection);
 		}
+
+		log.fine("Externalized " + privateKeys.size() + " private keys and " +
+			secretKeys.size() + " secret keys");
 
 		return store;
 	}

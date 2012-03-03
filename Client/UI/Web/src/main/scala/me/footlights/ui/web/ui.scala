@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.net.URI
 import java.util.logging.Logger
 
 import scala.collection.JavaConversions._
@@ -29,7 +30,7 @@ import me.footlights.ui.web.Constants.WEB_PORT
 package me.footlights.ui.web {
 
 class WebUI(
-		footlights:Footlights, server:MasterServer, ajax:AjaxServer, apps:Map[String,AppWrapper])
+		footlights:Footlights, server:MasterServer, ajax:AjaxServer, apps:Map[URI,AppWrapper])
 	extends UI("Web UI", footlights) {
 
 	override def run = new Thread(null, server, "Web Server").run
@@ -76,7 +77,7 @@ object WebUI {
 		val port = WEB_PORT
 		log info { "Using TCP port " + port }
 
-		val apps:Map[String,AppWrapper] = Map()
+		val apps:Map[URI,AppWrapper] = Map()
 		val ajax = new AjaxServer(footlights)
 		val staticContent = new StaticContentServer(apps)
 		val master = new MasterServer(port, footlights, ajax, staticContent)

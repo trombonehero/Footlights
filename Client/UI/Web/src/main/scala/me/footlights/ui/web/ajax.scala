@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.net.URI
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 
@@ -27,7 +29,7 @@ package me.footlights.ui.web {
 /** Acts as an Ajax server for the JavaScript client */
 class AjaxServer(footlights:Footlights) extends WebServer
 {
-	val appAjaxHandlers = new HashMap[String, AjaxHandler]
+	val appAjaxHandlers = new HashMap[URI, AjaxHandler]
 	val globalContext = new GlobalContext(footlights, this)
 
 	override def name:String = "Ajax"
@@ -39,7 +41,8 @@ class AjaxServer(footlights:Footlights) extends WebServer
 		Option(req.prefix match {
 			case GlobalContext => globalContext service request
 			case ApplicationContext =>
-				appAjaxHandlers.get(request.prefix) map { _.service(request.shift) } getOrElse {
+				val name = new URI(java.net.URLDecoder.decode(request.prefix, "utf-8"))
+				appAjaxHandlers get name map { _.service(request.shift) } getOrElse {
 					throw new IllegalArgumentException("No such app: " + request.prefix)
 				}
 			case _:String => new JavaScript()
@@ -52,7 +55,7 @@ class AjaxServer(footlights:Footlights) extends WebServer
 
 
 	def reset = appAjaxHandlers.clear();
-	def register(name:String, appHandler:AjaxHandler)
+	def register(name:URI, appHandler:AjaxHandler)
 	{
 		if (appAjaxHandlers.contains(name))
 			throw new RuntimeException(name + " already registered");
@@ -109,10 +112,9 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 			case LoadApplication(path) =>
 				val uri = new java.net.URI(request.shift().path())
 				val wrapper = footlights.loadApplication(uri)
-				val name = java.net.URLEncoder.encode(wrapper.name, "utf-8")
 
-				server.register(name, wrapper.app.ajaxHandler)
-				createUISandbox(name)
+				server.register(wrapper.name, wrapper.app.ajaxHandler)
+				createUISandbox(wrapper.name)
 
 			case FillPlaceholder(name) => {
 				JSON("key" -> name, "value" -> footlights.evaluate(name))
@@ -130,13 +132,13 @@ a.onclick = function onClickHandler() { context.ajax('%s'); };
 """ format (parent, JavaScript.sanitizeText(name), ajax))
 	}
 
-	private def createUISandbox(name:String) =
+	private def createUISandbox(name:URI) =
 		new JavaScript()
 			.append("""
 var sb = context.globals['sandboxes'].create(
 	'app/%s', context.globals['content'], context.log, { x: 0, y: 0 });
 sb.ajax('init');
-""" format (JavaScript.sanitizeText(name), "100%"))
+""" format (JavaScript sanitizeText java.net.URLEncoder.encode(name.toString, "utf-8"), "100%"))
 
 
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()

@@ -22,8 +22,8 @@ import me.footlights.api.Application;
 package me.footlights.core.apps {
 
 /** Wrapper for applications; ensures consistent exception handling */
-final class AppWrapper(val name:String, val uri:URI, val app:Application) {
-	override lazy val toString = "Application { '" + name + "' from " + uri + " }"
+final class AppWrapper(val name:URI, val app:Application) {
+	override lazy val toString = "Application { '" + name + "' }"
 }
 
 }

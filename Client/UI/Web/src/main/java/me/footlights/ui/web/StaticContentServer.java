@@ -18,6 +18,8 @@ package me.footlights.ui.web;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,16 +32,13 @@ import me.footlights.core.apps.AppWrapper;
 /** Code to serve static content. */
 class StaticContentServer implements WebServer
 {
-	StaticContentServer(Map<String,AppWrapper> apps)
+	StaticContentServer(Map<URI,AppWrapper> apps)
 	{
-		paths = new HashMap<String, Class<?>>();
+		paths = new HashMap<URI, Class<?>>();
 		this.apps = apps;
 
-		for (Map.Entry<String,AppWrapper> app : apps.entrySet())
+		for (Map.Entry<URI,AppWrapper> app : apps.entrySet())
 			paths.put(app.getKey(), app.getValue().getClass());
-
-		// TODO: this is a temporary cheat for testing.
-		paths.put("sandbox", getClass());
 	}
 
 	@Override public String name() { return "static content server"; }
@@ -61,9 +60,13 @@ class StaticContentServer implements WebServer
 		if (request.prefix().equals("app"))
 		{
 			request = request.shift();
-			AppWrapper wrapper = apps.get(java.net.URLDecoder.decode(request.prefix(), "utf-8"));
+			final URI name;
+			try { name = new URI(java.net.URLDecoder.decode(request.prefix(), "utf-8")); }
+			catch (URISyntaxException e) { throw new IOException(e); }
+
+			AppWrapper wrapper = apps.get(name);
 			if (wrapper == null)
-				throw new FileNotFoundException("No such app " + request.prefix());
+				throw new FileNotFoundException("No such app " + name);
 
 			resourceLoader = wrapper.app().getClass();
 		}
@@ -115,6 +118,6 @@ class StaticContentServer implements WebServer
 		return "text/xml";
 	}
 
-	private final Map<String,Class<?>> paths;
-	private final Map<String, AppWrapper> apps;
+	private final Map<URI,Class<?>> paths;
+	private final Map<URI, AppWrapper> apps;
 }

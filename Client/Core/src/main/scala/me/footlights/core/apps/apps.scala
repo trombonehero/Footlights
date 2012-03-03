@@ -61,7 +61,7 @@ trait ApplicationManagement extends Footlights {
 					case e:Throwable => throw new AppStartupException(uri, e)
 				}
 			} map {
-				new AppWrapper(uri.toString, uri, _)
+				new AppWrapper(uri, _)
 			} tee {
 				loadedApps put (uri, _)
 			} get

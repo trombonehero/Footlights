@@ -16,7 +16,7 @@
 import java.io.{FileInputStream,FileOutputStream}
 import java.net.{URI,URL}
 import java.security.{AccessController, AllPermission}
-import java.util.logging.Level
+import java.util.logging.Level._
 import java.util.logging.Logger
 
 import javax.swing.JFileChooser
@@ -122,7 +122,7 @@ object Kernel {
 		if (keychainFile.exists) {
 			try { keychain.importKeystoreFile(new FileInputStream(keychainFile)) }
 			catch {
-				case e:Exception => log.log(Level.SEVERE, "Error loading keychain", e)
+				case e:Exception => log.log(SEVERE, "Error loading keychain", e)
 			}
 		}
 		Flusher(keychain, keychainFile) start

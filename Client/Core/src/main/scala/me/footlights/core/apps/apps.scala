@@ -36,6 +36,12 @@ import me.footlights.core.data
 package me.footlights.core.apps {
 
 
+/** Wrapper for applications; ensures consistent exception handling */
+final class AppWrapper(val name:URI, val app:Application) {
+	override lazy val toString = "Application { '" + name + "' }"
+}
+
+
 /** Provides plugin [un]loading. */
 trait ApplicationManagement extends Footlights {
 	protected def keychain:Keychain

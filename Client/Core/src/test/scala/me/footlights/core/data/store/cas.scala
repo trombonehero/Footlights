@@ -155,7 +155,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 			prefs get DownloadUrl._1 map { base =>
 				new URL(base + "/" + java.net.URLEncoder.encode(f.encode, "utf-8")) }
 
-		new CASClient(downloadUrl, uploadUrl, Option(SharedSecret), resolver, cache);
+		new CASClient(downloadUrl, uploadUrl, Option(SharedSecret), cache);
 	}
 
 

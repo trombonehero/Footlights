@@ -134,7 +134,7 @@ class MemoryStore extends LocalStore {
 /** A client for the Footlights Content-Addressible Store (CAS). */
 class CASClient private[store](
 		downloadUrl:Fingerprint => Option[URL], uploadUrl:() => Option[URL],
-		uploadKey:Option[String], resolver:Resolver, cache:Option[LocalStore])
+		uploadKey:Option[String], cache:Option[LocalStore])
 	extends Store(cache) {
 
 	override def toString() = "CASClient"
@@ -291,7 +291,7 @@ object CASClient {
 		// The key used to upload content. If None, we can still use the CASClient for downloading.
 		val uploadKey = uploadSecret orElse { prefs getString PrefPrefix + "secret" }
 
-		val c = new CASClient(downloadUrl, uploadUrl, uploadKey, resolver, cache)
+		val c = new CASClient(downloadUrl, uploadUrl, uploadKey, cache)
 		me.footlights.core.Flusher(c).start
 		c
 	}

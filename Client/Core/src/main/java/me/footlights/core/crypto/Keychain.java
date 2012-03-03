@@ -290,7 +290,7 @@ public class Keychain implements HasBytes
 
 
 	/** Retrieve the keystore password from somewhere trustworthy (the user?). */
-	private final String getPassword() { return "fubar"; }
+	private static final String getPassword() { return "fubar"; }
 
 
 	private static final Logger log = Logger.getLogger(Keychain.class.getCanonicalName());

@@ -84,11 +84,12 @@ public class Keychain implements HasBytes
 
 
 	/** Merge a KeyStore file into this Keychain. */
-	public void importKeystoreFile(InputStream input)
+	public Keychain importKeystoreFile(InputStream input)
 		throws CertificateException, IOException, KeyStoreException,
 		       NoSuchAlgorithmException, UnrecoverableEntryException
 	{
 		importKeystoreFile(input, PREFERENCES.getString("crypto.keystore.type").get());
+		return this;
 	}
 
 	/** Merge a KeyStore file into this Keychain. */

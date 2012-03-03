@@ -49,25 +49,25 @@ object Flusher
 			wait = () => f.synchronized { f.wait },
 			log = log)
 
-	def apply(o:HasBytes, save:ByteBuffer => Any) = new Flusher(
-			name = "%s => %s" format (o.getClass.getSimpleName, save),
-			flush = () => save(o.getBytes),
-			wait = () => o.synchronized { o.wait },
+	def apply(target:HasBytes, save:ByteBuffer => Any) = new Flusher(
+			name = "%s => %s" format (target.getClass.getSimpleName, save),
+			flush = () => save(target.getBytes),
+			wait = () => target.synchronized { target.wait },
 			log
 		)
 
-	def apply(o:HasBytes, filename:java.io.File) = new Flusher(
-			name = o.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
+	def apply(target:HasBytes, filename:java.io.File) = new Flusher(
+			name = target.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
 			flush = () => {
 				val tmp = java.io.File.createTempFile("tmp-", "", filename.getParentFile)
 
 				val s = new FileOutputStream(tmp)
-				s.getChannel.write(o.getBytes)
+				s.getChannel.write(target.getBytes)
 				s.close
 
 				tmp renameTo filename
 			},
-			wait = () => o.synchronized { o.wait },
+			wait = () => target.synchronized { target.wait },
 			log)
 }
 

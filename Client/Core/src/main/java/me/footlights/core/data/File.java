@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +137,14 @@ public class File implements me.footlights.api.File
 		return buffer;
 	}
 
+
+	/**
+	 * Get a {@link ReadableByteChannel} for the {@link File}.
+	 *
+	 * For now, this is a wrapper around {@link #getInputStream()}; in the future, it should be
+	 * the other way around (if we keep {@link #getInputStream()} at all).
+	 */
+	public ReadableByteChannel getChannel() { return Channels.newChannel(getInputStream()); }
 
 	/**
 	 * The content of the file, transformed into an {@link InputStream}.

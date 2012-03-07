@@ -58,6 +58,23 @@ trait Filesystem extends Footlights {
 			Some(f)
 		}
 
+	/**
+	 * Save data to a local {@link java.io.File}.
+	 *
+	 * We do what we can to make this as atomic an operation as possible: we write to a temporary
+	 * file which is on the same filesystem as the target filename, then rename it to the target.
+	 */
+	override def saveLocal(f:File, filename:java.io.File) = {
+		val tmp = java.io.File.createTempFile("tmp-", "", filename.getParentFile)
+		val out = io writer tmp
+
+		out transferFrom (Channels newChannel f.getInputStream, 0, f.stat.length)
+		out force true
+		out close
+
+		tmp renameTo filename
+	}
+
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks
 

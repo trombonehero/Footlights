@@ -33,6 +33,9 @@ public interface Footlights extends KernelInterface
 	/** Open a particular {@link Link}. */
 	public Option<File> open(Link link);
 
+	/** Save data to a local {@link java.io.File}. */
+	public void saveLocal(File file, java.io.File filename);
+
 	/**
 	 * Convert a placeholder name (e.g. "user.name") into a meaningful value.
 	 *

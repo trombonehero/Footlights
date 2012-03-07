@@ -120,8 +120,7 @@ trait SwingPowerboxes extends Footlights {
 			case _ => { log.fine("User cancelled save file dialog"); None }
 		}
 
-		val in = Channels newChannel f.getInputStream
-		filename map io.writer map { _.transferFrom(in, 0, f.stat().length) }
+		filename map { localFileName => saveLocal(f, localFileName) }
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }

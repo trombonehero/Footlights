@@ -173,6 +173,14 @@ public class SecretKey
 		return SecretKey.class.getSimpleName() + " { " + fingerprint + " }";
 	}
 
+	@Override public boolean equals(Object other)
+	{
+		if (!(other instanceof SecretKey)) return false;
+		SecretKey o = (SecretKey) other;
+
+		return (this.uri.equals(o.uri));
+	}
+
 
 	private SecretKey(SecretKeySpec key, Fingerprint fingerprint)
 	{

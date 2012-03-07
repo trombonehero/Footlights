@@ -245,7 +245,7 @@ public class Link implements FootlightsPrimitive
 		buf.append("Link { fingerprint: '");
 		buf.append(fingerprint);
 		buf.append("', key: ");
-		buf.append((key == null) ? "<null>" : "<key>");
+		buf.append((key == null) ? "<null>" : key.toString());
 		buf.append(" }");
 
 		return buf.toString();

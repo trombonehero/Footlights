@@ -130,6 +130,7 @@ class Preferences(engine:Option[PreferenceStorageEngine])
 	/** Set up sensible crypto options */
 	private def cryptoDefaults(provider:Option[Provider]):Map[String,String] = {
 		val defaults = MutableMap(
+			("crypto.asym.algorithm" -> "RSA"),
 			("crypto.asym.keylen"    -> "2048"),
 			("crypto.hash.algorithm" -> "SHA-256"),
 			("crypto.keystore.type"  -> "UBER"),

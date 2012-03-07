@@ -240,7 +240,8 @@ public class File implements me.footlights.api.File
 	@Override
 	public String toString()
 	{
-		return "Encrypted File [ " + plaintext.size() + " blocks, name = '" + header.name() + "' ]";
+		return "Encrypted File [ " + header.name() + ", " + plaintext.size() + " blocks, " +
+			stat.length() + " B ]";
 	}
 
 

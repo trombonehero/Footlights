@@ -16,7 +16,7 @@
 import java.io.{FileInputStream, FileOutputStream, IOException}
 import java.net.URL
 import java.nio.{Buffer,ByteBuffer}
-import java.nio.channels.ReadableByteChannel
+import java.nio.channels.{ReadableByteChannel,WritableByteChannel}
 import java.nio.channels.FileChannel.MapMode
 
 import java.util.logging.Logger
@@ -110,6 +110,39 @@ class IO(proxy:java.net.Proxy) {
 
 object IO {
 	def direct = new IO(java.net.Proxy.NO_PROXY)
+
+	implicit def readable2rich(ch:ReadableByteChannel) = new RichReadableByteChannel(ch)
+	implicit def writable2rich(ch:WritableByteChannel) = new RichWritableByteChannel(ch)
+}
+
+class RichReadableByteChannel(channel:ReadableByteChannel) {
+	def readInt() = readInteger(4)
+	def readShort() = readInteger(2) toShort
+	def readByte() = readInteger(1) toByte
+
+	def readInteger(byteCount:Int = 4) = {
+		val bytes = new Array[Byte](byteCount)
+		channel.read(ByteBuffer wrap bytes)
+		(for (i <- 0 until byteCount) yield bytes(i) << 8 * (byteCount - i - 1)) reduce { _ + _ }
+	}
+}
+
+class RichWritableByteChannel(channel:WritableByteChannel) {
+	def << (x:ByteBuffer):RichWritableByteChannel = { channel write x; this }
+	def << (x:Array[Byte]):RichWritableByteChannel = this << ByteBuffer.wrap(x)
+
+	def << (x:Byte):RichWritableByteChannel  = writeInteger(x, 1)
+	def << (x:Short):RichWritableByteChannel = writeInteger(x, 2)
+	def << (x:Int):RichWritableByteChannel   = writeInteger(x, 4)
+
+	def writeInteger(x:Int, byteCount:Int = 4) = {
+		val bytes = {
+			for (i <- 0 until byteCount)
+				yield (x >> 8 * (byteCount - i - 1)) & 0xff
+		} map { _.toByte }
+
+		this << bytes.toArray
+	}
 }
 
 }

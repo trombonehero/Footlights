@@ -30,10 +30,11 @@ import org.scalatest.mock.MockitoSugar
 import me.footlights.api.ajax.JSON
 import me.footlights.api.ajax.JSON._
 
-import me.footlights.core.crypto.{Fingerprint,Keychain,SecretKey}
-import me.footlights.core.data.{File,Link}
-
 package me.footlights.core {
+
+import crypto.{Fingerprint,Keychain,SecretKey}
+import data.{File,Link}
+
 
 @RunWith(classOf[JUnitRunner])
 class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {

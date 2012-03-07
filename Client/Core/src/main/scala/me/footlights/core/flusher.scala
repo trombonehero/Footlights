@@ -43,20 +43,21 @@ object Flusher
 {
 	private val log = java.util.logging.Logger.getLogger(Flusher.getClass().getCanonicalName())
 
-	def apply(f:Flushable) = new Flusher(
+	def apply(name:String, flush:() => Unit, wait:() => Unit) = new Flusher(name, flush, wait, log)
+
+	def apply(f:Flushable):Flusher = apply(
 			name = f.getClass.getSimpleName,
 			flush = f.flush _,
-			wait = () => f.synchronized { f.wait },
-			log = log)
-
-	def apply(target:HasBytes, save:ByteBuffer => Any) = new Flusher(
-			name = "%s => %s" format (target.getClass.getSimpleName, save),
-			flush = () => save(target.getBytes),
-			wait = () => target.synchronized { target.wait },
-			log
+			wait = () => f.synchronized { f.wait }
 		)
 
-	def apply(target:HasBytes, filename:java.io.File) = new Flusher(
+	def apply(target:HasBytes, save:ByteBuffer => Any):Flusher = apply(
+			name = "%s => %s" format (target.getClass.getSimpleName, save),
+			flush = () => save(target.getBytes),
+			wait = () => target.synchronized { target.wait }
+		)
+
+	def apply(target:HasBytes, filename:java.io.File):Flusher = apply(
 			name = target.getClass().getSimpleName() + " => " + filename.getCanonicalFile(),
 			flush = () => {
 				val tmp = java.io.File.createTempFile("tmp-", "", filename.getParentFile)
@@ -67,8 +68,8 @@ object Flusher
 
 				tmp renameTo filename
 			},
-			wait = () => target.synchronized { target.wait },
-			log)
+			wait = () => target.synchronized { target.wait }
+		)
 }
 
 }

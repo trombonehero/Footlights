@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import java.nio.ByteBuffer
+import java.nio.channels.Channels
 
 import scala.collection.JavaConversions._
 
-import me.footlights.core.Footlights
-import me.footlights.core.crypto.{Fingerprint,Keychain}
+import me.footlights.core.{Footlights,HasBytes,IO}
+import me.footlights.core.crypto.{Fingerprint,MutableKeychain}
 import me.footlights.core.data.{File,Link}
 
 import me.footlights.api
@@ -32,7 +33,8 @@ package me.footlights.core.data.store {
  * encrypted data).
  */
 trait Filesystem extends Footlights {
-	protected def keychain:Keychain
+	protected def io:IO
+	protected def keychain:MutableKeychain
 	protected def store:Store
 
 	override def open(link:Link):Option[File] = store fetch link
@@ -41,7 +43,7 @@ trait Filesystem extends Footlights {
 	override def open(name:String):Option[api.File] = {
 		log fine { "open('%s')" format name }
 		Option(Fingerprint decode name) flatMap { fingerprint =>
-			try { Option(keychain getLink fingerprint) }
+			try { keychain getLink fingerprint }
 			catch {
 				case e:NoSuchElementException =>
 					log warning "No key stored for file " + name
@@ -54,7 +56,7 @@ trait Filesystem extends Footlights {
 	override def save(data:ByteBuffer):Option[api.File] = {
 			val f = File.newBuilder.setContent(data).freeze
 			store store f.toSave
-			f.link saveTo keychain
+			log fine { "saved '%s'" format f }
 			Some(f)
 		}
 
@@ -81,7 +83,9 @@ trait Filesystem extends Footlights {
 	private val log = java.util.logging.Logger getLogger classOf[Filesystem].getCanonicalName
 }
 
-class Stat(val name: Fingerprint, val length: Long)
+class Stat(val name: Fingerprint, val length: Long) {
+	override val toString = "File '%s' (%d B)" format (name, length)
+}
 
 object Stat {
 	def apply(f:java.io.File) = new Stat(Fingerprint.decode(f.getName), f.length())

@@ -31,7 +31,7 @@ import me.footlights.core.data.store.CASClient
 package me.footlights.core {
 
 import apps.AppWrapper
-import crypto.{Fingerprint,Keychain}
+import crypto.{Fingerprint,Keychain,MutableKeychain}
 import data.store.{CASClient, DiskStore, Store}
 
 
@@ -51,7 +51,7 @@ abstract class Kernel(
 	protected val io: IO,
 	protected val appLoader: ClassLoader,
 	protected val prefs: FileBackedPreferences,
-	protected val keychain: Keychain,
+	protected val keychain: MutableKeychain,
 	protected val loadedApps: mutable.HashMap[URI,AppWrapper],
 	protected val uis: mutable.Set[UI],
 	protected val cache: DiskStore)
@@ -72,7 +72,7 @@ abstract class Kernel(
 	 */
 	override def localizeJar(uri:URI) = security.Privilege.sudo { () =>
 		val absoluteLink =
-			if (uri.isOpaque) Option(uri) map Fingerprint.decode map keychain.getLink
+			if (uri.isOpaque) keychain getLink Fingerprint.decode(uri)
 			else if (uri.getScheme != null) resolver.resolve(uri.toURL)
 			else {
 				log warning ("Tried to localize scheme-less URI '%s'" format uri.toString)
@@ -115,17 +115,24 @@ object Kernel {
 
 		val io = IO.direct
 
-		val keychain = Keychain create
 		val keychainFile = prefs getString { FileBackedPreferences.KEYCHAIN_KEY } map {
 			new java.io.File(_) } get
 
-		if (keychainFile.exists) {
-			try { keychain.importKeystoreFile(new FileInputStream(keychainFile)) }
-			catch {
-				case e:Exception => log.log(SEVERE, "Error loading keychain", e)
-			}
-		}
-		Flusher(keychain, keychainFile) start
+		val keystore =
+			if (keychainFile.exists) {
+				try { Keychain.importKeyStore(new FileInputStream(keychainFile).getChannel) }
+				catch {
+					case e:Exception =>
+						log.log(SEVERE, "Error loading keychain", e)
+						Keychain()
+				}
+			} else Keychain()
+
+		val keychain = new MutableKeychain(keystore, (k:Keychain) => security.Privilege.sudo { () =>
+				val tmp = java.io.File.createTempFile("tmp-", "", keychainFile.getParentFile)
+				k exportKeyStore { new FileOutputStream(tmp) getChannel }
+				tmp renameTo keychainFile
+			})
 
 		val apps = new mutable.HashMap[URI,AppWrapper]
 		val uis = new mutable.HashSet[UI]

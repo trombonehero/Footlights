@@ -21,16 +21,16 @@ import java.util.logging.{Level, Logger}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-import me.footlights.api.Application
-import me.footlights.api.File
-import me.footlights.api.KernelInterface
-import me.footlights.api.ModifiablePreferences
-
+import me.footlights.api
+import me.footlights.api.{Application, KernelInterface, ModifiablePreferences}
+import me.footlights.api.support.Pipeline._
 import me.footlights.api.support.Tee._
 
-import me.footlights.core.{Footlights,ModifiableStorageEngine}
-import me.footlights.core.crypto.Keychain
+import me.footlights.core
+import me.footlights.core.{Flusher, Footlights, ModifiableStorageEngine}
+import me.footlights.core.crypto.{Fingerprint, Keychain, MutableKeychain}
 import me.footlights.core.data
+import me.footlights.core.ProgrammerError
 
 
 package me.footlights.core.apps {
@@ -38,8 +38,8 @@ package me.footlights.core.apps {
 
 /** Wrapper for applications; ensures consistent exception handling */
 case class AppWrapper(
-		mainClass:Class[_], val name:URI,
-		val kernel:KernelInterface, val prefs:ModifiablePreferences, val log:Logger) {
+		mainClass:Class[_], val name:URI, val kernel:Footlights,
+		val appKeychain:MutableKeychain, val prefs:ModifiablePreferences, val log:Logger) {
 	override lazy val toString = "Application { '" + name + "' }"
 
 	/** The application itself (lazily initialized). */
@@ -80,7 +80,7 @@ case class AppWrapper(
 
 /** Provides plugin [un]loading. */
 trait ApplicationManagement extends Footlights {
-	protected def keychain:Keychain
+	protected def keychain:MutableKeychain
 	protected def loadedApps:mutable.Map[URI,AppWrapper]
 	protected def appLoader:ClassLoader
 	protected def prefs:ModifiablePreferences
@@ -91,11 +91,12 @@ trait ApplicationManagement extends Footlights {
 
 	override def loadApplication(uri:URI) =
 		loadedApps get(uri) getOrElse {
-			val prefs = appPreferences(uri)
-			val appLog = Logger getLogger uri.toString
-
 			loadAppClass(uri.toURL) map {
-				AppWrapper(_, uri, this, prefs, appLog)
+				val appKeys = appKeychain(uri)
+				val appPrefs = appPreferences(uri)
+				val appLog = Logger getLogger uri.toString
+
+				AppWrapper(_, uri, this, appKeys, appPrefs, appLog)
 			} tee {
 				loadedApps put (uri, _)
 			} get
@@ -121,10 +122,16 @@ trait ApplicationManagement extends Footlights {
 	/** Create a {@link Keychain} for an application which can save itself. */
 	private def appKeychain(appName:URI) = {
 		val appKey = "app.keychain." + appName
-		val appKeychain = prefs getString appKey flatMap readKeychain getOrElse Keychain.create
 
-		Flusher(appKeychain, save = remember(appKey)).start
-		appKeychain
+		prefs getString appKey flatMap open map { case file:data.File =>
+			Keychain parse file.getContents
+		} orElse {
+			Some(Keychain())
+		} map {
+			new MutableKeychain(_, { k:Keychain => remember(appKey)(k.getBytes) })
+		} getOrElse {
+			throw new ProgrammerError("Failed to load or create app-specific Keychain")
+		}
 	}
 
 
@@ -145,9 +152,7 @@ trait ApplicationManagement extends Footlights {
 
 	/** Save some data, its {@link Link} (including symmetric key) and name. */
 	private def remember(prefKey:String)(bytes:ByteBuffer) =
-		save(bytes) map { case f:data.File => f } map { _.link } tee {
-			_ saveTo keychain
-		} map {
+		save(bytes) map { case f:data.File => f } map { _.link } tee keychain.store map {
 			_.fingerprint.encode
 		} tee {
 			prefs.set(prefKey, _)

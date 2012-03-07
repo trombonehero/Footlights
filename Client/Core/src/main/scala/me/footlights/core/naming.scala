@@ -46,7 +46,7 @@ class Resolver private(io:IO, keychain: Keychain)
 		fetchJSON(url) flatMap { json =>
 			json.get("fingerprint") map {
 				_ match { case s:String => Fingerprint.decode(s) }
-			} map {
+			} flatMap { fingerprint =>
 				// Check for a key.
 				json.get("key") match {
 					// If a key has been explicitly specified, use it.
@@ -54,21 +54,21 @@ class Resolver private(io:IO, keychain: Keychain)
 						val tokens = s.split(":")
 						tokens.length match {
 							case 2 =>
-								Link.newBuilder
-									.setFingerprint(_)
+								Some(Link.newBuilder
+									.setFingerprint(fingerprint)
 									.setKey(
 										SecretKey.newGenerator
 											.setAlgorithm(tokens(0))
 											.setBytes(Hex.decodeHex(tokens(1).toCharArray()))
 											.generate)
-									.build
+									.build)
 
-							case _ => null
+							case _ => None
 						}
 					}
 
 					// No key specified; we expect the key to be in the keychain.
-					case _ => keychain getLink _
+					case _ => keychain getLink fingerprint
 				}
 			}
 		}

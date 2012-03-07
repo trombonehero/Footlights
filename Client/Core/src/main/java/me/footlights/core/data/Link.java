@@ -26,7 +26,6 @@ import javax.crypto.Cipher;
 import me.footlights.core.Preconditions;
 import me.footlights.core.Util;
 import me.footlights.core.crypto.Fingerprint;
-import me.footlights.core.crypto.Keychain;
 import me.footlights.core.crypto.SecretKey;
 import me.footlights.core.crypto.SecretKey.Operation;
 
@@ -134,10 +133,8 @@ public class Link implements FootlightsPrimitive
 	}
 
 
-	public void saveTo(Keychain keychain) { keychain.store(fingerprint, key); }
-
 	public Fingerprint fingerprint() { return fingerprint; }
-	SecretKey key() { return key; }
+	public SecretKey key() { return key; }  // TODO: move this class to .crypto and remove 'public'
 
 
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException

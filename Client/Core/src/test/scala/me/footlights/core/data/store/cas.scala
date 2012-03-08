@@ -36,6 +36,7 @@ import me.footlights.core.Preferences
 import me.footlights.core.crypto.Fingerprint
 import me.footlights.core.data.Block
 import me.footlights.core.data
+import me.footlights.core.tags._
 
 
 package me.footlights.core.data.store {
@@ -113,7 +114,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 		}
 
 		"when talking to a local server" - {
-			"should be able to upload a file" in {
+			"should be able to upload a file" taggedAs(LocalCAS) in {
 				prefs += (SharedSecretName -> SharedSecret)
 				prefs += (UploadUrl._1 -> "http://localhost:8080/footlights-uploadserver/upload")
 	
@@ -126,7 +127,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 		}
 
 		"when talking to a remote server" - {
-			"should be able to upload a file" in {
+			"should be able to upload a file" taggedAs(InternetAccess) in {
 				prefs += (SharedSecretName -> SharedSecret)
 				prefs += UploadUrl
 	
@@ -137,7 +138,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 				}
 			}
 
-			"should be able to download a file" in {
+			"should be able to download a file" taggedAs(InternetAccess) in {
 				prefs += DownloadUrl
 				try { cas get block.name should equal(Some(block.getBytes)) }
 				catch {

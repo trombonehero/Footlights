@@ -30,27 +30,28 @@ import me.footlights.ui.web.Constants.WEB_PORT
 package me.footlights.ui.web {
 
 class WebUI(
-		footlights:Footlights, server:MasterServer, ajax:AjaxServer, apps:Map[URI,AppWrapper])
+		footlights:Footlights, server:MasterServer, globalContext:GlobalContext,
+		apps:Map[URI,AppWrapper])
 	extends UI("Web UI", footlights) {
 
 	override def run = new Thread(null, server, "Web Server").run
 	override def handleEvent(e:UI.Event) = e match {
 		case e:AppLoadedEvent =>
 			apps put(e.app.name, e.app)
-			ajax fireEvent {
+			globalContext fireEvent {
 				new JavaScript()
 					.append("context.log('Loaded app: %s');" format e.app.name)
 			}
 
 		case e:AppUnloadingEvent =>
 			apps remove e.app.name
-			ajax fireEvent {
+			globalContext fireEvent {
 				new JavaScript()
 					.append("context.log('Unloaded app: %s');" format e.app.name)
 			}
 
 		case e:FileOpenedEvent =>
-			ajax fireEvent {
+			globalContext fireEvent {
 				new JavaScript()
 					.append("context.log('opened: ")
 					.appendText(e.file toString)
@@ -58,13 +59,13 @@ class WebUI(
 			}
 
 		case e:FileSavedEvent =>
-			ajax fireEvent {
+			globalContext fireEvent {
 				new JavaScript()
 					.append("context.log('saved: ").appendText(e.file toString).append("');")
 			}
 
 		case e:UI.Event =>
-			ajax fireEvent {
+			globalContext fireEvent {
 				new JavaScript()
 					.append("context.log('Unknown event: %s');" format e)
 			}
@@ -78,11 +79,15 @@ object WebUI {
 		log info { "Using TCP port " + port }
 
 		val apps:Map[URI,AppWrapper] = Map()
-		val ajax = new AjaxServer(footlights)
-		val staticContent = new StaticContentServer(apps)
-		val master = new MasterServer(port, footlights, ajax, staticContent)
+		val master = new MasterServer(port, footlights)
 
-		new WebUI(footlights, master, ajax, apps)
+		def createAppContext(app:AppWrapper) =
+			master register (app.name.toString -> new AppContext(app))
+
+		val globalContext = new GlobalContext(footlights, null, createAppContext)
+		master register ("footlights" -> globalContext)
+
+		new WebUI(footlights, master, globalContext, apps)
 	}
 
 	/** Log. */

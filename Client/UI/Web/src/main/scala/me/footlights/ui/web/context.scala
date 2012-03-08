@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Jonathan Anderson
+ * Copyright 2012 Jonathan Anderson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,73 +13,98 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.net.URI
+import java.io.FileNotFoundException
+import java.net.{InetSocketAddress,URI}
+import java.nio.ByteBuffer
+import java.nio.channels.{ServerSocketChannel,SocketChannel}
+import java.util.logging.Level.{FINE,INFO,WARNING,SEVERE}
+import java.util.logging.Logger
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable.HashMap
+import scala.actors.Actor._
+import scala.actors.Futures._
 
 import me.footlights.api.WebRequest
-import me.footlights.api.ajax.{AjaxHandler, AjaxResponse, JavaScript, JSON}
+import me.footlights.api.ajax.{AjaxResponse,JavaScript,JSON}
 import me.footlights.api.ajax.JSON._
-
 import me.footlights.core.Footlights
+import me.footlights.core.apps.AppWrapper
+
 
 package me.footlights.ui.web {
 
-/** Acts as an Ajax server for the JavaScript client */
-class AjaxServer(footlights:Footlights) extends WebServer
-{
-	val appAjaxHandlers = new HashMap[URI, AjaxHandler]
-	val globalContext = new GlobalContext(footlights, this)
+/**
+ * Server-side handle to a client sandbox's context.
+ *
+ * @param  base    the base app or Footlights class, relative to which we load e.g. resources
+ */
+abstract class Context(base:Class[_]) extends WebServer {
+	/** Concrete subclasses must handle Ajax. */
+	protected def handleAjax(req:WebRequest): AjaxResponse
 
-	override def name:String = "Ajax"
+	/** Subclasses <i>may</i> provide a default response for empty requests. */
+	protected def defaultResponse() = Response error new FileNotFoundException
 
 	override def handle(req:WebRequest) = {
-		// The request to be passed up to the next level of the stack.
-		val request = req.shift
+		val remainder = req.shift
 
-		Option(req.prefix match {
-			case GlobalContext => globalContext service request
-			case ApplicationContext =>
-				val name = new URI(java.net.URLDecoder.decode(request.prefix, "utf-8"))
-				appAjaxHandlers get name map { _.service(request.shift) } getOrElse {
-					throw new IllegalArgumentException("No such app: " + request.prefix)
-				}
-			case _:String => new JavaScript()
-		}) map { response =>
-			Response.newBuilder()
-				.setResponse(response.mimeType, response.data)
-				.build()
-		} getOrElse { throw new IllegalArgumentException("Unable to service request: " + req) }
+		req.prefix match {
+			case Empty => defaultResponse
+
+			case Ajax =>
+				val response = handleAjax(remainder)
+				Response.newBuilder
+					.setResponse(response.mimeType, response.data)
+					.build
+
+			case StaticContent =>
+				val data = getStaticContent(remainder)
+				Response.newBuilder
+					.setResponse(MimeType(remainder.path), data)
+					.build
+		}
 	}
 
+	private def getStaticContent(request:WebRequest) = {
+		val path = request.path
+		if (path contains "..") throw new SecurityException("'..' present in " + request)
 
-	def reset = appAjaxHandlers.clear();
-	def register(name:URI, appHandler:AjaxHandler)
-	{
-		if (appAjaxHandlers.contains(name))
-			throw new RuntimeException(name + " already registered");
+		val url = base getResource path
+		if (url == null) throw new FileNotFoundException(path)
 
-		appAjaxHandlers += name -> appHandler
+		url.openStream
 	}
 
-	/** Send an asychronous event to the trusted part of the UI. */
-	private[web] def fireEvent(response:JavaScript) = globalContext fireEvent response
+	private val Empty = ""
+	private val Ajax = "ajax"
+	private val StaticContent = "static"
 
-	private val GlobalContext = "global"
-	private val ApplicationContext = "app"
+	private def log = Logger.getLogger(classOf[MasterServer].getCanonicalName)
 }
 
 
+/** The Ajax, etc. context for an unprivileged application. */
+class AppContext(wrapper:AppWrapper) extends Context(wrapper.app.getClass) {
+	override val name = "Application context: '%s'" format wrapper.name
+	override def handleAjax(req:WebRequest) = wrapper.app.ajaxHandler service req
+}
+
 
 /** The global context - code sent here has full DOM access. */
-class GlobalContext(footlights:Footlights, server:AjaxServer)
-	extends AjaxHandler
-{
-	override def service(request:WebRequest) = {
+class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapper => Unit)
+		extends Context(classOf[GlobalContext]) {
+
+	override def defaultResponse() = Response.newBuilder
+		.setResponse(
+				MimeType("index.html"),
+				(this.getClass getResource "index.html").openStream
+			)
+		.build
+
+	override val name = "Global context"
+	override def handleAjax(request:WebRequest):AjaxResponse = {
 		request.path() match {
 			case Init =>
-				server.reset
+				reset
 
 				val launcher = "context.globals['launcher']"
 
@@ -97,7 +122,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 					footlights.unloadApplication(
 						footlights.runningApplications().iterator().next());
 
-				server.reset
+				reset
 				new JavaScript().append("context.globals['window'].location.reload()")
 
 			case AsyncChannel =>
@@ -113,7 +138,7 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 				val uri = new java.net.URI(request.shift().path())
 				val wrapper = footlights.loadApplication(uri)
 
-				server.register(wrapper.name, wrapper.app.ajaxHandler)
+				newContext(wrapper)
 				createUISandbox(wrapper.name)
 
 			case FillPlaceholder(name) => {
@@ -121,6 +146,14 @@ class GlobalContext(footlights:Footlights, server:AjaxServer)
 			}
 		}
 	}
+
+
+	private val asyncEvents = collection.mutable.Queue[JavaScript]()
+	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
+		asyncEvents enqueue event
+		asyncEvents notify
+	}
+
 
 
 	private def createClickableText(parent:String, name:String, ajax:String) = {
@@ -136,17 +169,11 @@ a.onclick = function onClickHandler() { context.ajax('%s'); };
 		new JavaScript()
 			.append("""
 var sb = context.globals['sandboxes'].create(
-	'app/%s', context.globals['content'], context.log, { x: 0, y: 0 });
+	'%s', context.globals['content'], context.log, { x: 0, y: 0 });
 sb.ajax('init');
 """ format (JavaScript sanitizeText java.net.URLEncoder.encode(name.toString, "utf-8"), "100%"))
 
 
-	private val asyncEvents = collection.mutable.Queue[JavaScript]()
-
-	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
-		asyncEvents enqueue event
-		asyncEvents notify
-	}
 
 	private val Init            = "init"
 	private val AsyncChannel    = "async_channel"
@@ -166,6 +193,34 @@ sb.ajax('init');
 	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar!/"
 	private val TICTACTOE = APP_PATH + "TicTacToe/target/classes"
 	private val UPLOADER = APP_PATH + "Uploader/target/classes"
+}
+
+
+object MimeType {
+	def apply(path:String):String = {
+		path match {
+			case CSS(_)      => "text/css"
+			case HTML(_)     => "text/html"
+			case JS(_)       => "text/javascript"
+
+			case GIF(_)      => "image/gif"
+			case JPEG(_)     => "image/jpeg"
+			case PNG(_)      => "image/png"
+
+			case TrueType(_) => "font/ttf"
+
+			case _           => "application/octet-stream"
+		}
+		
+	}
+
+	private val CSS      = """(.*)\.css""".r
+	private val GIF      = """(.*)\.gif""".r
+	private val HTML     = """(.*)\.html?""".r
+	private val JPEG     = """(.*)\.jpe?g""".r
+	private val JS       = """(.*)\.js""".r
+	private val PNG      = """(.*)\.png""".r
+	private val TrueType = """(.*)\.ttf""".r
 }
 
 }

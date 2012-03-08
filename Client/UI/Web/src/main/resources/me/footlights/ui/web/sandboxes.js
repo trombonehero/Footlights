@@ -51,7 +51,7 @@ sandboxes.wrap = function(name, log)
 {
 	var sandbox =
 		{
-			ajax: function(request, callback) { ajax('/ajax/' + name + '/' + request, this, callback); },
+			ajax: function(request, callback) { ajax('/' + name + '/ajax/' + request, this, callback); },
 			compile: function(code) { return cajaVM.compileModule('return ' + code); },
 			exec: function(code)
 			{
@@ -64,7 +64,7 @@ sandboxes.wrap = function(name, log)
 					throw e;
 				}
 			},
-			load: function(filename) { ajax('static/' + this.name + '/' + filename, this); },
+			load: function(filename) { ajax('/' + name + '/static/' + filename, this); },
 			log: log,
 			name: name,
 		};

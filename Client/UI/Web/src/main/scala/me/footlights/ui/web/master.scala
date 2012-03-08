@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import java.io.FileNotFoundException
-import java.net.InetSocketAddress
+import java.net.{InetSocketAddress,URLDecoder}
 import java.nio.ByteBuffer
 import java.nio.channels.{ServerSocketChannel,SocketChannel}
 import java.util.logging.Level.{FINE,INFO,WARNING,SEVERE}
@@ -29,15 +29,11 @@ import me.footlights.core.Footlights
 package me.footlights.ui.web {
 
 /** Acts as a master server for Basic UI, JavaScript and Ajax */
-class MasterServer(
-		port:Int, footlights:Footlights, ajax:AjaxServer, staticServer:StaticContentServer)
+class MasterServer(port:Int, footlights:Footlights)
 	extends Runnable {
 
-	val servers = Map(
-			"" -> staticServer,
-			"static" -> staticServer,
-			"ajax" -> ajax
-		)
+	def register(context:(String, Context)) = contexts += context
+	private var contexts:Map[String,Context] = Map()
 
 	private var done = false
 
@@ -65,33 +61,41 @@ class MasterServer(
 				case (Some(request:Request), client:SocketChannel) => future {
 					log fine "Request: " + request
 
-					servers.get(request.prefix) map { server =>
-						try { server handle request.shift }
-						catch {
-							case e:FileNotFoundException => Response error e
+					val response = {
+						try {
+							if (request.prefix.isEmpty) Option(contexts.head._2 handle request)
+							else {
+								val contextName = URLDecoder.decode(request.prefix, "utf-8")
+								contexts get contextName map { _ handle request.shift
+								}
+							} orElse Some {
+								Response error new FileNotFoundException(
+										"No such context '%s'" format request.prefix)
+							}
+						} catch {
+							case e:FileNotFoundException => Some(Response error e)
 							case e:SecurityException =>
 								log.log(WARNING, "Security error handling " + request, e)
-								Response error e
+								Some(Response error e)
 	
 							case t:Throwable =>
 								log.log(SEVERE, "Unanticipated error handling " + request, t)
-								Response error t
+								Some(Response error t)
 						}
-					} orElse {
-						Some(Response.error(new FileNotFoundException(request toString)))
-					} foreach { response =>
-						log fine "Response: " + response
-						try { response write client }
-						catch {
-							case e:java.io.IOException =>
-								log fine "Can't write response: " + e
+					} getOrElse { Response error new FileNotFoundException(request toString) }
 
-							case t:Throwable =>
-								log.log(WARNING,
-									"Error responding to " + request + " with " + response, t)
-						}
-						client.close
+					log fine "Response: " + response
+					try { response write client }
+					catch {
+						case e:java.io.IOException =>
+							log fine "Can't write response: " + e
+
+						case t:Throwable =>
+							log.log(WARNING,
+								"Error responding to " + request + " with " + response, t)
 					}
+
+					client.close
 				}
 
 				case (None, client:SocketChannel) =>

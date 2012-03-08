@@ -72,7 +72,7 @@ function proxy(node, context)
 			subproxy.class = 'placeholder';
 
 			var callback = function interpretPlaceholder(p) { subproxy.appendText(p['value']); };
-			sandboxes['global'].ajax('fill_placeholder/' + name, callback);
+			sandboxes['footlights'].ajax('fill_placeholder/' + name, callback);
 			return subproxy;
 		},
 
@@ -119,7 +119,7 @@ function proxy(node, context)
 		get style()         { return node.style; },
 		get tag()           { return node.tagName ? node.tagName.toLowerCase() : undefined; },
 
-		set src(uri)        { node.src = '/static/' + context.name + '/' + uri; },
+		set src(uri)        { node.src = '/' + context.name + '/static/' + uri; },
 
 		set alt(text)       { node.alt = text; },
 		set class(name)     { node.setAttribute("class", name); },

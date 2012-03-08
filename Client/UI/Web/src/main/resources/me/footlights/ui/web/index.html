@@ -1,27 +1,27 @@
 <html>
 	<head>
 		<title>Footlights</title>
-		<link rel="stylesheet" type="text/css" href="/static/footlights/style/footlights.css"/>
+		<link rel="stylesheet" type="text/css" href="/footlights/static/style/footlights.css"/>
 
-		<script type="text/javascript" src="/static/footlights/ses/whitelist.js"></script>
-		<script type="text/javascript" src="/static/footlights/ses/atLeastFreeVarNames.js"></script>
-		<script type="text/javascript" src="/static/footlights/ses/WeakMap.js"></script>
-		<script type="text/javascript" src="/static/footlights/ses/initSES.js"></script>
+		<script type="text/javascript" src="/footlights/static/ses/whitelist.js"></script>
+		<script type="text/javascript" src="/footlights/static/ses/atLeastFreeVarNames.js"></script>
+		<script type="text/javascript" src="/footlights/static/ses/WeakMap.js"></script>
+		<script type="text/javascript" src="/footlights/static/ses/initSES.js"></script>
 
-		<script type="text/javascript" src="/static/footlights/dom-proxy.js"></script>
-		<script type="text/javascript" src="/static/footlights/sandboxes.js"></script>
+		<script type="text/javascript" src="/footlights/static/dom-proxy.js"></script>
+		<script type="text/javascript" src="/footlights/static/sandboxes.js"></script>
 
-		<script type="text/javascript" src="/static/footlights/ajax.js"></script>
+		<script type="text/javascript" src="/footlights/static/ajax.js"></script>
 	</head>
 	
 	<body>
 		<div id="curtains">
-			<img id="curtain-top" src="/static/footlights/images/curtain-top.png"/>
-			<img id="curtain-left" src="/static/footlights/images/curtain-left.png"/>
-			<img id="curtain-right" src="/static/footlights/images/curtain-right.png"/>
+			<img id="curtain-top" src="/footlights/static/images/curtain-top.png"/>
+			<img id="curtain-left" src="/footlights/static/images/curtain-left.png"/>
+			<img id="curtain-right" src="/footlights/static/images/curtain-right.png"/>
 		</div>
 
-		<img id="banner" src="/static/footlights/images/banner.png"/>
+		<img id="banner" src="/footlights/static/images/banner.png"/>
 
 		<div id="root">
 			<div id="launcher"></div>
@@ -55,7 +55,7 @@ initSES(window, whitelist, atLeastFreeVarNames);
 		console.log(message);
 		status.log(message);
 	}
-	var rootContext = sandboxes.wrap('global', log);
+	var rootContext = sandboxes.wrap('footlights', log);
 	rootContext.root = proxy(document.getElementById('root'), rootContext);
 
 	// The root context has no inherent privileges: we must pass special things in.
@@ -71,7 +71,7 @@ initSES(window, whitelist, atLeastFreeVarNames);
 	}
 	rootContext.globals['setupAsyncChannel'] = setupAsyncChannel;
 
-	sandboxes['global'] = Object.freeze(rootContext);
+	sandboxes['footlights'] = Object.freeze(rootContext);
 
 	rootContext.ajax('init');
 })();

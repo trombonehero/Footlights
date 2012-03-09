@@ -62,13 +62,7 @@ function proxy(node, context)
 
 		appendPlaceholder: function(name)
 		{
-			// We must create the span explicitly, rather than using appendElement(),
-			// since we want to set the 'id' attribute (which is a privileged operation).
-			var span = document.createElement('span');
-			node.appendChild(span);
-
-			// Now we can start using the unprivileged proxy for the <span/>.
-			var subproxy = proxy(span, context);
+			var subproxy = theProxy.appendElement('span');
 			subproxy.class = 'placeholder';
 
 			var callback = function interpretPlaceholder(p) { subproxy.appendText(p['value']); };

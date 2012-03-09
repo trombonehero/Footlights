@@ -21,6 +21,9 @@
 //   appendElement(type)           returns a proxied Node
 //
 
+// Translate a placeholder into a real value and feed it to a callback function.
+function translate(name, callback) { sandboxes['footlights'].translate(name, callback); }
+
 function proxy(node, context)
 {
 	if (typeof(node) != "object") throw "Attempting to proxy a non-object!";
@@ -65,8 +68,7 @@ function proxy(node, context)
 			var subproxy = theProxy.appendElement('span');
 			subproxy.class = 'placeholder';
 
-			var callback = function interpretPlaceholder(p) { subproxy.appendText(p['value']); };
-			sandboxes['footlights'].ajax('fill_placeholder/' + name, callback);
+			translate(name, function interpretPlaceholder(p) { subproxy.appendText(p['value']); });
 			return subproxy;
 		},
 

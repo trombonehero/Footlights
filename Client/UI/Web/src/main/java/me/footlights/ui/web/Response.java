@@ -121,7 +121,7 @@ class Response
 
 		private HttpResponseCode http = OK;
 		private Throwable error;
-		private String mimeType = "text/xml";
+		private String mimeType = "application/octet-stream";
 		private InputStream content;
 	}
 

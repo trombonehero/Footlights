@@ -38,14 +38,14 @@ package me.footlights.core.apps {
 
 /** Wrapper for applications; ensures consistent exception handling */
 case class AppWrapper(
-		mainClass:Class[_], val name:URI, val kernel:Footlights,
+		mainClass:Class[_], val name:URI, private val footlights:Footlights,
 		val appKeychain:MutableKeychain, val prefs:ModifiablePreferences, val log:Logger) {
 	override lazy val toString = "Application { '" + name + "' }"
 
 	/** The application itself (lazily initialized). */
 	lazy val app:Application = {
 		try {
-			init.invoke(null, kernWrapper, prefs, log) match {
+			init.invoke(null, kernel, prefs, log) match {
 				case app:Application => app
 				case a:Any => throw new ClassCastException(
 						"init() returned non-application '%s'" format a)
@@ -55,15 +55,15 @@ case class AppWrapper(
 		}
 	}
 
-	private val kernWrapper:KernelInterface = new KernelInterface() {
+	val kernel:KernelInterface = new KernelInterface() {
 		def save(bytes:ByteBuffer) =
-			kernel save bytes tee { case f:data.File => appKeychain store f.link }
+			footlights save bytes tee { case f:data.File => appKeychain store f.link }
 
 		def open(name:String) = try {
-			appKeychain getLink { Fingerprint decode name } map kernel.open get
+			appKeychain getLink { Fingerprint decode name } map footlights.open get
 		}
 
-		def openLocalFile = kernel.openLocalFile tee {
+		def openLocalFile = footlights.openLocalFile tee {
 			case f:data.File => appKeychain store f.link
 			println("Opened local:")
 			println("name: " + f.name)

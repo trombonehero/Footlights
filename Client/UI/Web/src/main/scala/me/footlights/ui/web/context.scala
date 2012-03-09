@@ -57,9 +57,10 @@ abstract class Context(base:Class[_]) extends WebServer {
 					.build
 
 			case StaticContent =>
-				val data = getStaticContent(remainder)
+				val mimeType = MimeType(remainder.path)
 				Response.newBuilder
-					.setResponse(MimeType(remainder.path), data)
+					.setMimeType(MimeType(remainder.path))
+					.setResponse(getStaticContent(remainder))
 					.build
 		}
 	}
@@ -93,12 +94,10 @@ class AppContext(wrapper:AppWrapper) extends Context(wrapper.app.getClass) {
 class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapper => Unit)
 		extends Context(classOf[GlobalContext]) {
 
-	override def defaultResponse() = Response.newBuilder
-		.setResponse(
-				MimeType("index.html"),
-				(this.getClass getResource "index.html").openStream
-			)
-		.build
+	override def defaultResponse() = {
+		val data = (this.getClass getResource "index.html").openStream
+		Response.newBuilder setMimeType "text/html" setResponse data build
+	}
 
 	override val name = "Global context"
 	override def handleAjax(request:WebRequest):AjaxResponse = {

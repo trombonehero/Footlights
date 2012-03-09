@@ -48,8 +48,6 @@ abstract class Context(base:Class[_]) extends WebServer {
 		val remainder = req.shift
 
 		req.prefix match {
-			case Empty => defaultResponse
-
 			case Ajax =>
 				val response = handleAjax(remainder)
 				Response.newBuilder
@@ -62,6 +60,8 @@ abstract class Context(base:Class[_]) extends WebServer {
 					.setMimeType(MimeType(remainder.path))
 					.setResponse(getStaticContent(remainder))
 					.build
+
+			case _ => defaultResponse
 		}
 	}
 
@@ -75,7 +75,6 @@ abstract class Context(base:Class[_]) extends WebServer {
 		url.openStream
 	}
 
-	private val Empty = ""
 	private val Ajax = "ajax"
 	private val StaticContent = "static"
 

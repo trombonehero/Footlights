@@ -48,6 +48,17 @@ class Response
 	static Builder newBuilder() { return new Builder(); }
 	static class Builder
 	{
+		/** Set the MIME type (can be overwritten if {@link #setError} called). */
+		public Builder setMimeType(String mimeType) { this.mimeType = mimeType; return this; }
+
+		public Builder setResponse(InputStream content)
+		{
+			this.http = OK;
+			this.error = null;
+			this.content = content;
+			return this;
+		}
+
 		/** Set the response to just a {@link String}. */
 		public Builder setResponse(String mimeType, String content)
 		{

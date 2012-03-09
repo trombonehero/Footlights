@@ -20,6 +20,7 @@
 //   appendText(text)              returns a proxied Text node
 //   appendElement(type)           returns a proxied Node
 //
+'use strict';
 
 // Translate a placeholder into a real value and feed it to a callback function.
 function translate(name, callback) { sandboxes['footlights'].translate(name, callback); }

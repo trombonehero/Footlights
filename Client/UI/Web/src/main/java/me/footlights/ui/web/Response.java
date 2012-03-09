@@ -116,6 +116,7 @@ class Response
 
 		public Response build()
 		{
+			if (content == null) setError(new FileNotFoundException());
 			return new Response(http, mimeType, content, error);
 		}
 

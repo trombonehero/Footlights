@@ -65,9 +65,12 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 
 	/** Load the "main" class, if one is specified in the manifest. */
-	private[boot] def loadMainClass = classpath.mainClassName flatMap attemptLoadingClass orElse {
+	private[boot] def loadMainClass = classpath.mainClassName orElse {
 		throw new ClassNotFoundException(
 			"%s does not specify a main Footlights class" format classpath.externalURL)
+	} flatMap attemptLoadingClass orElse {
+		throw new ClassNotFoundException(
+			"Unable to load app's main class '%s'" format classpath.mainClassName)
 	}
 
 	override def toString = {

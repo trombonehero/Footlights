@@ -57,6 +57,7 @@ function proxy(node, context)
 
 				default:
 					element = document.createElement(type);
+					if (type == 'a') element.href = '#';
 					subproxy = proxy(element, context);
 			}
 

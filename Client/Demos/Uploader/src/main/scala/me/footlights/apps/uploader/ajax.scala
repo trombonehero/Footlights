@@ -36,7 +36,7 @@ class Ajax(app:Uploader) extends AjaxHandler
 				val js = new JavaScript().append("var list = context.globals['list'];")
 				app.storedNames foreach { name =>
 					val sanitized = JavaScript sanitizeText name.toString
-					val encoded = JavaScript sanitizeText (URLEncoder encode name.toString)
+					val encoded = JavaScript sanitizeText URLEncoder.encode(name.toString, "utf-8")
 
 					js.append("""
 var a = list.appendElement('div').appendElement('a');
@@ -54,7 +54,7 @@ a.onclick = function() { context.ajax('download/%s)'); };
 
 			case DownloadRequest(name) =>
 				setStatus {
-					app download (URLDecoder decode name) map {
+					app download URLDecoder.decode(name, "utf-8") map {
 						"Downloaded '%s'" format _.name.toString
 					} getOrElse
 						"Downloaded nothing (user cancelled?)."

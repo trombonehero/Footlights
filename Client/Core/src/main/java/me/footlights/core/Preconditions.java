@@ -24,9 +24,9 @@ public class Preconditions
 {
 	/**
 	 * Checks that the supplied references are non-null.
-	 * @throws IllegalArgumentException if any supplied reference is null
+	 * @throws NullPointerException if any supplied reference is null
 	 */
-	public static void notNull(Object... o) throws IllegalArgumentException
+	public static void notNull(Object... o) throws NullPointerException
 	{
 		for (int i = 0; i < o.length; i++)
 			if (o[i] == null)

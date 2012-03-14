@@ -69,17 +69,7 @@ public class Fingerprint
 	public static Builder newBuilder() { return new Builder(Preferences.getDefaultPreferences()); }
 
 	public URI toURI() { return uri; }
-
-	public String encode()
-	{
-		StringBuffer sb = new StringBuffer();
-		sb.append("urn:");
-		sb.append(algorithm.getAlgorithm().toLowerCase());
-		sb.append(":");
-		sb.append(new String(new Base32().encode(bytes.array())));
-
-		return sb.toString();
-	}
+	public String encode() { return uri.toString(); }
 
 	public MessageDigest getAlgorithm() { return algorithm; }
 
@@ -157,7 +147,7 @@ public class Fingerprint
 	}
 
 
-	@Override public String toString() { return encode(); }
+	@Override public String toString() { return uri.toString(); }
 	@Override public int hashCode() { return bytes.duplicate().getInt(); }
 	@Override public boolean equals(Object o)
 	{

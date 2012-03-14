@@ -43,11 +43,14 @@ public class Fingerprint
 	public static Fingerprint decode(String name)
 		throws NoSuchAlgorithmException
 	{
-		String parts[] = name.replaceAll("\\+", "/").split(":");
-		if (parts.length != 2)
+		String parts[] = name.split(":");
+		if (parts.length != 3)
 			throw new IllegalArgumentException("Invalid fingerprint '" + name + "'");
 
-		return decode(parts[0].toLowerCase(), parts[1].toUpperCase());
+		if (!parts[0].equals("urn"))
+			throw new IllegalArgumentException("URNs must start with 'urn:'");
+
+		return decode(parts[1].toLowerCase(), parts[2].toUpperCase());
 	}
 
 	public static Fingerprint decode(String algorithmName, String hash)
@@ -55,7 +58,7 @@ public class Fingerprint
 	{
 		MessageDigest algorithm = MessageDigest.getInstance(algorithmName);
 		final URI uri;
-		try { uri = new URI(algorithmName, hash, null); }
+		try { uri = new URI("urn", algorithmName + ":" + hash, null); }
 		catch (URISyntaxException e) { throw new IllegalArgumentException(e); }
 
 		return new Fingerprint(algorithm,
@@ -70,9 +73,10 @@ public class Fingerprint
 	public String encode()
 	{
 		StringBuffer sb = new StringBuffer();
+		sb.append("urn:");
 		sb.append(algorithm.getAlgorithm().toLowerCase());
 		sb.append(":");
-		sb.append(new String(new Base32().encode(bytes.array())).replaceAll("/", "+"));
+		sb.append(new String(new Base32().encode(bytes.array())));
 
 		return sb.toString();
 	}
@@ -104,7 +108,7 @@ public class Fingerprint
 			try
 			{
 				uri = new URI(algorithm.getAlgorithm().toLowerCase(),
-						new String(new Base32().encode(hash.array())).replaceAll("/", "+"), null);
+						new String(new Base32().encode(hash.array())), null);
 			}
 			catch (URISyntaxException e)
 			{

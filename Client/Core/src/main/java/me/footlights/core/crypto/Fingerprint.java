@@ -107,7 +107,8 @@ public class Fingerprint
 			final URI uri;
 			try
 			{
-				uri = new URI(algorithm.getAlgorithm().toLowerCase(),
+				uri = new URI("urn",
+						algorithm.getAlgorithm().toLowerCase() + ":" +
 						new String(new Base32().encode(hash.array())), null);
 			}
 			catch (URISyntaxException e)
@@ -175,6 +176,8 @@ public class Fingerprint
 
 	private Fingerprint(MessageDigest hashAlgorithm, ByteBuffer fingerprintBytes, URI uri)
 	{
+		Preconditions.check(uri.getScheme().equals("urn"));
+
 		this.algorithm = hashAlgorithm;
 		this.bytes = fingerprintBytes;
 		this.uri = uri;

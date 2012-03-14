@@ -34,6 +34,15 @@ public class Preconditions
 					"Precondition failed: argument " + i + " is null");
 	}
 
+	/** Checks that some conditions are true. */
+	public static void check(boolean... b) throws IllegalArgumentException
+	{
+		for (int i = 0; i < b.length; i++)
+			if (!b[i])
+				throw new IllegalArgumentException(
+					"Precondition failed: argument " + i + " is false");
+	}
+
 	/** Non-instantiable utility class. */
 	private Preconditions() {}
 }

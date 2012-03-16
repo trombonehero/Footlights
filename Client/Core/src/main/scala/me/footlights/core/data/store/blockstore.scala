@@ -48,7 +48,13 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	def store(blocks:Iterable[EncryptedBlock]): Unit = blocks foreach { store(_) }
 
 	def retrieve(name:Fingerprint):Option[ByteBuffer] =
-		cache flatMap { _ retrieve name } orElse { get(name) }
+		// Intentionally not using Scala primitives like map. We currently load Scala
+		// classes with no special privileges, so having Option.map on the stack stops
+		// the Kernel from performing privileged operations like writing files.
+		//
+		// TODO: fix the access control bits
+		if (cache.isDefined) cache.get retrieve name
+		else get(name)
 
 	def retrieveCiphertext(link:Link) = retrieve(link.fingerprint) map {
 		EncryptedBlock.newBuilder()
@@ -80,6 +86,11 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
 	private def store(name:Fingerprint, bytes:ByteBuffer): Unit = {
+		// Intentionally not using Scala primitives like map. We currently load Scala
+		// classes with no special privileges, so having Option.map on the stack stops
+		// the Kernel from performing privileged operations like writing files.
+		//
+		// TODO: fix the access control bits
 		if (cache.isEmpty) put(name, bytes.asReadOnlyBuffer)
 		else cache.synchronized {
 			cache map { _.store(name, bytes.asReadOnlyBuffer) }

@@ -102,7 +102,11 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 				}
 			} flatMap { bytes =>
 				try { put(name, bytes); None }
-				catch { case e:IOException => Option(name) }
+				catch {
+					case e:IOException =>
+						log log (FINE, "Error flushing %s" format name, e)
+						Option(name)
+				}
 			}
 		}
 		journal retain unflushed.contains

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import java.io.{ByteArrayOutputStream, IOException}
+import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.net.{URI,URL}
 import java.util.logging.{Level, Logger}
@@ -37,9 +38,8 @@ package me.footlights.core.apps {
 
 
 /** Wrapper for applications; ensures consistent exception handling */
-case class AppWrapper(
-		mainClass:Class[_], val name:URI, private val footlights:Footlights,
-		val appKeychain:MutableKeychain, val prefs:ModifiablePreferences, val log:Logger) {
+class AppWrapper private(init:Method, val name:URI, val kernel:KernelInterface,
+		prefs:ModifiablePreferences, log:Logger) {
 	override lazy val toString = "Application { '" + name + "' }"
 
 	/** The application itself (lazily initialized). */
@@ -54,27 +54,37 @@ case class AppWrapper(
 			case t:Throwable => throw new AppStartupException(name, t)
 		}
 	}
+}
 
-	val kernel:KernelInterface = new KernelInterface() {
-		def save(bytes:ByteBuffer) =
-			footlights save bytes tee { case f:data.File => appKeychain store f.link }
+object AppWrapper {
+	def apply(
+			mainClass:Class[_], name:URI, footlights:Footlights,
+			appKeychain:MutableKeychain, prefs:ModifiablePreferences, log:Logger) = {
 
-		def open(name:String) = try {
-			appKeychain getLink { Fingerprint decode name } map footlights.open get
+		val init = mainClass.getMethod("init",
+				classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
+
+		// Create a wrapper around the real kernel which saves keys to an app-specific keychain.
+		val kernelWrapper = new KernelInterface() {
+			def save(bytes:ByteBuffer) =
+				footlights save bytes tee { case f:data.File => appKeychain store f.link }
+
+			def open(name:String) = try {
+				appKeychain getLink { Fingerprint decode name } map footlights.open get
+			}
+
+			def openLocalFile = footlights.openLocalFile tee {
+				case f:data.File => appKeychain store f.link
+				println("Opened local:")
+				println("name: " + f.name)
+				println("key:  " + f.key)
+			}
+
+			def saveLocalFile(file:api.File) = footlights saveLocalFile file
 		}
 
-		def openLocalFile = footlights.openLocalFile tee {
-			case f:data.File => appKeychain store f.link
-			println("Opened local:")
-			println("name: " + f.name)
-			println("key:  " + f.key)
-		}
-		def saveLocalFile(file:api.File) = kernel saveLocalFile file
+		new AppWrapper(init, name, kernelWrapper, prefs, log)
 	}
-
-	/** The application's {@link Application#init} method. */
-	private lazy val init = mainClass.getMethod("init",
-			classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
 }
 
 

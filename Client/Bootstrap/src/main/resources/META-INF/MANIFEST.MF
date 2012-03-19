@@ -3,4 +3,3 @@ Main-Class: footlights.boot.Bootstrapper
 
 Name: me/footlights/boot/
 Sealed: true
-

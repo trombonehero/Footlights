@@ -250,10 +250,8 @@ class CASClient private[store](
 						throw new IOException("Unknown mime-type: " + http.getContentType)
 					true
 
-				case 404 => false
-				case 410 => false
 				case other =>
-					log severe "Unknown CAS HTTP response code: " + other
+					log severe "CAS error: HTTP code " + other
 					false
 			}
 		} catch {

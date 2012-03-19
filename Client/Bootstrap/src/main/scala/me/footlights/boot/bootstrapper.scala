@@ -62,7 +62,7 @@ object Bootstrapper extends App {
 	def resolveDependencyJar(uri:URI):Option[JarFile] =
 		if (localizeJar == null) None
 		else localizeJar.invoke(footlights, uri) match {
-			case jar:Some[JarFile] => jar
+			case Some(jar:JarFile) => Some(jar)
 			case None =>
 				log warning "Unable to resolve dependency %s".format(uri)
 				None

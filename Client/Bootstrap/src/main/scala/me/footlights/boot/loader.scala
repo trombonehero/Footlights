@@ -23,6 +23,23 @@ package me.footlights.boot {
 class FootlightsClassLoader(
 		classpaths:Iterable[URL], resolveDep:URI=>Option[JarFile]) extends ClassLoader {
 	/**
+	 * Load a privileged UI.
+	 */
+	def loadUi(classpath:URL) = {
+		ClasspathLoader.create(this, classpath, resolveDep) flatMap { loader =>
+			loader.loadUi flatMap { ui =>
+				val className = ui.getName
+				val packageName = className.substring(0, className.lastIndexOf("."))
+
+				knownCorePackages += (packageName -> loader)
+				ui.getMethods() find { _.getName equals "init" } map { init =>
+					new UI(className, ui, init)
+				}
+			}
+		}
+	}
+
+	/**
 	 * Load an unprivileged application.
 	 *
 	 * Open the given classpath and load its main class, as specified in its manifest file
@@ -83,6 +100,24 @@ class FootlightsClassLoader(
 	}
 
 	private var knownCorePackages = Map[String, ClasspathLoader]()
+}
+
+/**
+ * A privileged user interface.
+ *
+ * User interfaces are privileged because they accept user commands, bypassing applications'
+ * {@link KernelInterface}.
+ *
+ * A UI must have a static "init" method which accepts a Footlights object as its only parameter.
+ * This factory method should return a {@link import me.footlights.core.UI} object.
+ */
+class UI(val name:String, c:Class[_], init:java.lang.reflect.Method) {
+	/** Start running against the privileged interface of {@link Footlights}. */
+	def start(footlights:Object) = init invoke (null, footlights) match {
+		case r:Runnable => new Thread(r, name)
+		case _ =>
+			throw new Error("UI '%s' is not Runnable" format name)
+	}
 }
 
 }

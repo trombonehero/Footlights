@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Footlights-UI: me.footlights.ui.web.WebUI

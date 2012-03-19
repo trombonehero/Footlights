@@ -73,6 +73,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 			"Unable to load app's main class '%s'" format classpath.mainClassName)
 	}
 
+	/** Load the UI class specified by the manifest (if any). Ok to fail if it's not a UI. */
+	private[boot] def loadUi = classpath.uiName flatMap attemptLoadingClass
+
 	override def toString = {
 		classOf[ClasspathLoader].getSimpleName + " { " +
 			"base url = '" + classpath.url + "', " +
@@ -228,6 +231,7 @@ private[boot]
 abstract class Classpath(val url:URL) {
 	def externalURL = url.toExternalForm
 	def mainClassName = getManifestAttribute("Footlights-App")
+	def uiName = getManifestAttribute("Footlights-UI")
 	def dependencies =
 		(getManifestAttribute("Class-Path") map { _ split " " } flatten) map {
 			new URI(_) } filter { _.getScheme != null }

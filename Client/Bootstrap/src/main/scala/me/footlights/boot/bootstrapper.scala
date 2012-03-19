@@ -28,9 +28,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 package me.footlights.boot {
 
-case class UI(name:String, sourceDirectory:String, packageName:String, className:String)
-
-
 /**
  * Bootstraps the Footlights system.
  *
@@ -43,20 +40,20 @@ object Bootstrapper extends App {
 
 	private val log = Logger getLogger Bootstrapper.getClass.getName
 
-	val WebUI = UI("Local Web UI", "UI/Web", "me.footlights.ui.web", "WebUI")
-	val SwingUI = UI("Local Swing UI", "UI/Swing", "me.footlights.ui.swing", "SwingUI")
-	val uis = WebUI ::
-//		SwingUI ::
-		Nil
+	// Find Scala libraries in the Java "boot" classpath.
+	val scalaPaths = System.getProperty("sun.boot.class.path") split ":" filter {
+		_.contains("scala")
+	}
 
-	def pathExists(path:String) = new File(path).exists
-	def toUrl(s:String) = new URL(s)
+	// Find Footlights code in the regular Java classpath.
+	val classpaths = System.getProperty("java.class.path") split ":" filter { entry =>
+		(entry contains "ootlights") && !(entry contains "test")
+	}
 
-	val bootPath = "Bootstrap"
-	val corePaths = "Core" :: (uis map { _.sourceDirectory })
-	val coreClasspaths = (System.getProperty("java.class.path") split ":" map { path =>
-		corePaths map { path replace (bootPath, _) } filter pathExists map { "file:" + _ } map toUrl
-	}).flatten.toSet
+	// Treat these two sets of classpaths as "core" (privileged) code.
+	val coreClasspaths = (classpaths ++ scalaPaths) map { new File(_) } filter { _.exists } map {
+		_.toURI.toURL
+	}
 
 	/** Uses the loaded {@link me.footlights.core.Kernel} to resolve a dependency URI. */
 	def resolveDependencyJar(uri:URI):Option[JarFile] =
@@ -99,16 +96,12 @@ object Bootstrapper extends App {
 	}
 
 	// Load the UI(s).
-	val uiThreads = uis map { ui =>
-		val className = ui.packageName + "." + ui.className;
-		log info "Loading UI '%s' (%s/%s)".format(ui.name, ui.sourceDirectory, className)
-
-		val init = classLoader loadClass className getMethod ("init", footlightsClass)
-
-		init invoke (null, footlights) match {
-			case r:Runnable => Some(new Thread(r, ui.name))
-			case _ =>
-				log severe "UI '%s' is not Runnable!".format(ui.name)
+	val uiThreads = coreClasspaths flatMap { classLoader.loadUi } map { ui =>
+		log info "Starting '%s' UI".format(ui.name)
+		try { Some(ui start footlights) }
+		catch {
+			case t:Throwable =>
+				log log (Level.SEVERE, "Error starting UI '%s'" format ui.name, t)
 				None
 		}
 	} flatten

@@ -43,12 +43,16 @@ object Flusher
 {
 	private val log = java.util.logging.Logger.getLogger(Flusher.getClass().getCanonicalName())
 
-	def apply(name:String, flush:() => Unit, wait:() => Unit) = new Flusher(name, flush, wait, log)
+	def apply(name:String, flush:() => Unit, wait:() => Unit) = {
+		val flusher = new Flusher(name, flush, wait, log)
+		flusher setPriority Thread.MIN_PRIORITY
+		flusher
+	}
 
 	def apply(f:Flushable):Flusher = apply(
 			name = f.getClass.getSimpleName,
 			flush = f.flush _,
-			wait = () => f.synchronized { f.wait }
+			wait = () => { Thread sleep 500; f.synchronized { f.wait } }
 		)
 
 	def apply(target:HasBytes, save:ByteBuffer => Any):Flusher = apply(
@@ -68,7 +72,7 @@ object Flusher
 
 				tmp renameTo filename
 			},
-			wait = () => target.synchronized { target.wait }
+			wait = () => { Thread sleep 500; target.synchronized { target.wait } }
 		)
 }
 

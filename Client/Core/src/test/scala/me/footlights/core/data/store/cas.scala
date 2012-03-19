@@ -117,7 +117,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 			"should be able to upload a file" taggedAs(LocalCAS) in {
 				prefs += (SharedSecretName -> SharedSecret)
 				prefs += (UploadUrl._1 -> "http://localhost:8080/footlights-uploadserver/upload")
-	
+
 				try { cas.put(block.name, block.getBytes) }
 				catch {
 					case e:java.net.ConnectException =>
@@ -130,7 +130,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 			"should be able to upload a file" taggedAs(InternetAccess) in {
 				prefs += (SharedSecretName -> SharedSecret)
 				prefs += UploadUrl
-	
+
 				try { cas.put(block.name, block.getBytes) }
 				catch {
 					case e:java.net.UnknownHostException =>

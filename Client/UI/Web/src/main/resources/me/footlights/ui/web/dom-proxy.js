@@ -117,7 +117,15 @@ function proxy(node, context)
 		get style()         { return node.style; },
 		get tag()           { return node.tagName ? node.tagName.toLowerCase() : undefined; },
 
-		set src(uri)        { node.src = '/' + context.name + '/static/' + uri; },
+		set src(uri)
+		{
+			if (uri.indexOf('..') != -1) throw "src may not contain '..'";
+
+			if (uri.indexOf(':') == -1) uri = 'static/' + uri;
+			else uri = 'file/' + uri;
+
+			node.src = '/' + context.name + '/' + uri;
+		},
 
 		set alt(text)       { node.alt = text; },
 		set class(name)     { node.setAttribute("class", name); },

@@ -88,7 +88,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	/** Try to load a class. */
 	private def attemptLoadingClass(name:String):Option[Class[_]] = attemptLoadingClass(name, false)
 	private def attemptLoadingClass(name:String, resolve:Boolean = false):Option[Class[_]] =
-		if (mustDeferToParent(name)) Some(getParent loadClass name)     // literal null is ok
+		if (mustDeferToParent(name)) Some(parent loadClass name)     // literal null is ok
 		else
 			findInClasspath(name) map { c =>
 				if (resolve) resolveClass(c)

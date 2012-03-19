@@ -240,8 +240,8 @@ object Keychain {
 		log fine "Loaded %d KeyStore entries".format(store.size)
 
 		for (alias <- store.aliases) alias match {
-			case KeyStoreEntry(entryType, fingerprintAlgorithm, hash) =>
-				val fingerprint = Fingerprint decode "%s:%s".format(fingerprintAlgorithm, hash)
+			case KeyStoreEntry(entryType, name) =>
+				val fingerprint = Fingerprint decode name
 				val keyEntry = store.getKey(alias, rawPassword)
 
 				entryType match {
@@ -255,7 +255,7 @@ object Keychain {
 						val secret = keyEntry match { case k:javax.crypto.SecretKey => k }
 						val key = SecretKey.newGenerator
 							.setAlgorithm(secret.getAlgorithm)
-							.setFingerprintAlgorithm(fingerprintAlgorithm)
+							.setFingerprintAlgorithm(fingerprint.getAlgorithm.getAlgorithm)
 							.setBytes(secret.getEncoded)
 							.generate
 						val link = key.createLinkBuilder
@@ -284,7 +284,7 @@ object Keychain {
 	/** Magic hexword: "Foot keys". */
 	private val Magic = List(0xF0, 0x07, 0x6E, 0x75) map { _.toByte } toArray
 
-	private val KeyStoreEntry = """(\S+):(\S+):(\S+)""".r
+	private val KeyStoreEntry = """((\S+):){1}(\S+)""".r
 	private val PrivateKeyEntry = "private"
 	private val SymmetricKeyEntry = "secret"
 

@@ -124,6 +124,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 					.append(createClickableText(launcher, "Tic-Tac-Toe", "load_app/" + TICTACTOE))
 					.append(createClickableText(launcher, "Wicked Demo", "load_app/" + WICKED_APP))
 					.append(createClickableText(launcher, "File Uploader", "load_app/" + UPLOADER))
+					.append(createClickableText(launcher, "Photo Manager", "load_app/" + PHOTO_APP))
 					.append(setupAsyncChannel)
 					.append("context.log('UI initialized.');")
 
@@ -201,6 +202,7 @@ sb.ajax('init');
 
 	private val GOOD_APP = APP_PATH + "Basic/target/classes"
 	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar!/"
+	private val PHOTO_APP = APP_PATH + "Photos/target/classes"
 	private val TICTACTOE = APP_PATH + "TicTacToe/target/classes"
 	private val UPLOADER = APP_PATH + "Uploader/target/classes"
 }

@@ -21,6 +21,8 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import scala.Option;
+
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 
@@ -34,6 +36,12 @@ import me.footlights.core.ProgrammerError;
 /** A fingerprint for a number of bytes. */
 public class Fingerprint
 {
+	public static Option<Fingerprint> unapply(String s)
+	{
+		try { return Option.apply(decode(new URI(s))); }
+		catch (Exception e) { return Option.apply(null); }
+	}
+
 	public static Fingerprint decode(URI uri)
 		throws NoSuchAlgorithmException
 	{

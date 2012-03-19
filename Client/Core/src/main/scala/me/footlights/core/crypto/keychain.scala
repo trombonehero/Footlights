@@ -240,8 +240,7 @@ object Keychain {
 		log fine "Loaded %d KeyStore entries".format(store.size)
 
 		for (alias <- store.aliases) alias match {
-			case KeyStoreEntry(entryType, name) =>
-				val fingerprint = Fingerprint decode name
+			case KeyStoreEntry(entryType, Fingerprint(fingerprint)) =>
 				val keyEntry = store.getKey(alias, rawPassword)
 
 				entryType match {

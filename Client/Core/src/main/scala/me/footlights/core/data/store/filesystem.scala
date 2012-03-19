@@ -39,7 +39,7 @@ trait Filesystem extends Footlights {
 
 	override def open(link:Link):Option[File] = store fetch link
 
-	/** Open a file, named by its content, e.g. "sha-256:0123456789abcdef01234...". */
+	/** Open a file, named by its content, e.g. "urn:sha-256:0123456789abcdef01234...". */
 	override def open(name:String):Option[api.File] = {
 		log fine { "open('%s')" format name }
 		Option(Fingerprint decode name) flatMap { fingerprint =>

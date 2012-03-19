@@ -66,7 +66,9 @@ class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 		}
 	}
 
-	val f = Fingerprint.decode("sha-256:JA6RDME6RLZPILMRNRBD5AX5SDGMSHAJ2WHZKBWYIPLHFPODHHRQ====")
+	val f = Fingerprint decode
+			"urn:sha-256:JA6RDME6RLZPILMRNRBD5AX5SDGMSHAJ2WHZKBWYIPLHFPODHHRQ===="
+
 	val url = new URL("http://127.0.0.1/foo/bar")
 
 	val io = mock[IO]

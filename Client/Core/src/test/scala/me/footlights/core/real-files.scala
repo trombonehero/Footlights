@@ -37,8 +37,9 @@ package me.footlights.core {
 class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 	"The real block store" - {
 		"should contain a Keychain" in {
+			// TODO: fix!
 			val name = Fingerprint decode
-				"sha-256:HVRFF7OBYMCOXZLGHMWGKKPSBB23PZYG7XO3M2XHNKAMKYG75W5Q===="
+				"urn:sha-256:HVRFF7OBYMCOXZLGHMWGKKPSBB23PZYG7XO3M2XHNKAMKYG75W5Q===="
 			val secretKey = SecretKey.parse(
 					new URI("AES:3d6252fdc1c304ebe5663b2c6529f20875b7e706fdddb66ae76a80c560dfedbb"))
 			val link = Link.newBuilder setFingerprint name setKey secretKey build
@@ -47,7 +48,7 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 			val keychain = Keychain importKeyStore file.get.getChannel
 
 			val keyName = Fingerprint decode
-				"sha-256:YZDD7MJX2FMCVYG4LZVLQ6QRXWWNZ2R4J4MWRQR3F7TNF42A3UJQ===="
+				"urn:sha-256:YZDD7MJX2FMCVYG4LZVLQ6QRXWWNZ2R4J4MWRQR3F7TNF42A3UJQ===="
 
 			keychain getLink keyName should not be null
 		}

@@ -28,7 +28,7 @@ object CryptoBackend {
 			// If we haven't already installed BouncyCastle as the crypto provider, we must be
 			// running in a special environment such as a unit test.
 			val p = Option(new BouncyCastleProvider())
-			p foreach { Security.addProvider(_) }
+			p foreach { Security.insertProviderAt(_, 1) }
 			p
 		}
 	}

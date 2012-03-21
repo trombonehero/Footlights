@@ -96,7 +96,7 @@ object Bootstrapper extends App {
 	}
 
 	// Load the UI(s).
-	val uiThreads = coreClasspaths flatMap { classLoader.loadUi } map { ui =>
+	val uiThreads = coreClasspaths flatMap classLoader.loadUi map { ui =>
 		log info "Starting '%s' UI".format(ui.name)
 		try { Some(ui start footlights) }
 		catch {

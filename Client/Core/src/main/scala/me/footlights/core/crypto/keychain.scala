@@ -73,6 +73,9 @@ trait Keychain extends core.HasBytes {
 	override def getBytes = serialized.asReadOnlyBuffer 
 
 	// Object override
+	override def toString = {
+		"Keychain { identities: %s, links: %s }" format (identities, links)
+	}
 	override def equals(other:Any) = other match {
 		case o:Keychain => (identities equals o.identities) && (links equals o.links)
 		case _ => false

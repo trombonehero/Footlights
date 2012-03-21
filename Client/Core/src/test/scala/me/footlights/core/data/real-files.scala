@@ -40,9 +40,9 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 	"The real block store" - {
 		"should contain files." in {
 			val name = Fingerprint decode
-				"urn:sha-256:ELZTISC5262M67OS34XNK6VQQAS7F2S5QFVYAP7QWA42FHTUHBHA===="
+				"urn:sha-256:OR57TWZ7I3OQ5HKXHUEHMMHRNKX3JT5HJ37GY22YQRZTPJXNO7JA===="
 			val secretKey = SecretKey.parse(
-					new URI("AES:391bf841f0a441e1db3a8a994fc9bbd0d437ad5c09388c6687d7e00f112cb4ef"))
+					new URI("AES:f00f117bc882d36743eea35b384d0cd7727e8ef70d5aa87afdbd2d9741942700"))
 			val link = Link.newBuilder setFingerprint name setKey secretKey build
 
 			val file = cache fetch link
@@ -51,16 +51,16 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 
 		"should contain a Keychain" in {
 			val name = Fingerprint decode
-				"urn:sha-256:DVWTDVSOVV5MZ5BW72QFAFCEWC2JMO6CHX3PXGWN6ALBJK3VDG2Q===="
+				"urn:sha-256:UTKOVVTKJICZNPTQBSLGBMP4ZE4LN4XLVPBVHV4YIB3A3J6PB6LQ===="
 			val secretKey = SecretKey.parse(
-					new URI("AES:1d6d31d64ead7accf436fea0501444b0b4963bc23df6fb9acdf01614ab7519b5"))
 			val link = Link.newBuilder setFingerprint name setKey secretKey build
+					new URI("AES:7d9fd5a88cb2684eea81677d43ec93f960c6a66311567ca170502940cc9545a2"))
 
 			val file = cache fetch link
 			val keychain = Keychain importKeyStore file.get.getChannel
 
 			val keyName = Fingerprint decode
-				"urn:sha-256:YZDD7MJX2FMCVYG4LZVLQ6QRXWWNZ2R4J4MWRQR3F7TNF42A3UJQ===="
+				"urn:sha-256:RIA2GUON26FJPGZTZOJCUA3ZUIA2NDBCSC6A2LCU75I6APKLVEOQ===="
 
 			keychain getLink keyName should not be null
 		}

@@ -105,7 +105,9 @@ class BlockTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shou
 
 		"filter out non-power-of-two block sizes." in {
 			List(15, 17, 31, 255, 257) map { size =>
-				intercept[FormatException] { Block.newBuilder setDesiredSize size build }
+				evaluating {
+					Block.newBuilder setDesiredSize size build
+				} should produce [FormatException]
 			}
 		}
 

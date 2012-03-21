@@ -27,11 +27,11 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import me.footlights.core.Preferences
 import me.footlights.core.crypto.{Fingerprint,Keychain,SecretKey}
-import me.footlights.core.data.{File,Link}
 import me.footlights.core.data.store._
 
-package me.footlights.core {
+package me.footlights.core.data {
 
 @RunWith(classOf[JUnitRunner])
 class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {

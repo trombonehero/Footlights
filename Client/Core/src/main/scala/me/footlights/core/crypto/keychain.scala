@@ -283,7 +283,7 @@ object Keychain {
 	/** Magic hexword: "Foot keys". */
 	private val Magic = List(0xF0, 0x07, 0x6E, 0x75) map { _.toByte } toArray
 
-	private val KeyStoreEntry = """((\S+):){1}(\S+)""".r
+	private val KeyStoreEntry = """(\S+?):(\S+)""".r
 	private val PrivateKeyEntry = "private"
 	private val SymmetricKeyEntry = "secret"
 

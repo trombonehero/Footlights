@@ -38,6 +38,17 @@ package me.footlights.core.data {
 @RunWith(classOf[JUnitRunner])
 class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 	"The real block store" - {
+		"should contain files." in {
+			val name = Fingerprint decode
+				"urn:sha-256:ELZTISC5262M67OS34XNK6VQQAS7F2S5QFVYAP7QWA42FHTUHBHA===="
+			val secretKey = SecretKey.parse(
+					new URI("AES:391bf841f0a441e1db3a8a994fc9bbd0d437ad5c09388c6687d7e00f112cb4ef"))
+			val link = Link.newBuilder setFingerprint name setKey secretKey build
+
+			val file = cache fetch link
+			file should not be ('empty)
+		}
+
 		"should contain a Keychain" in {
 			val name = Fingerprint decode
 				"urn:sha-256:DVWTDVSOVV5MZ5BW72QFAFCEWC2JMO6CHX3PXGWN6ALBJK3VDG2Q===="

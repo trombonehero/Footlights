@@ -20,6 +20,8 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import scala.Option;
 
@@ -31,6 +33,7 @@ import me.footlights.core.Preconditions;
 import me.footlights.core.Preferences;
 import me.footlights.core.ConfigurationError;
 import me.footlights.core.ProgrammerError;
+import me.footlights.core.data.FormatException;
 
 
 /** A fingerprint for a number of bytes. */
@@ -39,7 +42,14 @@ public class Fingerprint
 	public static Option<Fingerprint> unapply(String s)
 	{
 		try { return Option.apply(decode(new URI(s))); }
-		catch (Exception e) { return Option.apply(null); }
+		catch (FormatException e)
+		{
+			log.log(Level.INFO, e.getLocalizedMessage() + ": " + s);
+		}
+		catch (NoSuchAlgorithmException e) { log.log(Level.WARNING, "No such algorithm", e); }
+		catch (URISyntaxException e) { log.log(Level.INFO, "Bad fingerprint syntax: " + s); }
+
+		return Option.apply(null);
 	}
 
 	public static Fingerprint decode(URI uri)
@@ -184,4 +194,6 @@ public class Fingerprint
 	private MessageDigest algorithm;
 	private ByteBuffer bytes;
 	private URI uri;
+
+	private static Logger log = Logger.getLogger(Fingerprint.class.getCanonicalName());
 }

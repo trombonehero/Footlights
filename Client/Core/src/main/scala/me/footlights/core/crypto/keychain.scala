@@ -245,13 +245,13 @@ object Keychain {
 
 				entryType match {
 					case PrivateKeyEntry =>
-						val key = keyEntry match { case k:java.security.PrivateKey => k }
+						val key = keyEntry.asInstanceOf[java.security.PrivateKey]
 						val cert = store getCertificate alias
 
 						identities += (fingerprint -> SigningIdentity.wrap(key, cert))
 
 					case SymmetricKeyEntry =>
-						val secret = keyEntry match { case k:javax.crypto.SecretKey => k }
+						val secret = keyEntry.asInstanceOf[javax.crypto.SecretKey]
 						val key = SecretKey.newGenerator
 							.setAlgorithm(secret.getAlgorithm)
 							.setFingerprintAlgorithm(fingerprint.getAlgorithm.getAlgorithm)
@@ -264,7 +264,7 @@ object Keychain {
 						links += (fingerprint -> link)
 				}
 
-			case a:Any =>
+			case _ =>
 				log warning "Invalid KeyStore entry '%s'".format(alias)
 		}
 

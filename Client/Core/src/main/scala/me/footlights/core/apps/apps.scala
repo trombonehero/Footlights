@@ -17,6 +17,7 @@ import java.io.{ByteArrayOutputStream, IOException}
 import java.lang.reflect.Method
 import java.nio.ByteBuffer
 import java.net.{URI,URL}
+import java.security.AccessControlException
 import java.util.logging.{Level, Logger}
 
 import scala.collection.JavaConversions._
@@ -70,7 +71,11 @@ object AppWrapper {
 				footlights save bytes tee { case f:data.File => appKeychain store f.link }
 
 			def open(name:String) =
-				appKeychain getLink { Fingerprint decode name } map footlights.open get
+				appKeychain getLink { Fingerprint decode name } orElse {
+					throw new AccessControlException("Unable to find key for '%s'" format name)
+				} map footlights.open getOrElse {
+					throw new java.io.FileNotFoundException("Unable to open '%s'" format name)
+				}
 
 			def openLocalFile = footlights.openLocalFile tee {
 				case f:data.File => appKeychain store f.link

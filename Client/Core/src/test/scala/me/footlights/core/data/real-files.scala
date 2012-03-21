@@ -62,7 +62,7 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 			val keyName = Fingerprint decode
 				"urn:sha-256:RIA2GUON26FJPGZTZOJCUA3ZUIA2NDBCSC6A2LCU75I6APKLVEOQ===="
 
-			keychain getLink keyName should not be null
+			keychain getLink keyName should not be ('empty)
 		}
 
 		"should give back real files with the same names that went in." in {

@@ -43,6 +43,12 @@ public class Preconditions
 					"Precondition failed: argument " + i + " is false");
 	}
 
+	/** Report a precondition failure. */
+	public static void fail(String message, Throwable cause)
+	{
+		throw new IllegalArgumentException(message, cause);
+	}
+
 	/** Non-instantiable utility class. */
 	private Preconditions() {}
 }

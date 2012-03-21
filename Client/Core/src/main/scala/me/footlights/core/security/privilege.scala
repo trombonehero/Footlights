@@ -17,6 +17,8 @@ import java.security.{AccessController, PrivilegedActionException, PrivilegedExc
 import java.nio.ByteBuffer
 
 import me.footlights.api.{File,KernelInterface}
+import me.footlights.core.Footlights
+import me.footlights.core.data.Link
 
 
 package me.footlights.core.security {
@@ -29,9 +31,10 @@ package me.footlights.core.security {
  *
  * Obviously, the privileged {@link Kernel} must be carefully implemented to avoid abuse. 
  */
-trait KernelPrivilege extends KernelInterface {
+trait KernelPrivilege extends Footlights {
 	abstract override def open(name:String)        = Privilege.sudo { () => super.open(name) }
 	abstract override def openLocalFile()          = Privilege.sudo { () => super.openLocalFile() }
+	abstract override def open(link:Link)          = Privilege.sudo { () => super.open(link) }
 	abstract override def save(data:ByteBuffer)    = Privilege.sudo { () => super.save(data) }
 	abstract override def saveLocalFile(f:File)    = Privilege.sudo { () => super.saveLocalFile(f) }
 }

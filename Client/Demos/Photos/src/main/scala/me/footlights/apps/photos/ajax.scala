@@ -49,6 +49,9 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 			case RemoveImage(name) =>
 				app remove new URI(name)
 				new JavaScript() append "context.ajax('populate')"
+
+			case other:String =>
+				setStatus { "Unknown command '%s'" format other}
 		}
 	}
 

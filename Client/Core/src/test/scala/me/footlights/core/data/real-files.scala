@@ -58,6 +58,7 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 					new URI("AES:7d9fd5a88cb2684eea81677d43ec93f960c6a66311567ca170502940cc9545a2"))
 
 			val file = cache fetch { Link.newBuilder setFingerprint name setKey secretKey build }
+			file should not be ('empty)
 
 			val keychain = Keychain parse file.get.getContents
 

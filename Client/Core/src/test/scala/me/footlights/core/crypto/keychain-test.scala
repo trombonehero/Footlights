@@ -15,6 +15,7 @@
  */
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
+import java.nio.channels.Channels
 
 import org.junit.runner.RunWith
 
@@ -76,7 +77,28 @@ class KeychainTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 			(parsed getLink name).get.key should equal (symmetricKey)
 		}
 
-		"should be able to save to a Java KeyStore" in (pending)
+		"should be able to save to a Java KeyStore" in {
+			Preferences.loadFromDefaultLocation
+			val privateKey = SigningIdentity.newGenerator
+				.setPrincipalName("Nobody")
+				.setPublicKeyType("RSA")
+				.generate
+
+			val symmetricKey = SecretKey.newGenerator.generate
+			val name = Fingerprint.newBuilder.setContent(Seq(1,2,3) map { _ toByte } toArray) build
+			val link = symmetricKey.createLinkBuilder setFingerprint name build
+
+			val keychain = Keychain() + link + (name, privateKey)
+			val out = new java.io.ByteArrayOutputStream
+			keychain exportKeyStore { Channels newChannel out }
+
+			val parsed = Keychain importKeyStore {
+				Channels newChannel { new java.io.ByteArrayInputStream(out.toByteArray) }
+			}
+
+			parsed should equal (keychain)
+			(parsed getLink name).get.key should equal (symmetricKey)
+		}
 	}
 
 	var fingerprint:Fingerprint = _

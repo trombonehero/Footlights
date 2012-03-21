@@ -53,9 +53,14 @@ public class Fingerprint
 	}
 
 	public static Fingerprint decode(URI uri)
-		throws NoSuchAlgorithmException
+		throws FormatException, NoSuchAlgorithmException, URISyntaxException
 	{
-		return decode(uri.getScheme(), uri.getSchemeSpecificPart());
+		if ((uri.getScheme() == null) || !uri.getScheme().equals("urn"))
+			throw new FormatException("Fingerprint must start with 'urn:'");
+
+		// Recurse down into scheme-specific part, which is also a URI.
+		URI data = new URI(uri.getSchemeSpecificPart());
+		return decode(data.getScheme(), data.getSchemeSpecificPart());
 	}
 
 	public static Fingerprint decode(String name)

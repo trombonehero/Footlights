@@ -44,11 +44,16 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 	}
 
 	private def setFilenames(files:Iterable[URI]) = prefs.synchronized {
-		prefs.set(Photos, files map { _.toString } reduce join)
+		val packed = files match {
+			case Nil => ""
+			case i:Iterable[_] => i map { _.toString } reduce join
+		}
+
+		prefs.set(Photos, packed)
 	}
 
 	private def join(x:String, y:String) = x + ";" + y
-	private def split(x:String) = x split ";" toList
+	private def split(x:String) = (x split ";" toList) filter { !_.isEmpty }
 
 	private val Photos = "photos"
 }

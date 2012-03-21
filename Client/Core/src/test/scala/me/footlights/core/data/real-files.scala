@@ -55,11 +55,11 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 			val name = Fingerprint decode
 				"urn:sha-256:UTKOVVTKJICZNPTQBSLGBMP4ZE4LN4XLVPBVHV4YIB3A3J6PB6LQ===="
 			val secretKey = SecretKey.parse(
-			val link = Link.newBuilder setFingerprint name setKey secretKey build
 					new URI("AES:7d9fd5a88cb2684eea81677d43ec93f960c6a66311567ca170502940cc9545a2"))
 
-			val file = cache fetch link
-			val keychain = Keychain importKeyStore file.get.getChannel
+			val file = cache fetch { Link.newBuilder setFingerprint name setKey secretKey build }
+
+			val keychain = Keychain parse file.get.getContents
 
 			val keyName = Fingerprint decode
 				"urn:sha-256:RIA2GUON26FJPGZTZOJCUA3ZUIA2NDBCSC6A2LCU75I6APKLVEOQ===="

@@ -69,9 +69,8 @@ object AppWrapper {
 			def save(bytes:ByteBuffer) =
 				footlights save bytes tee { case f:data.File => appKeychain store f.link }
 
-			def open(name:String) = try {
+			def open(name:String) =
 				appKeychain getLink { Fingerprint decode name } map footlights.open get
-			}
 
 			def openLocalFile = footlights.openLocalFile tee {
 				case f:data.File => appKeychain store f.link

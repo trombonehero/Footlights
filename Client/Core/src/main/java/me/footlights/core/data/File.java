@@ -221,6 +221,8 @@ public class File implements me.footlights.api.File
 	public Link link() { return header.link(); }
 
 
+	EncryptedBlock encryptedHeader() { return header; }
+
 	/**
 	 * The contents of the file.
 	 *  

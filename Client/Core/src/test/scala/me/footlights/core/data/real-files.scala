@@ -17,6 +17,8 @@
 import java.net.{URI,URL}
 import java.nio.ByteBuffer
 
+import scala.collection.JavaConversions._
+
 import org.junit.runner.RunWith
 
 import org.mockito.Matchers._
@@ -50,6 +52,32 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 				"urn:sha-256:YZDD7MJX2FMCVYG4LZVLQ6QRXWWNZ2R4J4MWRQR3F7TNF42A3UJQ===="
 
 			keychain getLink keyName should not be null
+		}
+
+		"should give back real files with the same names that went in." in {
+			val plaintext = Block.newBuilder
+				.setContent(ByteBuffer wrap { (1 :: 2 :: 3 :: Nil) map { _.toByte } toArray })
+				.build
+
+			val encrypted = plaintext.encrypt
+			encrypted.ciphertext.remaining should equal (32)
+
+			val file = File.newBuilder setBlocks plaintext :: Nil freeze
+
+			file.name should equal (file.encryptedHeader.name.toURI)
+			file.name should equal (
+					Fingerprint.newBuilder
+						.setContent(file.encryptedHeader.ciphertext)
+						.build
+						.toURI)
+
+			val toSave = file.toSave
+			cache store file.toSave
+
+			var retrieved = cache fetch file.link
+			retrieved.isDefined should equal (true)
+			retrieved.get.name should equal (file.name)
+			retrieved should equal (Some(file))
 		}
 	}
 

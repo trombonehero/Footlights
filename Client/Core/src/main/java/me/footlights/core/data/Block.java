@@ -164,8 +164,9 @@ public class Block implements FootlightsPrimitive
 		cipher.doFinal(bytes.asReadOnlyBuffer(), ciphertext);
 		ciphertext.flip();
 
+		Fingerprint ciphertextName = Fingerprint.newBuilder().setContent(ciphertext).build();
 		Link link = Link.newBuilder()
-			.setFingerprint(fingerprint)
+			.setFingerprint(ciphertextName)
 			.setKey(key)
 			.build();
 

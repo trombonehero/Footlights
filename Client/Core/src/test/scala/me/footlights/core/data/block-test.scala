@@ -108,6 +108,19 @@ class BlockTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shou
 				intercept[FormatException] { Block.newBuilder setDesiredSize size build }
 			}
 		}
+
+		"name blocks correctly." in {
+			val block = Block.newBuilder()
+				.setContent { ByteBuffer wrap List[Byte](1,2,3).toArray }
+				.build
+
+			val encrypted = block.encrypt
+			encrypted.name should equal (
+					Fingerprint.newBuilder
+						setAlgorithm encrypted.name.getAlgorithm.getAlgorithm
+						setContent encrypted.ciphertext
+						build)
+		}
 	}
 
 	private val prefs = Preferences.loadFromDefaultLocation

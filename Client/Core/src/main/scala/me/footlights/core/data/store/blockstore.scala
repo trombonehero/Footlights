@@ -47,14 +47,17 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 	def store(block:EncryptedBlock): Unit = store(block.name, block.ciphertext)
 	def store(blocks:Iterable[EncryptedBlock]): Unit = blocks foreach { store(_) }
 
-	def retrieve(name:Fingerprint):Option[ByteBuffer] =
+	def retrieve(name:Fingerprint):Option[ByteBuffer] = {
 		// Intentionally not using Scala primitives like map. We currently load Scala
 		// classes with no special privileges, so having Option.map on the stack stops
 		// the Kernel from performing privileged operations like writing files.
 		//
 		// TODO: fix the access control bits
-		if (cache.isDefined) cache.get retrieve name
-		else get(name)
+		var result:Option[ByteBuffer] = None
+		if (cache.isDefined) result = cache.get retrieve name
+		if (result.isEmpty) result = get(name)
+		result
+	}
 
 	def retrieveCiphertext(link:Link) = retrieve(link.fingerprint) map {
 		EncryptedBlock.newBuilder()

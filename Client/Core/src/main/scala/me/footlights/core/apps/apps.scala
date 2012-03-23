@@ -142,8 +142,9 @@ trait ApplicationManagement extends Footlights {
 			Keychain parse file.getContents
 		} orElse {
 			Some(Keychain())
-		} map {
-			new MutableKeychain(_, { k:Keychain => remember(appKey)(k.getBytes) })
+		} map { keys =>
+			log finer "Loaded keychain for '%s': %s".format(appKey, keys)
+			new MutableKeychain(keys, (k:Keychain) => remember(appKey)(k.getBytes))
 		} getOrElse {
 			throw new ProgrammerError("Failed to load or create app-specific Keychain")
 		}

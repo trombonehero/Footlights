@@ -73,6 +73,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 			"Unable to load app's main class '%s'" format classpath.mainClassName)
 	}
 
+	/** Does this classpath define a UI? */
+	private[boot] def isUi = classpath.uiName.isDefined
+
 	/** Load the UI class specified by the manifest (if any). Ok to fail if it's not a UI. */
 	private[boot] def loadUi = classpath.uiName flatMap attemptLoadingClass
 

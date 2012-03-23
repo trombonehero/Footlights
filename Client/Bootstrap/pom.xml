@@ -16,6 +16,22 @@
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<configuration>
+					<executable>java</executable>
+					<arguments>
+						<argument>-classpath</argument>
+						<classpath/>
+						<argument>me.footlights.boot.Bootstrapper</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 	<dependencies>

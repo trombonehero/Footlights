@@ -97,13 +97,18 @@ object Bootstrapper extends App {
 
 	// Load the UI(s).
 	log info "Searching %d classpaths for UIs...".format(coreClasspaths.length)
-	val uiThreads = coreClasspaths flatMap classLoader.loadUi map { ui =>
-		try { Some(ui start footlights) }
-		catch {
-			case t:Throwable =>
-				log log (Level.SEVERE, "Error starting UI '%s'" format ui.name, t)
-				None
-		}
+	val uiThreads = coreClasspaths map classLoader.open filter { loader =>
+		(loader.right map { _.isUi }).right getOrElse { false }
+	} map { _.right.get } map classLoader.loadUi map {
+		_.right flatMap { _ initialize footlights }
+	} map {
+		case Right(ui) =>
+			log info "Loaded UI %s".format(ui)
+			Some(ui)
+
+		case Left(exception) =>
+			log log (Level.SEVERE, "Error loading UI", exception)
+			None
 	} flatten
 
 	if (uiThreads.isEmpty) log severe { "No UIs found in %s" format coreClasspaths.toList }

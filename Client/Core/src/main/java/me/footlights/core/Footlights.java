@@ -18,6 +18,7 @@ package me.footlights.core;
 import java.net.URI;
 import java.util.Collection;
 
+import scala.Either;
 import scala.Option;
 
 import me.footlights.api.KernelInterface;
@@ -58,6 +59,6 @@ public interface Footlights extends KernelInterface
 	public Collection<Stat> listFiles();
 
 	public Collection<AppWrapper> runningApplications();
-	public AppWrapper loadApplication(URI uri) throws AppStartupException;
+	public Either<Exception,AppWrapper> loadApplication(URI uri) throws AppStartupException;
 	public void unloadApplication(AppWrapper plugin);
 }

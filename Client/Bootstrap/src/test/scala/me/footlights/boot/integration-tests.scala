@@ -122,11 +122,11 @@ class ClassLoadingIT extends FreeSpec with BeforeAndAfter with MockitoSugar with
 				localizeJar)
 
 		core = loader loadClass CoreClassName
-		good = loader loadApplication BasicDemo.classPath getOrElse {
+		good = (loader loadApplication BasicDemo.classPath).right getOrElse {
 			System.err println "Unable to load " + BasicDemo
 			null
 		}
-		evil = loader loadApplication WickedDemo.classPath getOrElse {
+		evil = (loader loadApplication WickedDemo.classPath).right getOrElse {
 			System.err println "Unable to load " + WickedDemo
 			null
 		}

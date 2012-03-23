@@ -103,17 +103,18 @@ trait ApplicationManagement extends Footlights {
 
 	def runningApplications():_root_.java.util.Collection[AppWrapper] = loadedApps.values
 
-	override def loadApplication(uri:URI) =
-		loadedApps get(uri) getOrElse {
-			loadAppClass(uri.toURL) map {
+	override def loadApplication(uri:URI): Either[Exception,AppWrapper] =
+		loadedApps get(uri) map Right.apply getOrElse {
+			val appClass = loadAppClass(uri.toURL).right map {
 				val appKeys = appKeychain(uri)
 				val appPrefs = appPreferences(uri)
 				val appLog = Logger getLogger uri.toString
 
 				AppWrapper(_, uri, this, appKeys, appPrefs, appLog)
-			} tee {
-				loadedApps put (uri, _)
-			} get
+			}
+			appClass.right foreach { loadedApps put (uri, _) }
+
+			appClass
 		}
 
 	override def unloadApplication(app:AppWrapper) =
@@ -150,17 +151,16 @@ trait ApplicationManagement extends Footlights {
 
 
 	/** Load an application's main class from a given classpath. */
-	private def loadAppClass(classpath:URL):Option[Class[_]] =
+	private def loadAppClass(classpath:URL):Either[Exception,Class[_]] =
 		(try { loadApplicationMethod.invoke(appLoader, classpath) }
-		catch {
-			case t:Throwable => throw new AppStartupException(classpath.toURI, t)
-		}) match {
-			case c:Some[Class[_]] => c
+		catch { case ex:Exception => Left(ex) }) match {
+			case Right(c:Class[_]) => Right(c)
 			case a:Any =>
-				throw new AppStartupException(classpath.toURI,
+				Left(new AppStartupException(classpath.toURI,
 						new IllegalArgumentException("%s returned '%s', not a Class" format (
 								loadApplicationMethod.getName, a))
 					)
+				)
 		}
 
 

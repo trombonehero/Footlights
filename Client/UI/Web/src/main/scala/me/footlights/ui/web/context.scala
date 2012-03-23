@@ -147,10 +147,17 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 
 			case LoadApplication(path) =>
 				val uri = new java.net.URI(request.shift().path())
-				val wrapper = footlights.loadApplication(uri)
+				footlights.loadApplication(uri) match {
+					case Right(wrapper) =>
+						newContext(wrapper)
+						createUISandbox(wrapper.name)
 
-				newContext(wrapper)
-				createUISandbox(wrapper.name)
+					case Left(error) =>
+						new JavaScript()
+							.append("context.log('Error loading application: %s');" format
+									JavaScript.sanitizeText(error.toString)
+								)
+				}
 
 			case FillPlaceholder(name) => {
 				JSON("key" -> name, "value" -> footlights.evaluate(name))

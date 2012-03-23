@@ -53,10 +53,13 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	protected[boot] override def loadClass(name:String) = loadClass(name, false)
 
 	@throws(classOf[ClassNotFoundException])
-	protected override def loadClass(name:String, resolve:Boolean):Class[_] =
-		attemptLoadingClass(name, resolve) getOrElse {
-			throw new ClassNotFoundException(name + " not in " + classpaths)
+	protected override def loadClass(name:String, resolve:Boolean):Class[_] = {
+		val result = attemptLoadingClass(name, resolve)
+		result.right getOrElse {
+			throw new ClassNotFoundException(name + " not in " + classpath +
+					": %s" format (result.left getOrElse "unknown reason"))
 		}
+	}
 
 
 	override def getResource(name:String) = findResource(name)
@@ -68,16 +71,15 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	private[boot] def loadMainClass = classpath.mainClassName orElse {
 		throw new ClassNotFoundException(
 			"%s does not specify a main Footlights class" format classpath.externalURL)
-	} flatMap attemptLoadingClass orElse {
-		throw new ClassNotFoundException(
-			"Unable to load app's main class '%s'" format classpath.mainClassName)
-	}
+	} map attemptLoadingClass get
 
 	/** Does this classpath define a UI? */
 	private[boot] def isUi = classpath.uiName.isDefined
 
-	/** Load the UI class specified by the manifest (if any). Ok to fail if it's not a UI. */
-	private[boot] def loadUi = classpath.uiName flatMap attemptLoadingClass
+	/** The name of the UI class specified by the manifest (if any). */
+	private[boot] def loadUi = classpath.uiName map attemptLoadingClass getOrElse {
+		Left(new IllegalArgumentException("Classpath %s is not a UI" format classpath))
+	}
 
 	override def toString = {
 		classOf[ClasspathLoader].getSimpleName + " { " +
@@ -89,19 +91,21 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 
 	/** Try to load a class. */
-	private def attemptLoadingClass(name:String):Option[Class[_]] = attemptLoadingClass(name, false)
-	private def attemptLoadingClass(name:String, resolve:Boolean = false):Option[Class[_]] =
-		if (mustDeferToParent(name)) Some(parent loadClass name)     // literal null is ok
+	private[boot] def attemptLoadingClass(name:String):Either[String,Class[_]] =
+			attemptLoadingClass(name, false)
+
+	private def attemptLoadingClass(name:String, resolve:Boolean = false) =
+		if (mustDeferToParent(name)) Right(parent loadClass name)     // literal null is ok
 		else
-			findInClasspath(name) map { c =>
+			findInClasspath(name).right map { c =>
 				if (resolve) resolveClass(c)
 				c
 			}
 
 	/** Find a class within this classpath. */
-	private[boot] def findInClasspath(name:String):Option[Class[_]] = {
+	private[boot] def findInClasspath(name:String):Either[String,Class[_]] = {
 		// Perhaps we've already loaded this class?
-		loaded get name orElse {
+		loaded get name map Right.apply getOrElse {
 			// If not, search through the places that might contain it.
 			classpathsFor(name) flatMap { classpath =>
 				sudo { () => classpath readClass name }
@@ -112,10 +116,10 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 			} map { c =>
 				loaded += (name -> c)
 				c
-			}
+			} map Right.apply getOrElse
+				Left("%s not found in %s" format (name, classpathsFor(name)))
 		}
 	}
-
 
 	/** Build a view of all of the {@link Classpath}s which might be able to load a given class. */
 	private def classpathsFor(className:String) = synchronized {
@@ -193,9 +197,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 object ClasspathLoader {
 	/** Factory method for {@link ClasspathLoader}. */
 	def create(parent:ClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
-			basePackage:Option[String] = None) =
+			basePackage:Option[String] = None): Either[Exception,ClasspathLoader] =
 	{
-		Classpath open path map { classpath =>
+		(Classpath open path).right map { classpath =>
 			classpath.dependencies foreach { dep =>
 				log fine ("Dependency for %s: %s => %s" format (path, dep, resolveDependencyJar(dep)))
 			}
@@ -254,7 +258,7 @@ abstract class Classpath(val url:URL) {
 
 private[boot]
 object Classpath {
-	def open(url:URL):Option[Classpath] = {
+	def open(url:URL):Either[Exception,Classpath] = {
 		try {
 			url.getProtocol match {
 				case "jar" => JARLoader.open(url)
@@ -263,8 +267,7 @@ object Classpath {
 					else FileLoader.open(url)
 			}
 		} catch {
-			case e:java.security.AccessControlException => None
-			case e:IOException => None
+			case e:Exception => Left(e)
 		}
 	}
 }
@@ -340,7 +343,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 
 private[boot]
 object FileLoader {
-	def open(url:URL) = Option(new FileLoader(url))
+	def open(url:URL) = Right(new FileLoader(url))
 }
 
 
@@ -389,9 +392,9 @@ object JARLoader {
 	def open(url:URL) = makeJarUrl(url) match {
 		case url:URL =>
 			(url openConnection match {
-				case c:java.net.JarURLConnection => Option(c.getJarFile)
-				case _ => None
-			}) map { new JARLoader(_, url) }
+				case c:java.net.JarURLConnection => Right(c.getJarFile)
+				case _ => Left(new Exception("Unknown error opening %s" format url))
+			}).right map { new JARLoader(_, url) }
 		}
 
 	def wrap(jar:JarFile) = new JARLoader(jar, new URL("jar:file:" + jar.getName + "!/"))

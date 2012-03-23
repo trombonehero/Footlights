@@ -15,29 +15,37 @@
  */
 import java.net.{URI,URL}
 import java.util.jar.JarFile
+import java.util.logging
 
 
 package me.footlights.boot {
 
+import ClasspathLoader.sudo
+
+
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
 class FootlightsClassLoader(
 		classpaths:Iterable[URL], resolveDep:URI=>Option[JarFile]) extends ClassLoader {
+
+	def open(classpath:URL) = ClasspathLoader.create(this, classpath, resolveDep)
+
 	/**
 	 * Load a privileged UI.
 	 */
-	def loadUi(classpath:URL) = {
-		ClasspathLoader.create(this, classpath, resolveDep) flatMap { loader =>
-			loader.loadUi flatMap { ui =>
+	def loadUi(loader:ClasspathLoader) =
+		if (!loader.isUi) Left(new IllegalArgumentException("%s is not a UI" format loader))
+		else
+			loader.loadUi.right flatMap { ui =>
 				val className = ui.getName
 				val packageName = className.substring(0, className.lastIndexOf("."))
 
 				knownCorePackages += (packageName -> loader)
 				ui.getMethods() find { _.getName equals "init" } map { init =>
 					new UI(className, ui, init)
+				} map Right.apply getOrElse {
+					Left(new NoSuchMethodException("%s has no init() method" format className))
 				}
 			}
-		}
-	}
 
 	/**
 	 * Load an unprivileged application.
@@ -46,7 +54,7 @@ class FootlightsClassLoader(
 	 * (see {@link Classpath#mainClassName}).
 	 */
 	def loadApplication(classpath:URL) =
-		ClasspathLoader.create(this, classpath, resolveDep) flatMap { _.loadMainClass }
+		ClasspathLoader.create(this, classpath, resolveDep).right flatMap { _.loadMainClass }
 
 
 	/** Load either a core Footlights class or a core library (e.g. Java or Scala) class. */
@@ -72,34 +80,41 @@ class FootlightsClassLoader(
 
 		// Do we already know what classpath to find the class in?
 		val packageName = className.substring(0, className lastIndexOf '.')
-		knownCorePackages get packageName map { _ loadClass className } getOrElse {
-			// Lazily-evaluated stream of already-open classpath loaders.
-			val known = {
-				for ((corePackage, loader) <- knownCorePackages
-					if packageName startsWith corePackage) yield
-						loader findInClasspath className
-			}
 
-			// Exhaustive search of unopened core classpaths.
-			val unknown =
-				for (url <- classpaths) yield
-					ClasspathLoader.create(this, url, resolveDep, Some(packageName)) flatMap {
-						_ findInClasspath className
+		// Construct a lazily-evaluated iterator over ClassLoaders which might contain the class.
+		val loaders = (knownCorePackages get packageName).toIterable ++ (sudo { () => { {
+				// Classpath loaders which we've already opened.
+				for ((corePackage, loader) <- knownCorePackages) yield
+					if (packageName startsWith corePackage) Some(loader)
+					else None
+			} ++ {
+				// Core classpaths which we haven't opened yet.
+				for (url <- classpaths) yield {
+					ClasspathLoader.create(this, url, resolveDep, Some(packageName)) match {
+						case Right(loader) => Some(loader)
+						case Left(ex) =>
+							log log (logging.Level.WARNING, "Error creating classloader " +  url, ex)
+							None
 					}
-
-			// Stream the two together, find the first success, note the correct loader and return.
-			(known ++ unknown).flatten match {
-				case c :: remainder =>
-					val loader = c.getClassLoader match { case l:ClasspathLoader => l }
-					knownCorePackages += (packageName -> loader)
-					c
-				case Nil =>
-					throw new ClassNotFoundException("No %s in %s" format (className, classpaths))
+				}
 			}
-		}
+		} } flatten)
+
+		val (success, errors) =
+			loaders map { l => (l, l attemptLoadingClass className) } partition { _._2.isRight }
+
+		if (success.isEmpty)
+			throw new ClassNotFoundException("No %s in %s (errors: %s)" format (
+						className, classpaths, errors map { "%s => %s" format _ })
+				)
+
+		val (loader, loadedClass) = success.head
+		knownCorePackages += (packageName -> loader)
+		loadedClass.right.get
 	}
 
 	private var knownCorePackages = Map[String, ClasspathLoader]()
+	private var log = logging.Logger getLogger classOf[ClasspathLoader].getCanonicalName
 }
 
 /**
@@ -112,11 +127,10 @@ class FootlightsClassLoader(
  * This factory method should return a {@link import me.footlights.core.UI} object.
  */
 class UI(val name:String, c:Class[_], init:java.lang.reflect.Method) {
-	/** Start running against the privileged interface of {@link Footlights}. */
-	def start(footlights:Object) = init invoke (null, footlights) match {
-		case r:Runnable => new Thread(r, name)
-		case _ =>
-			throw new Error("UI '%s' is not Runnable" format name)
+	/** Initialize UI with the privileged interface of {@link Footlights}. */
+	def initialize(footlights:Object) = init invoke (null, footlights) match {
+		case r:Runnable => Right(new Thread(r, name))
+		case _ => Left(new ClassCastException("UI '%s' is not Runnable" format name))
 	}
 }
 

@@ -98,7 +98,6 @@ object Bootstrapper extends App {
 	// Load the UI(s).
 	log info "Searching %d classpaths for UIs...".format(coreClasspaths.length)
 	val uiThreads = coreClasspaths flatMap classLoader.loadUi map { ui =>
-		log info "Starting '%s' UI".format(ui.name)
 		try { Some(ui start footlights) }
 		catch {
 			case t:Throwable =>
@@ -109,7 +108,12 @@ object Bootstrapper extends App {
 
 	if (uiThreads.isEmpty) log severe { "No UIs found in %s" format coreClasspaths.toList }
 
-	uiThreads foreach { _.start }
+	// Start all UIs running.
+	uiThreads map { ui =>
+		log info "Starting '%s' UI".format(ui.getName)
+		ui start
+	}
+
 	uiThreads foreach { thread =>
 		log.fine("Waiting for " + thread.getName() + " to end");
 		thread.join();

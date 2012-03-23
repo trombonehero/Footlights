@@ -34,6 +34,12 @@
 		<!-- The Footlights code to bootstrap (runtime and/or test). -->
 		<dependency>
 			<groupId>me.footlights</groupId>
+			<artifactId>api</artifactId>
+			<version>HEAD</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.footlights</groupId>
 			<artifactId>footlights-core</artifactId>
 			<version>HEAD</version>
 			<scope>runtime</scope>

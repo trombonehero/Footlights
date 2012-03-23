@@ -25,6 +25,8 @@ import collection.JavaConversions._
 
 package me.footlights.boot {
 
+import ClasspathLoader.sudo
+
 private case class Bytecode(bytes:Array[Byte], source:CodeSource)
 
 /**
@@ -164,24 +166,6 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	/** Ensure that a path finishes with a '/'. */
 	private def ensureFinalSlash(path:String) = path + (if (!(path endsWith"/")) '/' else "")
 
-
-	/**
-	 * Execute a function with JVM privilege (using {@link AccessController}).
-	 *
-	 * The name "sudo" is meant to be evocative of privilege in general;
-	 * it does not refer specifically to system privilege as conferred by sudo(8).
-	 *
-	 * This is, unfortunately, duplicate code (as in "copy-and-paste"), but it should go away
-	 * once we load the Scala libraries with the same privilege as core Java libraries.
-	 */
-	private def sudo[T](code:() => T):T =
-		try java.security.AccessController.doPrivileged[T] {
-			new java.security.PrivilegedExceptionAction[T]() { override def run:T = code() }
-		}
-		catch {
-			case e:java.security.PrivilegedActionException => throw e getCause
-		}
-
 	/** Where we find our classes and resources (package name -> {@link Classpath}). */
 	private var classpaths = Map[String,Classpath]()
 
@@ -213,6 +197,24 @@ object ClasspathLoader {
 			new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, basePackage)
 		}
 	}
+
+
+	/**
+	 * Execute a function with JVM privilege (using {@link AccessController}).
+	 *
+	 * The name "sudo" is meant to be evocative of privilege in general;
+	 * it does not refer specifically to system privilege as conferred by sudo(8).
+	 *
+	 * This is, unfortunately, duplicate code (as in "copy-and-paste"), but it should go away
+	 * once we load the Scala libraries with the same privilege as core Java libraries.
+	 */
+	private[boot] def sudo[T](code:() => T):T =
+		try java.security.AccessController.doPrivileged[T] {
+			new java.security.PrivilegedExceptionAction[T]() { override def run:T = code() }
+		}
+		catch {
+			case e:java.security.PrivilegedActionException => throw e getCause
+		}
 
 
 	/** Should code from the given package be privileged? */
@@ -331,7 +333,7 @@ class FileLoader(url:URL) extends Classpath(url) {
 	/** The directory underneath which the classes are stored. */
 	private val dirName = url.getFile
 	private val dir = new java.io.File(dirName)
-	if (!dir.exists) throw new java.io.FileNotFoundException("No such classpath '" + url + "'");
+	if (!sudo { () => dir.exists }) throw new java.io.FileNotFoundException("No such classpath '" + url + "'");
 
 	/** Path component separator ('/' on UNIX, '\' on Windows). */
 	private val pathSep = File.separatorChar.toString

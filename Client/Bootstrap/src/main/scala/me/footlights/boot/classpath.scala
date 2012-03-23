@@ -261,10 +261,10 @@ object Classpath {
 	def open(url:URL):Either[Exception,Classpath] = {
 		try {
 			url.getProtocol match {
-				case "jar" => JARLoader.open(url)
+				case "jar" => JARLoader open url
 				case "file" =>
-					if (url.getPath endsWith "jar") JARLoader.open(url)
-					else FileLoader.open(url)
+					if (url.getPath endsWith "jar") JARLoader open url
+					else FileLoader open url
 			}
 		} catch {
 			case e:Exception => Left(e)

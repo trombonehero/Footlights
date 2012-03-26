@@ -15,11 +15,14 @@
  */
 package me.footlights.ui.web;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import me.footlights.api.WebRequest;
+import me.footlights.core.ProgrammerError;
 
 
 /** A request from the client, broken into path, query and fragment. */
@@ -74,9 +77,13 @@ public class Request implements WebRequest
 	public String prefix()
 	{
 		int slash = path.indexOf("/");
+		final String encoded;
 
-		if (slash == -1) return path;
-		else return path.substring(0, slash);
+		if (slash == -1) encoded = path;
+		else encoded = path.substring(0, slash);
+
+		try { return URLDecoder.decode(encoded, "utf-8"); }
+		catch (UnsupportedEncodingException e) { throw new ProgrammerError("UTF-8 error", e); }
 	}
 
 	/**

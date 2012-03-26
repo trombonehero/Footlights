@@ -65,9 +65,7 @@ class MasterServer(port:Int, footlights:Footlights)
 						try {
 							if (request.prefix.isEmpty) Option(contexts.head._2 handle request)
 							else {
-								val contextName = URLDecoder.decode(request.prefix, "utf-8")
-								contexts get contextName map { _ handle request.shift
-								}
+								contexts get request.prefix map { _ handle request.shift }
 							} orElse Some {
 								Response error new FileNotFoundException(
 										"No such context '%s'" format request.prefix)

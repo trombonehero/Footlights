@@ -125,13 +125,13 @@ trait Keychain extends core.HasBytes {
 class MutableKeychain (private var keychain:Keychain, notify:Keychain => Unit = (_ => Unit))
 		extends Keychain {
 
-	def store(link:Link) = {
+	def store(link:Link) = synchronized {
 		keychain += link
 		notify(keychain)
 		this
 	}
 
-	def store(name:Fingerprint, id:SigningIdentity) = {
+	def store(name:Fingerprint, id:SigningIdentity) = synchronized {
 		keychain += (name, id)
 		notify(keychain)
 		this

@@ -86,7 +86,15 @@ class DiskStoreTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 			val file = data.File.newBuilder setContent blocks freeze
 
 			store store file.toSave
-			store fetch file.link should equal(Some(file))
+			store fetch file.link should equal (Some(file))
+		}
+
+		"should be able to deal with realistic-sized files" in {
+			val blocks = List(b1, b2, bigBlock) map { _.getBytes }
+			val file = data.File.newBuilder setContent blocks freeze
+
+			store store file.toSave
+			store fetch file.link should equal (Some(file))
 		}
 	}
 
@@ -96,6 +104,10 @@ class DiskStoreTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 
 	private val b2 = Block.newBuilder()
 		.setContent(ByteBuffer wrap List[Byte](5, 6, 7, 8).toArray)
+		.build
+
+	private lazy val bigBlock = Block.newBuilder()
+		.setContent(ByteBuffer allocate 32000)
 		.build
 }
 

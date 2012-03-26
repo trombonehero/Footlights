@@ -119,7 +119,7 @@ public class DiskStore extends LocalStore
 		{
 			File file = new File(dir, name.encode());
 			long len = file.length();
-			
+
 			if (len <= 0) return Option.apply(null);
 			else if (len > MAX_FILE_SIZE)
 			{

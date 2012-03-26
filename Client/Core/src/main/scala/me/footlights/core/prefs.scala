@@ -272,8 +272,8 @@ object Preferences {
  * Some platforms (e.g. Android) may prefer platform-specific mechanisms.
  */
 final class FileBackedPreferences(properties:java.util.Properties, configFile:java.io.File)
-    extends PreferenceStorageEngine
-	with java.io.Flushable with ModifiablePreferences {
+		extends PreferenceStorageEngine
+		with java.io.Flushable with ModifiablePreferences {
 
 	// PreferenceStorageEngine implementation
 	private[core] override def getAll = asMap

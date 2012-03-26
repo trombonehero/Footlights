@@ -18,12 +18,6 @@
 			<artifactId>scala-library</artifactId>
 		</dependency>
 
-		<!-- ScalaTest. -->
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.9.1</artifactId>
-		</dependency>
-
 		<!-- JUnit 4. -->
 		<dependency>
 			<groupId>junit</groupId>

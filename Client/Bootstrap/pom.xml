@@ -85,13 +85,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Scala testing library. -->
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.9.1</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 		<!-- JUnit 4. -->
 		<dependency>
 			<groupId>junit</groupId>

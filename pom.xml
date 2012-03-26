@@ -22,6 +22,22 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<dependencies>
+		<!--
+		Include ScalaTest here: it's a pain to change Scala version numbers all
+		over the tree, since it gets embedded in the artifactId to describe the
+		ABI as well as the version of ScalaTest. It's only in the test phase
+		anyway, so this won't add a ton of runtime dependencies.
+		-->
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_2.9.1</artifactId>
+			<version>1.7.1</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
 	<!-- Specify preferred version numbers, etc. for common dependencies. -->
 	<dependencyManagement>
 		<dependencies>
@@ -59,13 +75,6 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>[4.0.0,)</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scalatest</groupId>
-				<artifactId>scalatest_2.9.1</artifactId>
-				<version>1.7.1</version>
 				<scope>test</scope>
 			</dependency>
 

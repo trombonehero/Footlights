@@ -153,7 +153,7 @@ object Kernel {
 	private def getStoreLocation(
 		key:String, prefs:Preferences, setupData:Option[Map[String,_]]) = {
 
-		prefs getString("blockstore." + key) orElse {
+		prefs getString("cas." + key) orElse {
 			setupData.get.get(key) match { case Some(s:String) => Option(s); case _ => None }
 		} map {
 			new URL(_)

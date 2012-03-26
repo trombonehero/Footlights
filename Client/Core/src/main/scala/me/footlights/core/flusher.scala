@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.{FileOutputStream,Flushable}
+import java.io.{FileOutputStream}
 import java.nio.ByteBuffer
 
 import java.util.logging.{Level,Logger}
@@ -21,6 +21,9 @@ import java.util.logging.{Level,Logger}
 package me.footlights.core {
 
 import data.File
+
+
+trait Flushable extends java.io.Flushable { def await(): Unit }
 
 
 /** An object which periodically writes data to disk, the network, etc. */
@@ -52,7 +55,7 @@ object Flusher
 	def apply(f:Flushable):Flusher = apply(
 			name = f.getClass.getSimpleName,
 			flush = f.flush _,
-			wait = () => { Thread sleep 500; f.synchronized { f.wait } }
+			wait = () => { Thread sleep 500; f.await }
 		)
 
 	def apply(target:HasBytes, save:ByteBuffer => Any):Flusher = apply(

@@ -273,7 +273,7 @@ object Preferences {
  */
 final class FileBackedPreferences(properties:java.util.Properties, configFile:java.io.File)
 		extends PreferenceStorageEngine
-		with java.io.Flushable with ModifiablePreferences {
+		with me.footlights.core.Flushable with ModifiablePreferences {
 
 	// PreferenceStorageEngine implementation
 	private[core] override def getAll = asMap
@@ -292,7 +292,8 @@ final class FileBackedPreferences(properties:java.util.Properties, configFile:ja
 	def set[T](key:String, value:T):FileBackedPreferences = set(key, value.toString)
 
 	// Flushable implementation
-	def flush = synchronized {
+	override def await = synchronized { while (!dirty) wait() }
+	override def flush = synchronized {
 		if (dirty) {
 			val comment = "Configuration options, auto-saved " +
 					java.text.DateFormat.getDateInstance().format(new java.util.Date())

@@ -34,7 +34,7 @@ package me.footlights.core.data.store {
 
 
 /** Stores blocks of content. */
-abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushable {
+abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.core.Flushable {
 	@throws(classOf[java.io.IOException])
 	protected def put(name:Fingerprint, bytes:ByteBuffer)
 
@@ -97,18 +97,23 @@ abstract class Store protected(cache:Option[LocalStore]) extends java.io.Flushab
 		//
 		// TODO: fix the access control bits
 		if (cache.isEmpty) put(name, bytes.asReadOnlyBuffer)
-		else cache.synchronized {
-			cache map { _.store(name, bytes.asReadOnlyBuffer) }
-			journal.synchronized { journal add name }
-			synchronized { notify }
+		else {
+			cache foreach { _.store(name, bytes.asReadOnlyBuffer) }
+			synchronized {
+				journal add name
+				notify
+			}
 		}
 	}
 
 
+	/** Wait until we have something to flush. */
+	override def await = synchronized { while (journal.isEmpty) wait() }
+
 	/**
 	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
 	 */
-	override def flush = journal.synchronized {
+	override def flush = synchronized {
 		log finer "Flushing %d blocks in %s".format (journal.size, this)
 
 		var unflushed = journal flatMap { name =>

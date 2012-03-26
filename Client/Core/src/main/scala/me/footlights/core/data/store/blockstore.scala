@@ -45,7 +45,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 
 	def store(block:Block): Unit = store(block.name, block.getBytes)
 	def store(block:EncryptedBlock): Unit = store(block.name, block.ciphertext)
-	def store(blocks:Iterable[EncryptedBlock]): Unit = blocks foreach { store(_) }
+	def store(blocks:Iterable[EncryptedBlock]): Unit = {
+		blocks foreach { store(_) }
+		log finer "Stored %d blocks in %s".format(blocks.size, this)
+	}
 
 	def retrieve(name:Fingerprint):Option[ByteBuffer] = {
 		// Intentionally not using Scala primitives like map. We currently load Scala

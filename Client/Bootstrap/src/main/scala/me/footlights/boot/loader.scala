@@ -60,7 +60,7 @@ class FootlightsClassLoader(
 
 	/** Load either a core Footlights class or a core library (e.g. Java or Scala) class. */
 	override protected def loadClass(name:String, resolve:Boolean):Class[_] = synchronized {
-		if (!(name startsWith "me.footlights")) getParent loadClass name
+		if (!ours(name)) getParent loadClass name
 		else {
 			// Option(findLoaded) getOrElse { findClass } makes the typechecker cry.
 			val loaded = findLoadedClass(name)
@@ -73,7 +73,7 @@ class FootlightsClassLoader(
 	/** Find a core Footlights class. */
 	override protected def findClass(className:String):Class[_] = {
 		// We must be loading a core Footlights class.
-		if (!className.startsWith("me.footlights"))
+		if (!ours(className))
 			throw new IllegalArgumentException(
 					classOf[FootlightsClassLoader].getSimpleName +
 					".findClass() is only used directly for loading core Footlights classes, not" +
@@ -118,6 +118,8 @@ class FootlightsClassLoader(
 		knownCorePackages += (packageName -> loader)
 		loadedClass.right.get
 	}
+
+	private def ours(name:String) = List("me.footlights") map name.startsWith reduce { _ || _ }
 
 	private var knownCorePackages = Map[String, ClasspathLoader]()
 	private var log = logging.Logger getLogger classOf[ClasspathLoader].getCanonicalName

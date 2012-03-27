@@ -111,7 +111,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 
 
 	/** Wait until we have something to flush. */
-	override def await = synchronized { while (journal.isEmpty) wait() }
+	override def await = {
+		Thread sleep 500
+		synchronized { while (journal.isEmpty) wait() }
+	}
 
 	/**
 	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.

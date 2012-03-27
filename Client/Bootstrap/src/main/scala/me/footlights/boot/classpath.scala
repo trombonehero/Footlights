@@ -40,9 +40,9 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  *                          if loading a plugin with packages com.foo.app and com.foo.support,
  *                          this parameter should be "com.foo". Only relevant for core classpaths.
  */
-class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
+class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 		permissions:PermissionCollection, resolveDependency:URI => Option[JarFile],
-		myBasePackage:Option[String])
+		privileged:Boolean = false)
 	extends ClassLoader(parent) {
 	/**
 	 * Load a class, optionally short-circuiting the normal hierarchy.
@@ -58,8 +58,14 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	protected override def loadClass(name:String, resolve:Boolean):Class[_] = {
 		val result = attemptLoadingClass(name, resolve)
 		result.right getOrElse {
-			throw new ClassNotFoundException(name + " not in " + classpath +
-					": %s" format (result.left getOrElse "unknown reason"))
+			val fromParent = (parent findInCoreClasspaths name).left map { _ getMessage }
+
+			if (fromParent.isRight) fromParent.right.get
+			else
+				throw new ClassNotFoundException(name + " not in " + classpath +
+					" (%s) or parent (%s)" format (
+							result.left getOrElse "unknown reason",
+							fromParent.left getOrElse "unknown reason"))
 		}
 	}
 
@@ -153,16 +159,19 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 	/** Should we defer to the parent {@link ClassLoader} for this class? */
 	private def mustDeferToParent(name:String) =
-		myBasePackage flatMap { base =>
-			if (isCorePackage(base)) Some(!(name startsWith base))
-			else None
-		} getOrElse isCorePackage(name)
+		isLanguageRuntime(name) || (!privileged && isCorePackage(name))
+
+	/** Is it <i>permissible</i> to defer to the parent {@link ClassLoader} for this class? */
+	private def mayDeferToParent(name:String) = isCorePackage(name)
+
+	/** Is the given class in the language runtime? */
+	private def isLanguageRuntime(className:String) =
+		List("java.", "javax.", "scala.", "sun.") exists className.startsWith
 
 	/** Is the given class in a core library package (so be careful about loading it)? */
 	private def isCorePackage(className:String) =
-		List("java.", "javax.", "scala.",
-				"me.footlights.api", "me.footlights.core", "me.footlights.ui") exists {
-			className startsWith
+		List("me.footlights.api.", "me.footlights.boot.", "me.footlights.core.") exists {
+			className.startsWith
 		}
 
 	/** Ensure that a path finishes with a '/'. */
@@ -182,8 +191,8 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 
 object ClasspathLoader {
 	/** Factory method for {@link ClasspathLoader}. */
-	def create(parent:ClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
-			basePackage:Option[String] = None, withPrivilege:Boolean = false):
+	def create(parent:FootlightsClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
+			withPrivilege:Boolean = false):
 			Either[Exception,ClasspathLoader] =
 	{
 		(Classpath open path).right map { classpath =>
@@ -197,7 +206,7 @@ object ClasspathLoader {
 				else classpath.readPermission
 			}
 
-			new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, basePackage)
+			new ClasspathLoader(parent, classpath, permissions, resolveDependencyJar, withPrivilege)
 		}
 	}
 

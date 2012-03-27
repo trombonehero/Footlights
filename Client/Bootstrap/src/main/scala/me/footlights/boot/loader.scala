@@ -40,7 +40,6 @@ class FootlightsClassLoader(
 				val className = ui.getName
 				val packageName = className.substring(0, className.lastIndexOf("."))
 
-				knownCorePackages += (packageName -> loader)
 				ui.getMethods() find { _.getName equals "init" } map { init =>
 					new UI(className, ui, init)
 				} map Right.apply getOrElse {
@@ -72,56 +71,55 @@ class FootlightsClassLoader(
 
 	/** Find a core Footlights class. */
 	override protected def findClass(className:String):Class[_] = {
+		val result = findInCoreClasspaths(className)
+		result.right getOrElse {
+			throw new ClassNotFoundException(
+					"Unable to find %s in any core classpath" format className,
+					result.left.get)
+		}
+	}
+
+	private[boot] def findInCoreClasspaths(className:String):Either[Exception,Class[_]] = {
 		// We must be loading a core Footlights class.
 		if (!ours(className))
-			throw new IllegalArgumentException(
+			Left {
+				new IllegalArgumentException(
 					classOf[FootlightsClassLoader].getSimpleName +
 					".findClass() is only used directly for loading core Footlights classes, not" +
 					className)
-
-		// Do we already know what classpath to find the class in?
-		val packageName = className.substring(0, className lastIndexOf '.')
-
-		// Construct a lazily-evaluated iterator over ClassLoaders which might contain the class.
-		val loaders = (knownCorePackages get packageName).toIterable ++ (sudo { () => { {
-				// Classpath loaders which we've already opened.
-				for ((corePackage, loader) <- knownCorePackages) yield
-					if (packageName startsWith corePackage) Some(loader)
-					else None
-			} ++ {
-				// Core classpaths which we haven't opened yet.
-				for (url <- classpaths.view) yield {
-					ClasspathLoader.create(this, url, resolveDep, Some(packageName),
-							withPrivilege = true) match {
-						case Right(loader) => Some(loader)
-						case Left(ex) =>
-							log log (logging.Level.WARNING, "Error creating classloader " +  url, ex)
-							None
-					}
-				}
 			}
-		} } flatten)
+		else {
+			val (success, errors) =
+				coreClasspaths map { _ attemptLoadingClass className } partition { _.isRight }
 
-		val (success, errors) =
-			loaders map { l => (l, l attemptLoadingClass className) } partition { _._2.isRight }
-
-		if (success.isEmpty)
-			throw new ClassNotFoundException("No %s in:\n%s\nErrors:\n%s" format (
-						className,
-						classpaths map { " - %s" format _ } reduce { _ + "\n" + _ },
-						errors map { case Tuple2(loader, err) =>
-							"%s: %s" format (loader, err.left.get)
-						} reduce { _ + "\n" + _ })
-				)
-
-		val (loader, loadedClass) = success.head
-		knownCorePackages += (packageName -> loader)
-		loadedClass.right.get
+			if (success.isEmpty)
+				Left {
+					new ClassNotFoundException("No %s in:\n%s\nErrors:\n%s" format (
+							className,
+							classpaths map { " - %s" format _ } reduce { _ + "\n" + _ },
+							errors map { _.left get } reduce { _ + "\n" + _ })
+					)
+				}
+			else Right(success.head.right.get)
+		}
 	}
 
-	private def ours(name:String) = List("me.footlights") map name.startsWith reduce { _ || _ }
+	private def ours(name:String) =
+		List("me.footlights", "org.bouncycastle", "org.apache") map {
+			name.startsWith
+		} reduce { _ || _ }
 
-	private var knownCorePackages = Map[String, ClasspathLoader]()
+	private val coreClasspaths = {
+		for (url <- classpaths) yield {
+			ClasspathLoader.create(this, url, resolveDep, withPrivilege = true) match {
+				case Right(loader) => Some(loader)
+				case Left(ex) =>
+					log log (logging.Level.WARNING, "Error creating classloader " +  url, ex)
+					None
+			}
+		}
+	} flatten
+
 	private var log = logging.Logger getLogger classOf[ClasspathLoader].getCanonicalName
 	log fine { "Initialized with classpaths: %s" format classpaths }
 }

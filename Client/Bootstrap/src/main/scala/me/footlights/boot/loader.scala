@@ -121,6 +121,7 @@ class FootlightsClassLoader(
 
 	private var knownCorePackages = Map[String, ClasspathLoader]()
 	private var log = logging.Logger getLogger classOf[ClasspathLoader].getCanonicalName
+	log fine { "Initialized with classpaths: %s" format classpaths }
 }
 
 /**

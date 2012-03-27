@@ -35,6 +35,13 @@ package me.footlights.boot {
  * other classes will be linked with such privilege.
  */
 object Bootstrapper extends App {
+	// Set up our security policy and start enforcing it.
+	Policy setPolicy new RestrictivePolicy()
+	System setSecurityManager new SecurityManager()
+
+	// Ensure that Bootstrapper, as the most privileged code around, can still do anything.
+	AccessController checkPermission new AllPermission()
+
 	LogManager.getLogManager().readConfiguration(
 		Bootstrapper.getClass.getResourceAsStream("logging.properties"));
 
@@ -72,13 +79,6 @@ object Bootstrapper extends App {
 
 	// Install crypto provider.
 	Security addProvider new BouncyCastleProvider()
-
-	// Set up our security policy and start enforcing it.
-	Policy setPolicy new RestrictivePolicy()
-	System setSecurityManager new SecurityManager()
-
-	// Ensure that Bootstrapper, as the most privileged code around, can still do anything.
-	AccessController checkPermission new AllPermission()
 
 	// Load the Footlights class.
 	val footlightsClass = classLoader.loadClass("me.footlights.core.Footlights")

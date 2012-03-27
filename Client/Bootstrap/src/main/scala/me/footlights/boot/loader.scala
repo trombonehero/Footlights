@@ -104,8 +104,12 @@ class FootlightsClassLoader(
 			loaders map { l => (l, l attemptLoadingClass className) } partition { _._2.isRight }
 
 		if (success.isEmpty)
-			throw new ClassNotFoundException("No %s in %s (errors: %s)" format (
-						className, classpaths, errors map { "%s => %s" format _ })
+			throw new ClassNotFoundException("No %s in:\n%s\nErrors:\n%s" format (
+						className,
+						classpaths map { " - %s" format _ } reduce { _ + "\n" + _ },
+						errors map { case Tuple2(loader, err) =>
+							"%s: %s" format (loader, err.left.get)
+						} reduce { _ + "\n" + _ })
 				)
 
 		val (loader, loadedClass) = success.head

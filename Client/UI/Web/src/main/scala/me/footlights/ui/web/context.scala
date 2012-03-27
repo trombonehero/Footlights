@@ -133,7 +133,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 					footlights.unloadApplication(
 						footlights.runningApplications().iterator().next());
 
-				reset
+				reset()
 				new JavaScript().append("context.globals['window'].location.reload()")
 
 			case AsyncChannel =>

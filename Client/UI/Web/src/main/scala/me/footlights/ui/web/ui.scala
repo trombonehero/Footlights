@@ -81,10 +81,14 @@ object WebUI {
 		val apps:Map[URI,AppWrapper] = Map()
 		val master = new MasterServer(port, footlights)
 
+		def reset(): Unit = master.synchronized {
+			// TODO: break circular dependency, clear and re-register global context in master
+		}
+
 		def createAppContext(app:AppWrapper) =
 			master register (app.name.toString -> new AppContext(app))
 
-		val globalContext = new GlobalContext(footlights, null, createAppContext)
+		val globalContext = new GlobalContext(footlights, reset, createAppContext)
 		master register ("footlights" -> globalContext)
 
 		new WebUI(footlights, master, globalContext, apps)

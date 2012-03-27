@@ -80,14 +80,7 @@ class FootlightsClassLoader(
 	}
 
 	private[boot] def findInCoreClasspaths(className:String):Either[Exception,Class[_]] = {
-		// We must be loading a core Footlights class.
-		if (!ours(className))
-			Left {
-				new IllegalArgumentException(
-					classOf[FootlightsClassLoader].getSimpleName +
-					".findClass() is only used directly for loading core Footlights classes, not" +
-					className)
-			}
+		if (!ours(className)) Right(getParent loadClass className)
 		else {
 			val (success, errors) =
 				coreClasspaths map { _ attemptLoadingClass className } partition { _.isRight }
@@ -104,10 +97,7 @@ class FootlightsClassLoader(
 		}
 	}
 
-	private def ours(name:String) =
-		List("me.footlights", "org.bouncycastle", "org.apache") map {
-			name.startsWith
-		} reduce { _ || _ }
+	private def ours(name:String) = name startsWith "me.footlights"
 
 	private val coreClasspaths = {
 		for (url <- classpaths) yield {

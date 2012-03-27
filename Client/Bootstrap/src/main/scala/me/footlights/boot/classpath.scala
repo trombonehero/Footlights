@@ -158,7 +158,7 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 			else None
 		} getOrElse isCorePackage(name)
 
-	/** Is the given class in a core library package (which we shouldn't try to load)? */
+	/** Is the given class in a core library package (so be careful about loading it)? */
 	private def isCorePackage(className:String) =
 		List("java.", "javax.", "scala.",
 				"me.footlights.api", "me.footlights.core", "me.footlights.ui") exists className.startsWith

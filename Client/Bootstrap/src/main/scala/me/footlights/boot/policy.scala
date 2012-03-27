@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-import java.security.{CodeSource,Permissions,Policy,ProtectionDomain}
+import java.security.{AllPermission,CodeSource,Permissions,Policy,ProtectionDomain}
 import java.io.FilePermission
 
 
 package me.footlights.boot {
 
-/** A very restrictive Java security policy. */
-final class RestrictivePolicy extends Policy
+/** A {@link Policy} which grants the {@link AllPermission} to local code. */
+final class LocalFilePolicy extends Policy
 {
-	override def getPermissions(source:CodeSource) = new Permissions
+	override def getPermissions(source:CodeSource) = {
+		val perms = new Permissions
+		if (source.getLocation.getProtocol equals "file") perms add new AllPermission
+		perms
+	}
 	override def getPermissions(domain:ProtectionDomain) = getPermissions(domain.getCodeSource())
 	override def refresh = {}
 }

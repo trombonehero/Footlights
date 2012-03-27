@@ -36,7 +36,10 @@ package me.footlights.boot {
  */
 object Bootstrapper extends App {
 	// Set up our security policy and start enforcing it.
-	Policy setPolicy new RestrictivePolicy()
+	//
+	// This only affects code loaded by the default ClassLoader: our own ClassLoader will apply
+	// permissions according to the app / not app dichotomy.
+	Policy setPolicy new LocalFilePolicy()
 	System setSecurityManager new SecurityManager()
 
 	// Ensure that Bootstrapper, as the most privileged code around, can still do anything.

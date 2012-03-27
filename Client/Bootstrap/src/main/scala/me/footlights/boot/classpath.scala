@@ -161,7 +161,9 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 	/** Is the given class in a core library package (so be careful about loading it)? */
 	private def isCorePackage(className:String) =
 		List("java.", "javax.", "scala.",
-				"me.footlights.api", "me.footlights.core", "me.footlights.ui") exists className.startsWith
+				"me.footlights.api", "me.footlights.core", "me.footlights.ui") exists {
+			className startsWith
+		}
 
 	/** Ensure that a path finishes with a '/'. */
 	private def ensureFinalSlash(path:String) = path + (if (!(path endsWith"/")) '/' else "")

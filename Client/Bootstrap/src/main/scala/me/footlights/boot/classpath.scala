@@ -394,6 +394,8 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 				case s:String => Option(s)
 			}
 	}
+
+	override val toString = "JARLoader { %s } " format url
 }
 
 private[boot]

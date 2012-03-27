@@ -58,7 +58,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 		// TODO: fix the access control bits
 		var result:Option[ByteBuffer] = None
 		if (cache.isDefined) result = cache.get retrieve name
-		if (result.isEmpty) result = get(name)
+		if (result.isEmpty) {
+			result = get(name)
+			result foreach { bytes => cache foreach { _.store(name, bytes) } }
+		}
 		result
 	}
 

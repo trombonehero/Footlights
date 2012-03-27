@@ -363,9 +363,20 @@ class JARLoader(jar:JarFile, url:URL) extends Classpath(url) {
 		val classPath = className.replace('.', '/') + ".class"
 		jar.entries find { _.getName.equals(classPath) } map { entry:JarEntry =>
 			{
-				val in = jar.getInputStream(entry)
-				val bytes = new Array[Byte](in.available)
-				in.read(bytes)
+				val bytes = {
+					val in = jar.getInputStream(entry)
+					val len = entry.getSize toInt
+					val array = new Array[Byte](len)
+
+					var (bytes, offset) = (1, 0)
+					while (bytes > 0) {
+						bytes = in.read(array, offset, len - offset)
+						if (bytes > 0) offset += bytes
+					}
+					if (len != offset)
+						throw new java.io.EOFException("Read %d B, expected %d" format (offset, len))
+					array
+				}
 
 				val signers = entry.getCodeSigners
 				if (signers == null) throw new SecurityException(entry.toString() + " not signed")

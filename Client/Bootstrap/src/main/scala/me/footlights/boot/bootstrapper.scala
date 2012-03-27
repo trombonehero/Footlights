@@ -42,7 +42,7 @@ object Bootstrapper extends App {
 
 	// Find Scala libraries in the Java "boot" classpath.
 	val scalaPaths = System.getProperty("sun.boot.class.path") split ":" filter {
-		_.contains("scala")
+		_ contains "scala"
 	}
 
 	// Find Footlights code in the regular Java classpath.

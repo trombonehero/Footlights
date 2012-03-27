@@ -55,7 +55,7 @@ object Flusher
 	def apply(f:Flushable):Flusher = apply(
 			name = f.getClass.getSimpleName,
 			flush = f.flush _,
-			wait = () => { Thread sleep 500; f.await }
+			wait = () => f.await
 		)
 
 	def apply(target:HasBytes, save:ByteBuffer => Any):Flusher = apply(

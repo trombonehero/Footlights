@@ -115,7 +115,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 
 	/** Wait until we have something to flush. */
 	override def await = {
-		Thread sleep 500
+		Thread sleep flushTimeout_ms
 		synchronized { while (journal.isEmpty) wait() }
 	}
 
@@ -141,8 +141,20 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 		}
 		journal retain unflushed.contains
 
-		if (!journal.isEmpty) log info "%s unable to flush %d blocks".format(this, journal size)
+		if (journal.isEmpty) resetTimeout
+		else {
+			log info "%s unable to flush %d blocks".format(this, journal size)
+			increaseTimeout
+		}
 	}
+
+	private val InitialTimeout_ms = 500
+	private val MaxTimeout_ms = 120000
+
+	/** How long (in ms) to sleep between flush attempts. */
+	private var flushTimeout_ms = InitialTimeout_ms
+	private def increaseTimeout = flushTimeout_ms = Math.min(2 * flushTimeout_ms, MaxTimeout_ms)
+	private def resetTimeout = flushTimeout_ms = InitialTimeout_ms
 
 	private val journal = collection.mutable.Set[Fingerprint]()
 	private val log = java.util.logging.Logger getLogger classOf[Store].getCanonicalName

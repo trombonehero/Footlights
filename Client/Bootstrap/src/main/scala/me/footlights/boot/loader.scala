@@ -27,7 +27,8 @@ import ClasspathLoader.sudo
 class FootlightsClassLoader(
 		classpaths:Iterable[URL], resolveDep:URI=>Option[JarFile]) extends ClassLoader {
 
-	def open(classpath:URL) = ClasspathLoader.create(this, classpath, resolveDep)
+	def open(privileged:Boolean = false)(classpath:URL) =
+		ClasspathLoader.create(this, classpath, resolveDep, privileged)
 
 	/**
 	 * Load a privileged UI.
@@ -89,8 +90,9 @@ class FootlightsClassLoader(
 					else None
 			} ++ {
 				// Core classpaths which we haven't opened yet.
-				for (url <- classpaths) yield {
-					ClasspathLoader.create(this, url, resolveDep, Some(packageName)) match {
+				for (url <- classpaths.view) yield {
+					ClasspathLoader.create(this, url, resolveDep, Some(packageName),
+							withPrivilege = true) match {
 						case Right(loader) => Some(loader)
 						case Left(ex) =>
 							log log (logging.Level.WARNING, "Error creating classloader " +  url, ex)

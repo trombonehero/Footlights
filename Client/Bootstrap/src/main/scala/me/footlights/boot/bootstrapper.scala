@@ -97,7 +97,7 @@ object Bootstrapper extends App {
 
 	// Load the UI(s).
 	log info "Searching %d classpaths for UIs...".format(coreClasspaths.length)
-	val uiThreads = coreClasspaths map classLoader.open filter { loader =>
+	val uiThreads = coreClasspaths map classLoader.open(privileged = true) filter { loader =>
 		(loader.right map { _.isUi }).right getOrElse { false }
 	} map { _.right.get } map classLoader.loadUi map {
 		_.right flatMap { _ initialize footlights }

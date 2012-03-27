@@ -181,7 +181,8 @@ class ClasspathLoader(parent:ClassLoader, classpath:Classpath,
 object ClasspathLoader {
 	/** Factory method for {@link ClasspathLoader}. */
 	def create(parent:ClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
-			basePackage:Option[String] = None): Either[Exception,ClasspathLoader] =
+			basePackage:Option[String] = None, withPrivilege:Boolean = false):
+			Either[Exception,ClasspathLoader] =
 	{
 		(Classpath open path).right map { classpath =>
 			classpath.dependencies foreach { dep =>
@@ -190,7 +191,7 @@ object ClasspathLoader {
 
 			// Only grant privileges to core Footlights code.
 			val permissions = makeCollection {
-				if (isPrivileged(basePackage)) new AllPermission
+				if (withPrivilege) new AllPermission
 				else classpath.readPermission
 			}
 
@@ -216,11 +217,6 @@ object ClasspathLoader {
 			case e:java.security.PrivilegedActionException => throw e getCause
 		}
 
-
-	/** Should code from the given package be privileged? */
-	private def isPrivileged(name:Option[String]): Boolean = name map isPrivileged getOrElse false
-	private def isPrivileged(name:String): Boolean =
-		List("me.footlights.core", "me.footlights.ui") exists { name startsWith _ }
 
 	/** Construct a read-only {@link PermissionCollection} with one {@link Permission} in it. */
 	private def makeCollection(perm:Permission) = {

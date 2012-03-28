@@ -56,17 +56,19 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 
 	@throws(classOf[ClassNotFoundException])
 	protected override def loadClass(name:String, resolve:Boolean):Class[_] = {
-		val result = attemptLoadingClass(name, resolve)
-		result.right getOrElse {
-			val fromParent = (parent findInCoreClasspaths name).left map { _ getMessage }
+		attemptLoadingClass(name, resolve) fold ( ex =>
+			if (!mayDeferToParent(name))
+				throw new ClassNotFoundException("%s not found in %s" format (name, classpath))
 
-			if (fromParent.isRight) fromParent.right.get
 			else
-				throw new ClassNotFoundException(name + " not in " + classpath +
-					" (%s) or parent (%s)" format (
-							result.left getOrElse "unknown reason",
-							fromParent.left getOrElse "unknown reason"))
-		}
+				parent findInCoreClasspaths name fold (
+					ex => throw new ClassNotFoundException(
+							"%s not found in %s or parent (%s)".format(
+									name, classpath, ex.getMessage)),
+					(c:Class[_]) => c
+				),
+			c => c
+		)
 	}
 
 

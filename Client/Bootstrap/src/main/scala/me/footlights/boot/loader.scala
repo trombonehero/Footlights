@@ -53,8 +53,10 @@ class FootlightsClassLoader(
 	 * Open the given classpath and load its main class, as specified in its manifest file
 	 * (see {@link Classpath#mainClassName}).
 	 */
-	def loadApplication(classpath:URL) =
-		ClasspathLoader.create(this, classpath, resolveDep).right flatMap { _.loadMainClass }
+	def loadApplication(classpath:URL): Either[Exception, Class[_]] =
+		ClasspathLoader.create(this, classpath, resolveDep).right flatMap {
+			_.loadMainClass.left map { new ClassNotFoundException(_) }
+		}
 
 
 	/** Load either a core Footlights class or a core library (e.g. Java or Scala) class. */

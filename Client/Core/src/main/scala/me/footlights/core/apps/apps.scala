@@ -153,10 +153,14 @@ trait ApplicationManagement extends Footlights {
 		(try { loadApplicationMethod.invoke(appLoader, classpath) }
 		catch { case ex:Exception => Left(ex) }) match {
 			case Right(c:Class[_]) => Right(c)
+			case Left(ex:Exception) => Left(new AppStartupException(classpath.toURI, ex))
 			case a:Any =>
 				Left(new AppStartupException(classpath.toURI,
-						new IllegalArgumentException("%s returned '%s', not a Class" format (
-								loadApplicationMethod.getName, a))
+						new IllegalArgumentException(
+								"%s returned '%s', rather than a Class or a Throwable" format (
+										loadApplicationMethod.getName, a
+									)
+							)
 					)
 				)
 		}

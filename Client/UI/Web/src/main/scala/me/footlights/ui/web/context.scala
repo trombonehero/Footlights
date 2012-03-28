@@ -153,6 +153,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 						createUISandbox(wrapper.name)
 
 					case Left(error) =>
+						log log (WARNING, "Error loading application", error)
 						val stackTrace = new java.io.StringWriter
 						error printStackTrace new java.io.PrintWriter(stackTrace)
 
@@ -205,6 +206,7 @@ sb.ajax('init');
 	private val setupAsyncChannel =
 		new JavaScript().append("context.globals['setupAsyncChannel']();")
 
+	private val log = Logger getLogger classOf[GlobalContext].getCanonicalName
 
 	// Hardcode demo app paths for now, just to demonstrate that they work.
 	private val CORE_PATH = System.getProperty("java.class.path").split(":")(0)

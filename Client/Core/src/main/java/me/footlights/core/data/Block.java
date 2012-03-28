@@ -217,14 +217,19 @@ public class Block implements FootlightsPrimitive
 	}
 
 
-	/** Convert buffers of data, which may have any size, into buffers of a desired chunk size. */
-	static Collection<ByteBuffer> rechunk(Iterable<ByteBuffer> content, int chunkSize)
+	/**
+	 * Convert buffers of data, which may have any size, into buffers of a desired chunk size.
+	 *
+	 * @param  after    leave this many bytes free at the beginning; the first block will be of
+	 *                  size (after - chunkSize)
+	 */
+	static Collection<ByteBuffer> rechunk(Iterable<ByteBuffer> content, int after, int chunkSize)
 	{
 		Iterator<ByteBuffer> i = content.iterator();
 		ByteBuffer next = null;
 
 		List<ByteBuffer> chunked = new LinkedList<ByteBuffer>();
-		ByteBuffer current = ByteBuffer.allocate(chunkSize);
+		ByteBuffer current = ByteBuffer.allocate(chunkSize - (after % chunkSize));
 
 		while (true)
 		{
@@ -264,6 +269,11 @@ public class Block implements FootlightsPrimitive
 		}
 
 		return chunked;
+	}
+
+	static Collection<ByteBuffer> rechunk(Iterable<ByteBuffer> content, int chunkSize)
+	{
+		return rechunk(content, 0, chunkSize);
 	}
 
 

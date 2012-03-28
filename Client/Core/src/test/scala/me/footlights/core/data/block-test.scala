@@ -42,6 +42,31 @@ package me.footlights.core.data {
 @RunWith(classOf[JUnitRunner])
 class BlockTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 	"We must be able to " - {
+		"rechunk content into buffers of the correct size." in {
+			val TestSize = 100
+			val data = List (
+				0 to 8,
+				9 to 19,
+				20 to 37,
+				38 to 39,
+				40 to 75,
+				76 to 99
+			) map { blob => blob map { _.toByte } toArray } map ByteBuffer.wrap
+			val bigBlob = ByteBuffer allocate TestSize
+
+			val Reserved = 5        // leave 5 B at the beginning for headers or what-have-you
+			val ChunkSize = 4
+			val rechunked = Block.rechunk(data, Reserved, ChunkSize) toSeq
+
+			rechunked(0).limit should equal (ChunkSize - (Reserved % ChunkSize))
+			for (i <- 1 until rechunked.size - 1) rechunked(i).limit should equal (ChunkSize)
+			rechunked.last.limit should equal (ChunkSize - ((TestSize - Reserved) % ChunkSize))
+
+			for (buffer <- rechunked) bigBlob put buffer
+			bigBlob.flip
+			for (i <- 0 until TestSize) bigBlob get i should equal (i)
+		}
+
 		"store and retrieve content." in {
 			val data = List[Byte](1, 2, 3, 4) toArray
 			val b = Block.newBuilder setContent ByteBuffer.wrap(data) build

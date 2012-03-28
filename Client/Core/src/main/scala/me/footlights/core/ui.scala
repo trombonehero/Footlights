@@ -110,7 +110,7 @@ trait SwingPowerboxes extends Footlights {
 			case _ => { log.fine("User cancelled file open dialog"); None }
 		}
 
-		io read filename flatMap save tee log.fine { "Opened local file: %s" format _ }
+		io read filename flatMap save tee { f => log fine ("Opened local file: %s" format f) }
 	}
 
 	override def saveLocalFile(file:me.footlights.api.File) = {

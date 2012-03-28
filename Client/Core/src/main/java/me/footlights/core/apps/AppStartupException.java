@@ -23,9 +23,9 @@ public class AppStartupException extends Exception
 {
 	public AppStartupException(URI uri, Throwable cause)
 	{
-		super("Failed to load plugin from '" + uri + "'", cause);
+		super("Failed to load application from '" + uri + "'", cause);
 	}
 
 	private static final long serialVersionUID
-		= ("5 Dec 2011 1950h GMT" + AppStartupException.class.getCanonicalName()).hashCode();
+		= ("28 Mar 2012 1208h BST" + AppStartupException.class.getCanonicalName()).hashCode();
 }

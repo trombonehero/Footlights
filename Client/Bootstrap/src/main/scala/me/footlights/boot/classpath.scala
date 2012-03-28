@@ -115,7 +115,7 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 		// Perhaps we've already loaded this class?
 		loaded get name map Right.apply getOrElse {
 			// If not, search through the places that might contain it.
-			classpathsFor(name) flatMap { classpath =>
+			classpaths flatMap { classpath =>
 				sudo { () => classpath readClass name }
 			} find { _ != None } map {
 				case Bytecode(bytes,source) =>
@@ -124,38 +124,10 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 			} map { c =>
 				loaded += (name -> c)
 				c
-			} map Right.apply getOrElse
-				Left("%s not found in %s" format (name, classpathsFor(name)))
+			} map Right.apply getOrElse Left("%s not found in %s" format (name, classpaths))
 		}
 	}
 
-	/** Build a view of all of the {@link Classpath}s which might be able to load a given class. */
-	private def classpathsFor(className:String) = synchronized {
-		// Classpaths that we already know contain the relevant package.
-		val knowns = List(classpath) ++ (
-				classpaths.keys filter { className startsWith _ } flatMap { classpaths get _ }
-			)
-
-		// Full package name of the class to be loaded.
-		val packageName = className.substring(0, className.lastIndexOf('.'))
-
-		// Already-loaded paths which might be able to load the desired class.
-		val loadedDeps = classpaths.values
-
-		// As-yet-unloaded dependencies which might contain the class (lazily evaluated).
-		val unloadedDeps = classpath.dependencies.view flatMap {
-			uri => resolveDependency(uri)
-		} map JARLoader.wrap
-
-		val allDeps = (loadedDeps ++ unloadedDeps) filter {
-			_ readClass className isDefined
-		} map { cp =>
-			classpaths += (packageName -> cp)
-			cp
-		}
-
-		knowns ++ allDeps
-	}
 
 	/** Should we defer to the parent {@link ClassLoader} for this class? */
 	private def mustDeferToParent(name:String) =
@@ -177,8 +149,12 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 	/** Ensure that a path finishes with a '/'. */
 	private def ensureFinalSlash(path:String) = path + (if (!(path endsWith"/")) '/' else "")
 
-	/** Where we find our classes and resources (package name -> {@link Classpath}). */
-	private var classpaths = Map[String,Classpath]()
+	/** Dependencies declared by the classpath's manifest. */
+	private val dependencies =
+			classpath.dependencies flatMap { resolveDependency(_) } map JARLoader.wrap toSeq
+
+	/** All classpaths, including dependencies. */
+	private val classpaths = classpath +: dependencies
 
 	/**
 	 * Classes we've already loaded.

@@ -26,7 +26,6 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -86,7 +85,7 @@ public class File implements me.footlights.api.File
 		{
 			// First, break the content into chunks of the appropriate size.
 			Collection<ByteBuffer> chunked =
-				rechunk(content, desiredBlockSize - Block.OVERHEAD_BYTES);
+				Block.rechunk(content, desiredBlockSize - Block.OVERHEAD_BYTES);
 
 			// Next, create {@link EncryptedBlock} objects.
 			List<EncryptedBlock> ciphertext = new ArrayList<EncryptedBlock>(chunked.size());
@@ -254,56 +253,6 @@ public class File implements me.footlights.api.File
 	{
 		return "Encrypted File [ " + header.name() + ", " + plaintext.size() + " blocks, " +
 			stat.length() + " B ]";
-	}
-
-
-	/** Convert buffers of data, which may have any size, into buffers of a desired chunk size. */
-	private static Collection<ByteBuffer> rechunk(Iterable<ByteBuffer> content, int chunkSize)
-	{
-		Iterator<ByteBuffer> i = content.iterator();
-		ByteBuffer next = null;
-
-		List<ByteBuffer> chunked = new LinkedList<ByteBuffer>();
-		ByteBuffer current = ByteBuffer.allocate(chunkSize);
-
-		while (true)
-		{
-			// Fetch the next input buffer (if necessary). If there are none, we're done.
-			if ((next == null) || !next.hasRemaining())
-			{
-				if (i.hasNext()) next = i.next();
-				else break;
-
-				// If the next batch of content is already the right size, add it directly.
-				if (next.remaining() == chunkSize)
-				{
-					chunked.add(next);
-					next = null;
-					continue;
-				}
-			}
-
-			// If the current output buffer is full, create a new one.
-			if (current.remaining() == 0)
-			{
-				current.flip();
-				chunked.add(current);
-				current = ByteBuffer.allocate(chunkSize);
-			}
-
-			// Copy data from input to output.
-			int toCopy = Math.min(next.remaining(), current.remaining());
-			next.get(current.array(), current.position(), toCopy);
-			current.position(current.position() + toCopy);
-		}
-
-		if (current.position() > 0)
-		{
-			current.flip();
-			chunked.add(current);
-		}
-
-		return chunked;
 	}
 
 

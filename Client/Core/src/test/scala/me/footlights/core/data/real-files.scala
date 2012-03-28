@@ -41,9 +41,9 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 		"should contain files." in {
 			// Name and decryption key for a real file in the CAS (a library JAR file).
 			val name = Fingerprint decode
-				"urn:sha-256:OR57TWZ7I3OQ5HKXHUEHMMHRNKX3JT5HJ37GY22YQRZTPJXNO7JA===="
+				"urn:sha-256:BRNYBIBDXYMQRFF2G7R2UGDHTBT63JMXOIKASRW3K4MX75I2UEPQ===="
 			val secretKey = SecretKey.parse(
-					new URI("AES:f00f117bc882d36743eea35b384d0cd7727e8ef70d5aa87afdbd2d9741942700"))
+					new URI("AES:d1bc705a152c3fc27f856a2f7394ec096d187a070034ea502e91d90a8e4b7f73"))
 			val link = Link.newBuilder setFingerprint name setKey secretKey build
 
 			val file = cache fetch link
@@ -53,9 +53,9 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 		"should contain a Keychain" in {
 			// Name and decryption key for a real keychain in the CAS.
 			val name = Fingerprint decode
-				"urn:sha-256:UTKOVVTKJICZNPTQBSLGBMP4ZE4LN4XLVPBVHV4YIB3A3J6PB6LQ===="
+				"urn:sha-256:LCMCTDGMMUGXGYLNXVAZAJSLY5XGYNS2LMEYTDYHP7J5TJTQ5H5Q===="
 			val secretKey = SecretKey.parse(
-					new URI("AES:7d9fd5a88cb2684eea81677d43ec93f960c6a66311567ca170502940cc9545a2"))
+					new URI("AES:a63cc216ffb9017f1eaad652b6098d149b08c894516d537bd76ea37fe50180c9"))
 
 			val file = cache fetch { Link.newBuilder setFingerprint name setKey secretKey build }
 			file should not be ('empty)
@@ -63,7 +63,7 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 			val keychain = Keychain parse file.get.getContents
 
 			val keyName = Fingerprint decode
-				"urn:sha-256:RIA2GUON26FJPGZTZOJCUA3ZUIA2NDBCSC6A2LCU75I6APKLVEOQ===="
+				"urn:sha-256:4S7RGYCAC4PI5QTA5B7CNFPYYUYERWW6YT5CO6W4JRSDDDVQVHFA===="
 
 			keychain getLink keyName should not be ('empty)
 		}

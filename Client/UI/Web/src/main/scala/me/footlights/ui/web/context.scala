@@ -153,9 +153,12 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 						createUISandbox(wrapper.name)
 
 					case Left(error) =>
+						val stackTrace = new java.io.StringWriter
+						error printStackTrace new java.io.PrintWriter(stackTrace)
+
 						new JavaScript()
-							.append("context.log('Error loading application: %s');" format
-									JavaScript.sanitizeText(error.toString)
+							.append("context.log('Error loading application:\\n%s');" format
+									(JavaScript sanitizeText stackTrace.toString)
 								)
 				}
 

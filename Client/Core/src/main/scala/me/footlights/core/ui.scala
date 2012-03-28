@@ -23,6 +23,7 @@ import javax.swing.JFileChooser
 import scala.collection.mutable.Set
 
 import me.footlights.api.{File,KernelInterface}
+import me.footlights.api.support.Tee._
 
 
 package me.footlights.core {
@@ -109,7 +110,7 @@ trait SwingPowerboxes extends Footlights {
 			case _ => { log.fine("User cancelled file open dialog"); None }
 		}
 
-		io read filename flatMap save
+		io read filename flatMap save tee log.fine { "Opened local file: %s" format _ }
 	}
 
 	override def saveLocalFile(file:me.footlights.api.File) = {

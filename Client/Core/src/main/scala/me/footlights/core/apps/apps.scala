@@ -79,9 +79,6 @@ object AppWrapper {
 
 			def openLocalFile = footlights.openLocalFile tee { case f:data.File =>
 				appKeychain store f.link
-				println("Opened local:")
-				println("name: " + f.name)
-				println("key:  " + f.key)
 			}
 
 			def saveLocalFile(file:api.File) = footlights saveLocalFile file

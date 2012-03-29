@@ -23,7 +23,6 @@ import java.util.logging.Logger
 import scala.actors.Future
 import scala.actors.Futures.future
 import scala.collection.JavaConversions._
-import scala.Math.min
 
 import me.footlights.core.{Kernel,Preferences,Resolver}
 import me.footlights.core.crypto.Fingerprint
@@ -153,7 +152,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 
 	/** How long (in ms) to sleep between flush attempts. */
 	private var flushTimeout_ms = InitialTimeout_ms
-	private def increaseTimeout = flushTimeout_ms = min(2 * flushTimeout_ms, MaxTimeout_ms)
+	private def increaseTimeout = flushTimeout_ms = math.min(2 * flushTimeout_ms, MaxTimeout_ms)
 	private def resetTimeout = flushTimeout_ms = InitialTimeout_ms
 
 	private val journal = collection.mutable.Set[Fingerprint]()
@@ -247,10 +246,10 @@ class CASClient private[store](
 			writer.flush
 
 			val copy = bytes.asReadOnlyBuffer
-			val buffer = new Array[Byte](min(4096, copy.remaining))
+			val buffer = new Array[Byte](math.min(4096, copy.remaining))
 			while (copy.hasRemaining) //binaryChannel write copy
 			{
-				val count = min(copy.remaining, buffer.length)
+				val count = math.min(copy.remaining, buffer.length)
 				copy.get(buffer, 0, count)
 				out.write(buffer, 0, count)
 			}

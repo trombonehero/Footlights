@@ -30,7 +30,7 @@ public interface KernelInterface
 	 */
 	public Option<File> save(ByteBuffer data) throws IOException;
 
-	/** Open a named file. */
+	/** Open a file by its URN. */
 	public Option<File> open(URI name) throws IOException;
 
 	/** Open a file on the local machine (e.g. a photo to upload). */

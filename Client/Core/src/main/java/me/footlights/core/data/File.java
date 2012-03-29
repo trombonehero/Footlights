@@ -84,8 +84,8 @@ public class File implements me.footlights.api.File
 		public File freeze() throws FormatException, GeneralSecurityException
 		{
 			// First, break the content into chunks of the appropriate size.
-			Collection<ByteBuffer> chunked =
-				Block.rechunk(content, desiredBlockSize - Block.OVERHEAD_BYTES);
+			Collection<ByteBuffer> chunked = Block.rechunk(content,
+					Block.newBuilder().setDesiredSize(desiredBlockSize).remaining());
 
 			// Next, create {@link EncryptedBlock} objects.
 			List<EncryptedBlock> ciphertext = new ArrayList<EncryptedBlock>(chunked.size());

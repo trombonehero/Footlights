@@ -20,6 +20,7 @@ import java.security.GeneralSecurityException;
 
 import me.footlights.core.Preconditions;
 import me.footlights.core.crypto.Fingerprint;
+import me.footlights.core.crypto.Link;
 
 
 /**

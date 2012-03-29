@@ -28,7 +28,6 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
 import me.footlights.core.Preferences
-import me.footlights.core.data.Link
 
 
 package me.footlights.core.crypto {

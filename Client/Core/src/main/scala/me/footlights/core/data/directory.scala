@@ -20,6 +20,7 @@ import scala.collection.JavaConversions._
 
 import me.footlights.api
 import me.footlights.core
+import me.footlights.core.crypto.Link
 
 
 package me.footlights.core.data {

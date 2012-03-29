@@ -33,6 +33,7 @@ import org.scalatest.mock.MockitoSugar
 
 import me.footlights.core.{Preferences,Util}
 import me.footlights.core.crypto.{Fingerprint,Keychain,SecretKey}
+import me.footlights.core.crypto.Link
 import me.footlights.core.data.store._
 import me.footlights.core.security
 

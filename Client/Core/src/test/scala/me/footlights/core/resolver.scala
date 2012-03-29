@@ -32,8 +32,8 @@ import me.footlights.api.ajax.JSON._
 
 package me.footlights.core {
 
-import crypto.{Fingerprint,Keychain,SecretKey}
-import data.{File,Link}
+import crypto.{Fingerprint,Keychain,Link,SecretKey}
+import data.File
 
 
 @RunWith(classOf[JUnitRunner])

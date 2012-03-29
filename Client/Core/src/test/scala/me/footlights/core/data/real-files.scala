@@ -30,7 +30,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
 import me.footlights.core.Preferences
-import me.footlights.core.crypto.{Fingerprint,Keychain,SecretKey}
+import me.footlights.core.crypto.{Fingerprint,Keychain,Link,SecretKey}
 import me.footlights.core.data.store._
 
 package me.footlights.core.data {

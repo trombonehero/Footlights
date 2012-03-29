@@ -23,8 +23,8 @@ import scala.Option;
 
 import me.footlights.api.KernelInterface;
 import me.footlights.core.apps.*;
+import me.footlights.core.crypto.Link;
 import me.footlights.core.data.File;
-import me.footlights.core.data.Link;
 import me.footlights.core.data.store.Stat;
 
 

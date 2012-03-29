@@ -19,7 +19,7 @@ import java.nio.ByteBuffer
 
 import me.footlights.api.{File,KernelInterface}
 import me.footlights.core.Footlights
-import me.footlights.core.data.Link
+import me.footlights.core.crypto.Link
 
 
 package me.footlights.core.security {

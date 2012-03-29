@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import me.footlights.core.crypto.Link;
 import me.footlights.core.data.store.Stat;
 
 
@@ -113,7 +114,6 @@ public class File implements me.footlights.api.File
 
 	@Override public URI name() { return stat.name().toURI(); }
 	public Stat stat() { return stat; }
-	public URI key() { return header.link().key().toUri(); }
 
 
 	/**

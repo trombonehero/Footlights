@@ -25,8 +25,8 @@ import scala.actors.Futures.future
 import scala.collection.JavaConversions._
 
 import me.footlights.core.{Kernel,Preferences,Resolver}
-import me.footlights.core.crypto.Fingerprint
-import me.footlights.core.data.{Block,EncryptedBlock,File,Link}
+import me.footlights.core.crypto.{Fingerprint,Link}
+import me.footlights.core.data.{Block,Directory,EncryptedBlock,File}
 
 
 package me.footlights.core.data.store {
@@ -82,8 +82,6 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 	/** Retrieve a stored (and encrypted) {@link File}. */
 	def fetch(link:Link):Option[File] = {
 		val encryptedHeader = retrieveCiphertext(link)
-		log finest "Decrypting '%s' with '%s'...".format(link.fingerprint, link.key.toUri)
-
 		encryptedHeader map { _.plaintext } map {
 			_.links map retrieveCiphertext
 		} filter { _.size > 0 } filter { _ forall { _.isDefined } } map { _.flatten } map {

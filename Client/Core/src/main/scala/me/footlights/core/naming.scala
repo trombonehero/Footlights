@@ -26,8 +26,7 @@ import org.apache.commons.codec.binary.Hex
 
 package me.footlights.core {
 
-import crypto.{Fingerprint,Keychain,SecretKey}
-import data.Link
+import crypto.{Fingerprint,Keychain,Link,SecretKey}
 
 /**
  * Resolves public names (e.g. a {@link URL}) into Footlights names (e.g. a {@link Fingerprint}

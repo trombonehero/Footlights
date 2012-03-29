@@ -20,8 +20,9 @@ import java.nio.channels.Channels
 import scala.collection.JavaConversions._
 
 import me.footlights.core.{Footlights,HasBytes,IO}
-import me.footlights.core.crypto.{Fingerprint,MutableKeychain}
-import me.footlights.core.data.{File,Link}
+import me.footlights.core.crypto.{Fingerprint,Link,MutableKeychain}
+import me.footlights.core.data
+import me.footlights.core.data.File
 
 import me.footlights.api
 

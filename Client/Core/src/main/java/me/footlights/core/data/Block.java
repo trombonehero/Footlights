@@ -30,6 +30,7 @@ import javax.crypto.Cipher;
 
 import me.footlights.core.Preconditions;
 import me.footlights.core.crypto.Fingerprint;
+import me.footlights.core.crypto.Link;
 import me.footlights.core.crypto.SecretKey;
 
 

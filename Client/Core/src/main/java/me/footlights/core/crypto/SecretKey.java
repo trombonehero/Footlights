@@ -31,7 +31,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 
 import me.footlights.core.Preferences;
-import me.footlights.core.data.Link;
 
 
 /** A secret, symmetric key. */

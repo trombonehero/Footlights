@@ -29,7 +29,7 @@ import scala.collection.JavaConversions._
 import me.footlights.core
 import me.footlights.core.IO._
 import me.footlights.core.data
-import me.footlights.core.data.{FormatException, Link}
+import me.footlights.core.data.FormatException
 
 
 package me.footlights.core.crypto {

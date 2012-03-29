@@ -66,7 +66,7 @@ class AppsTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shoul
 	var file = mock[data.File]
 	var fingerprint = mock[Fingerprint]
 	var kernel = mock[Footlights]
-	var link = mock[data.Link]
+	var link = mock[me.footlights.core.crypto.Link]
 	var log = mock[Logger]
 	var prefs = mock[ModifiablePreferences]
 

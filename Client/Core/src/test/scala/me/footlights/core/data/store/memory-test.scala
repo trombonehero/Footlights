@@ -32,11 +32,8 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
-import me.footlights.core.Preferences
-import me.footlights.core.crypto.Fingerprint
 import me.footlights.core.data.Block
 import me.footlights.core.data
-import me.footlights.core.tags._
 
 
 package me.footlights.core.data.store {

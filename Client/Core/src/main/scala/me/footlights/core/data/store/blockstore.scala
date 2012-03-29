@@ -24,6 +24,8 @@ import scala.actors.Future
 import scala.actors.Futures.future
 import scala.collection.JavaConversions._
 
+import me.footlights.api.support.Tee._
+
 import me.footlights.core.{Kernel,Preferences,Resolver}
 import me.footlights.core.crypto.{Fingerprint,Link}
 import me.footlights.core.data.{Block,Directory,EncryptedBlock,File}
@@ -49,20 +51,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 		log finer "Stored %d blocks in %s".format(blocks.size, this)
 	}
 
-	def retrieve(name:Fingerprint):Option[ByteBuffer] = {
-		// Intentionally not using Scala primitives like map. We currently load Scala
-		// classes with no special privileges, so having Option.map on the stack stops
-		// the Kernel from performing privileged operations like writing files.
-		//
-		// TODO: fix the access control bits
-		var result:Option[ByteBuffer] = None
-		if (cache.isDefined) result = cache.get retrieve name
-		if (result.isEmpty) {
-			result = get(name)
-			result foreach { bytes => cache foreach { _.store(name, bytes) } }
+	def retrieve(name:Fingerprint):Option[ByteBuffer] =
+		cache flatMap { _ retrieve name } orElse {
+			this get name tee { bytes => cache foreach { _ store (name, bytes) } }
 		}
-		result
-	}
 
 	def retrieveCiphertext(link:Link) = retrieve(link.fingerprint) map {
 		EncryptedBlock.newBuilder()
@@ -93,21 +85,17 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 	 * If we have a cache, this method should not block for I/O. To ensure that the block has
 	 * really been written to disk, the network, etc., call {@link #flush()}.
 	 */
-	private def store(name:Fingerprint, bytes:ByteBuffer): Unit = {
-		// Intentionally not using Scala primitives like map. We currently load Scala
-		// classes with no special privileges, so having Option.map on the stack stops
-		// the Kernel from performing privileged operations like writing files.
-		//
-		// TODO: fix the access control bits
-		if (cache.isEmpty) put(name, bytes.asReadOnlyBuffer)
-		else {
-			cache foreach { _.store(name, bytes.asReadOnlyBuffer) }
+	private def store(name:Fingerprint, bytes:ByteBuffer): Unit =
+		cache map { c =>
+			c.store(name, bytes.asReadOnlyBuffer)
 			synchronized {
 				journal add name
 				notify
 			}
+		} orElse {
+			put(name, bytes.asReadOnlyBuffer)
+			None
 		}
-	}
 
 
 	/** Wait until we have something to flush. */

@@ -35,29 +35,8 @@ class IO(proxy:java.net.Proxy) {
 	/**
 	 * Get bytes from a {@link java.io.File}, using whatever underlying mechanism will be most
 	 * efficient for the file's size.
-	 *
-	 * TODO: stop explicitly invoking Privilege.sudo() here.
-	 * Currently, we have to do this because the call stack looks like this:
-	 *   * java.security.AccessControlContext.checkPermission
-	 *   * [...]
-	 *   * me.footlights.core.IO$$anonfun$read$1.apply(io.scala:34)
-	 *   * at scala.Option.flatMap
-	 *   * at me.footlights.core.IO$.read(io.scala:34)
-	 *   * [...]
-	 *   * at me.footlights.core.Privilege$.sudo(privilege.scala:34)
-	 *
-	 * So, between the sudo call and the access control check, there is a step through
-	 * scala.Option.flatMap, which is unprivileged because it is neither a Footlights library
-	 * nor a Java core library. The real solution involves one of:
-	 *   * loading trusted Scala library code with the AllPermission (made somewhat risky by
-	 *     the fact that the Scala library is not signed), or
-	 *   * treating all code in the system classpath as fully-trusted and loading it with
-	 *     the AllPermission (but there is some kind of incompatibility between Scala bytecode
-	 *     and our ClassLoader).
-	 *
-	 * In the meantime, it's easy to throw in a Privilege.sudo().
 	 */
-	def read(f:Option[java.io.File]): Option[ByteBuffer] = f flatMap { file => Privilege.sudo { () =>
+	def read(f:Option[java.io.File]): Option[ByteBuffer] = f flatMap { file =>
 		if (!file.exists) None
 		else {
 			val channel = new FileInputStream(file).getChannel
@@ -82,7 +61,7 @@ class IO(proxy:java.net.Proxy) {
 					Option(buffer)
 				}
 			}
-		} }
+		}
 	}
 
 	def writer(file:java.io.File) = new FileOutputStream(file).getChannel

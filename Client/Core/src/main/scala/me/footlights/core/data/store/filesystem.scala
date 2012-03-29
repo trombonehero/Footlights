@@ -44,14 +44,10 @@ trait Filesystem extends Footlights {
 	/** Open a file, named by its content, e.g. "urn:sha-256:0123456789abcdef01234...". */
 	override def open(name:URI):Option[api.File] = {
 		log fine { "open('%s')" format name }
-		Option(Fingerprint decode name) flatMap { fingerprint =>
-			try { keychain getLink fingerprint }
-			catch {
-				case e:NoSuchElementException =>
-					log warning "No key stored for file " + name
-					None
-			}
-		} flatMap open
+		Option(name) map
+			Fingerprint.decode flatMap
+			keychain.getLink flatMap
+			open
 	}
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */

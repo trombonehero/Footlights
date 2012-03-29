@@ -300,7 +300,7 @@ public class Block implements FootlightsPrimitive
 		int byteCount = MINIMUM_BYTES;
 		for (Link link : links) byteCount += link.bytes();
 		int dataOffset = byteCount;
-		byteCount += content.limit();
+		byteCount += content.remaining();
 		if (padding != null) byteCount += padding.remaining();
 
 		// Do we want the block to be a particular size?
@@ -330,7 +330,7 @@ public class Block implements FootlightsPrimitive
 		rawBytes.put(N);
 		rawBytes.put((byte) links.size());
 		rawBytes.putInt(dataOffset);
-		rawBytes.putInt(content.limit());
+		rawBytes.putInt(content.remaining());
 
 		// Write links
 		for (Link link : links) rawBytes.put(link.getBytes().asReadOnlyBuffer());

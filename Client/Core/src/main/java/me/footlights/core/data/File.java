@@ -93,7 +93,7 @@ public class File implements me.footlights.api.File
 			for (ByteBuffer b : chunked)
 				ciphertext.add(
 					Block.newBuilder()
-						.setContent(b)
+						.addContent(b)
 						.setDesiredSize(desiredBlockSize)
 						.build()
 						.encrypt());

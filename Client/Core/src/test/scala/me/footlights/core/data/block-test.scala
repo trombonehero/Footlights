@@ -69,7 +69,7 @@ class BlockTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shou
 
 		"store and retrieve content." in {
 			val data = List[Byte](1, 2, 3, 4) toArray
-			val b = Block.newBuilder setContent ByteBuffer.wrap(data) build
+			val b = Block.newBuilder addContent ByteBuffer.wrap(data) build
 			val copy = new Array[Byte](data.length)
 			b.content().get(copy)
 
@@ -112,7 +112,7 @@ class BlockTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shou
 
 		"generate and parse blocks." in {
 			var original = Block.newBuilder()
-				.setContent(ByteBuffer wrap new Array[Byte](16))
+				.addContent(new Array[Byte](16))
 				.addLink(link)
 				.addLink(link)
 				.build
@@ -138,7 +138,7 @@ class BlockTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shou
 
 		"name blocks correctly." in {
 			val block = Block.newBuilder()
-				.setContent { ByteBuffer wrap List[Byte](1,2,3).toArray }
+				.addContent { List[Byte](1,2,3).toArray }
 				.build
 
 			val encrypted = block.encrypt

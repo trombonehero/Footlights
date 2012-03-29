@@ -70,7 +70,7 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 
 		"should give back real files with the same names that went in." in {
 			val plaintext = Block.newBuilder
-				.setContent(ByteBuffer wrap { (1 :: 2 :: 3 :: Nil) map { _.toByte } toArray })
+				.addContent(1 :: 2 :: 3 :: Nil map { _.toByte } toArray)
 				.build
 
 			val encrypted = plaintext.encrypt

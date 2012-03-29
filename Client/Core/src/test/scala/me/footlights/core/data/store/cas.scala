@@ -51,7 +51,7 @@ class MemoryStoreTest extends FreeSpec with BeforeAndAfter with MockitoSugar wit
 	"A MemoryStore" - {
 		"should return the same bytes that get stored" in {
 			val block = Block.newBuilder()
-				.setContent(ByteBuffer wrap List[Byte](1, 2, 3, 4).toArray)
+				.addContent(List[Byte](1, 2, 3, 4).toArray)
 				.build
 
 			store store block
@@ -99,15 +99,15 @@ class DiskStoreTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 	}
 
 	private val b1 = Block.newBuilder()
-		.setContent(ByteBuffer wrap List[Byte](1, 2, 3, 4).toArray)
+		.addContent(List[Byte](1, 2, 3, 4).toArray)
 		.build
 
 	private val b2 = Block.newBuilder()
-		.setContent(ByteBuffer wrap List[Byte](5, 6, 7, 8).toArray)
+		.addContent(List[Byte](5, 6, 7, 8).toArray)
 		.build
 
 	private lazy val bigBlock = Block.newBuilder()
-		.setContent(ByteBuffer allocate 32000)
+		.addContent(ByteBuffer allocate 32000)
 		.build
 }
 
@@ -174,7 +174,7 @@ class CASTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Should
 
 	/** A fairly trivial (but deterministic) {@link Block} for testing purposes. */
 	val block = Block.newBuilder
-		.setContent { ByteBuffer wrap (1 to 16 map { i:Int => i.toByte } toArray) }
+		.addContent { 1 to 16 map { _.toByte } toArray }
 		.build
 
 	/** Preferences which start out empty. */

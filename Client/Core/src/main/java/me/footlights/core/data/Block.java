@@ -55,9 +55,10 @@ public class Block implements FootlightsPrimitive
 
 		public Builder addLink(Link link) { links.add(link); return this; }
 
-		public Builder setContent(ByteBuffer content)
+		public Builder addContent(byte[] content) { return addContent(ByteBuffer.wrap(content)); }
+		public Builder addContent(ByteBuffer content)
 		{
-			this.content = content.asReadOnlyBuffer();
+			this.content.add(content.asReadOnlyBuffer());
 			return this;
 		}
 
@@ -120,8 +121,9 @@ public class Block implements FootlightsPrimitive
 				throw new FormatException(
 					"Incorrect offset (error parsing Links?)");
 
-			content = bytes.slice().asReadOnlyBuffer();
+			ByteBuffer content = bytes.slice().asReadOnlyBuffer();
 			content.limit(dataLength);
+			this.content.add(content);
 
 			bytes.position(bytes.position() + dataLength);
 			padding = bytes.slice();
@@ -131,14 +133,26 @@ public class Block implements FootlightsPrimitive
 
 		public Block build() throws FormatException
 		{
-			return new Block(links, content, padding, desiredSize, fingerprintBuilder);
+			final ByteBuffer flattened;
+			if (content.size() == 1) flattened = content.get(0);
+			else
+			{
+				int contentSize = 0;
+				for (ByteBuffer b : content) contentSize += b.remaining();
+
+				flattened = ByteBuffer.allocate(contentSize);
+				for (ByteBuffer b : content) flattened.put(b);
+				flattened.flip();
+			}
+
+			return new Block(links, flattened, padding, desiredSize, fingerprintBuilder);
 		}
 
 		private Builder() {}
 
 		private int desiredSize = 0;
 		private List<Link> links = new ArrayList<Link>();
-		private ByteBuffer content = ByteBuffer.allocate(0);
+		private List<ByteBuffer> content = new ArrayList<ByteBuffer>();
 		private ByteBuffer padding;
 		private Fingerprint.Builder fingerprintBuilder = Fingerprint.newBuilder();
 	}

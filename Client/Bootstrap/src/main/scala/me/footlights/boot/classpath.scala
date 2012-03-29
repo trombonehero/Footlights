@@ -144,7 +144,8 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 
 	/** Is the given class in a core library package (so be careful about loading it)? */
 	private def isCorePackage(className:String) =
-		List("me.footlights.api.", "me.footlights.boot.", "me.footlights.core.") exists {
+		List("org.apache",
+				"me.footlights.api.", "me.footlights.boot.", "me.footlights.core.") exists {
 			className.startsWith
 		}
 

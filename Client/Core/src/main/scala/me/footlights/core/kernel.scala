@@ -90,7 +90,7 @@ abstract class Kernel(
 	}
 
 	/** Read {@link Preferences} from a file. */
-	protected def readPrefs(filename:String) = {
+	protected def readPrefs(filename:URI) = {
 		log info ("Reading preferences: %s" format filename)
 		open(filename) map { case file:data.File => Map() ++ Preferences.parse(file.getContents) }
 	}

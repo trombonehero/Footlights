@@ -16,6 +16,7 @@
 package me.footlights.api;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 
 import scala.Option;
@@ -30,7 +31,7 @@ public interface KernelInterface
 	public Option<File> save(ByteBuffer data) throws IOException;
 
 	/** Open a named file. */
-	public Option<File> open(String name) throws IOException;
+	public Option<File> open(URI name) throws IOException;
 
 	/** Open a file on the local machine (e.g. a photo to upload). */
 	public Option<File> openLocalFile() throws IOException;

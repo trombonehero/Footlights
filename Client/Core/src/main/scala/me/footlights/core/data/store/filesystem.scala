@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 
@@ -40,7 +41,7 @@ trait Filesystem extends Footlights {
 	override def open(link:Link):Option[File] = store fetch link
 
 	/** Open a file, named by its content, e.g. "urn:sha-256:0123456789abcdef01234...". */
-	override def open(name:String):Option[api.File] = {
+	override def open(name:URI):Option[api.File] = {
 		log fine { "open('%s')" format name }
 		Option(Fingerprint decode name) flatMap { fingerprint =>
 			try { keychain getLink fingerprint }

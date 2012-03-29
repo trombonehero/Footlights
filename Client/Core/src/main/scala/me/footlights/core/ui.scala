@@ -72,7 +72,7 @@ trait UIManager extends Footlights {
 
 	import UI._
 
-	abstract override def open(filename:String) = {
+	abstract override def open(filename:URI) = {
 		val f = super.open(filename)
 		f map { new UI.FileOpenedEvent(_) } foreach fire
 		f

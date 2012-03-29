@@ -17,8 +17,7 @@ import me.footlights.api.{Preferences,WebRequest}
 import me.footlights.api.ajax.{AjaxHandler,JavaScript}
 import me.footlights.api.ajax.JavaScript.sanitizeText
 
-import java.net.URLEncoder
-import java.net.URLDecoder
+import java.net.{URI,URLEncoder,URLDecoder}
 
 package me.footlights.apps.uploader {
 
@@ -54,7 +53,7 @@ a.onclick = function() { context.ajax('download/%s)'); };
 
 			case DownloadRequest(name) =>
 				setStatus {
-					app download URLDecoder.decode(name, "utf-8") map {
+					app download { URI create URLDecoder.decode(name, "utf-8") } map {
 						"Downloaded '%s'" format _.name.toString
 					} getOrElse
 						"Downloaded nothing (user cancelled?)."

@@ -70,7 +70,7 @@ object AppWrapper {
 			def save(bytes:ByteBuffer) =
 				footlights save bytes tee { case f:data.File => appKeychain store f.link }
 
-			def open(name:String) =
+			def open(name:URI) =
 				appKeychain getLink { Fingerprint decode name } orElse {
 					throw new AccessControlException("Unable to find key for '%s'" format name)
 				} map footlights.open getOrElse {
@@ -96,7 +96,7 @@ trait ApplicationManagement extends Footlights {
 	protected def appLoader:ClassLoader
 	protected def prefs:ModifiablePreferences
 
-	protected def readPrefs(filename:String):Option[Map[String,String]]
+	protected def readPrefs(filename:URI):Option[Map[String,String]]
 
 	def runningApplications():_root_.java.util.Collection[AppWrapper] = loadedApps.values
 
@@ -126,7 +126,8 @@ trait ApplicationManagement extends Footlights {
 	 */
 	private def appPreferences(appName:URI) = {
 		val appKey = "app.prefs." + appName
-		val map = mutable.Map() ++ (prefs getString appKey flatMap readPrefs getOrElse Map())
+		val map = mutable.Map() ++
+			(prefs getString appKey map URI.create flatMap readPrefs getOrElse Map())
 
 		ModifiableStorageEngine(map, Some(remember(appKey)))
 	}
@@ -135,7 +136,7 @@ trait ApplicationManagement extends Footlights {
 	private def appKeychain(appName:URI) = {
 		val appKey = "app.keychain." + appName
 
-		prefs getString appKey flatMap open map { case file:data.File =>
+		prefs getString appKey map URI.create flatMap open map { case file:data.File =>
 			Keychain parse file.getContents
 		} orElse {
 			Some(Keychain())

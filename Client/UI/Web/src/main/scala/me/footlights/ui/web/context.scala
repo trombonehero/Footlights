@@ -43,7 +43,7 @@ abstract class Context(base:Class[_]) extends WebServer {
 	protected def handleAjax(req:WebRequest): AjaxResponse
 
 	/** Open a {@link data.File}, perhaps using a app-specific keychain. */
-	protected def openFile(name:String): Option[data.File]
+	protected def openFile(name:URI): Option[data.File]
 
 	/** Subclasses <i>may</i> provide a default response for empty requests. */
 	protected def defaultResponse() = Response error new FileNotFoundException
@@ -60,7 +60,9 @@ abstract class Context(base:Class[_]) extends WebServer {
 
 			case File =>
 				val r = Response.newBuilder
-				openFile(remainder.path) foreach { file => r setResponse file.getInputStream }
+				openFile(URI create remainder.path) foreach {
+					file => r setResponse file.getInputStream
+				}
 				r.build
 
 			case StaticContent =>
@@ -96,7 +98,7 @@ abstract class Context(base:Class[_]) extends WebServer {
 class AppContext(wrapper:AppWrapper) extends Context(wrapper.app.getClass) {
 	override val name = "Application context: '%s'" format wrapper.name
 	override def handleAjax(req:WebRequest) = wrapper.app.ajaxHandler service req
-	override def openFile(name:String) = wrapper.kernel open name map { case f:data.File => f }
+	override def openFile(name:URI) = wrapper.kernel open name map { case f:data.File => f }
 }
 
 
@@ -110,7 +112,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 	}
 
 	override val name = "Global context"
-	override def openFile(name:String) = footlights open name map { case f:data.File => f }
+	override def openFile(name:URI) = footlights open name map { case f:data.File => f }
 	override def handleAjax(request:WebRequest):AjaxResponse = {
 		request.path() match {
 			case Init =>

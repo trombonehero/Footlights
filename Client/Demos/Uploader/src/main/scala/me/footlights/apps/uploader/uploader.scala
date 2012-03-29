@@ -31,7 +31,7 @@ class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) 
 	def ajaxHandler = new Ajax(this)
 
 	private[uploader] def upload() = kernel.openLocalFile tee store
-	private[uploader] def download(name:String) =
+	private[uploader] def download(name:URI) =
 		kernel open name tee kernel.saveLocalFile
 
 	private[uploader] def storedNames =

@@ -83,7 +83,7 @@ class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 			}
 
 			val parsed = Directory parse decrypted
-			parsed should equal (d)
+			parsed should equal (Right(d))
 		}
 	}
 

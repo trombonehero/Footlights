@@ -130,7 +130,7 @@ class Directory(private val entries:Map[String,Entry]) {
 object Directory {
 	def apply(entries:Map[String,Entry] = Map()) = new Directory(entries)
 
-	def parse(blocks:Iterable[Block]): Directory = {
+	def parse(blocks:Iterable[Block]): Either[Exception,Directory] = {
 		var entries = blocks map { block =>
 			val content = block.content
 			val magic = new Array[Byte](Magic.length)
@@ -140,7 +140,7 @@ object Directory {
 				case Terminator => true
 				case Magic => false
 				case other:Any =>
-					throw new FormatException("Invalid directory magic '%s'" format other)
+					return Left(new FormatException("Invalid directory magic '%s'" format other))
 			}
 
 			val links:Iterable[Link] = if (isTerminator) block.links else block.links.tail
@@ -154,7 +154,7 @@ object Directory {
 			}
 		} reduce { _ ++ _ } map { entry => (entry.name -> entry) } toMap
 
-		new Directory(entries)
+		Right(new Directory(entries))
 	}
 
 	implicit def file2entry(x:(String,File)) = Entry(x._1, x._2)

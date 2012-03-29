@@ -70,7 +70,7 @@ abstract class Kernel(
 	 * indirectly by an indirection {@link URL}) and store it locally as a conventional
 	 * JAR file inside the OS' filesystem.
 	 */
-	override def localizeJar(uri:URI) = security.Privilege.sudo { () =>
+	override def localizeJar(uri:URI) = {
 		val absoluteLink =
 			if (uri.isOpaque) keychain getLink Fingerprint.decode(uri)
 			else if (uri.getScheme != null) resolver.resolve(uri.toURL)

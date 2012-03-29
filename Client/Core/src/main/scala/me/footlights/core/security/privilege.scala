@@ -40,13 +40,7 @@ trait KernelPrivilege extends Footlights {
 	abstract override def saveLocalFile(f:File)    = Privilege.sudo { () => super.saveLocalFile(f) }
 }
 
-/**
- * Represents JVM privilege.
- *
- * TODO: Once we've sorted out the ClassLoader issues referenced in {@link IO#read}, make this
- *       a private def within KernelPrivilege. Privilege should only need to be applied at the
- *       kernel level, where it should always be mixed in via KernelPrivilege. 
- */
+/** Represents JVM privilege. */
 object Privilege {
 	/**
 	 * Execute a function with JVM privilege (using {@link AccessController}).
@@ -54,7 +48,7 @@ object Privilege {
 	 * The name "sudo" is meant to be evocative of privilege in general;
 	 * it does not refer specifically to system privilege as conferred by sudo(8).
 	 */
-	def sudo[T](code:() => T) =
+	private[core] def sudo[T](code:() => T) =
 		try AccessController.doPrivileged[T] {
 			new PrivilegedExceptionAction[T]() { override def run:T = code() }
 		}

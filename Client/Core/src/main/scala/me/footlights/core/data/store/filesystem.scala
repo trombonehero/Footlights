@@ -51,12 +51,15 @@ trait Filesystem extends Footlights {
 	}
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
-	override def save(data:ByteBuffer):Option[api.File] = {
-			val f = File.newBuilder.setContent(data).freeze
-			store store f.toSave
-			log fine { "saved '%s'" format f }
-			Some(f)
-		}
+	override def save(data:ByteBuffer):Option[api.File] =
+		save { File.newBuilder.setContent(data).freeze }
+
+	/** Save a {@link File} that has already been generated to the {@link Store}. */
+	def save(file:File) = {
+		store store file.toSave
+		log fine { "saved '%s'" format file }
+		Some(file)
+	}
 
 	/**
 	 * Save data to a local {@link java.io.File}.
@@ -77,6 +80,8 @@ trait Filesystem extends Footlights {
 
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks
+
+	}
 
 	private val log = java.util.logging.Logger getLogger classOf[Filesystem].getCanonicalName
 }

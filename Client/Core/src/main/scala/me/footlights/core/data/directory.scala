@@ -41,32 +41,32 @@ class Entry(val name:String, val isDir:Boolean, val link:Link) {
 /**
  * Provides a name -> file mapping
  */
-class Directory(private val entries:Map[String,Entry]) {
+class Directory(private val map:Map[String,Entry]) {
 	import Directory._
 
-	def + (mapping:Entry) = Directory { entries + (mapping.name -> mapping) }
+	def + (mapping:Entry) = Directory { map + (mapping.name -> mapping) }
 
-	def ++ (dir:Directory) = Directory { entries ++ dir.entries }
+	def ++ (dir:Directory) = Directory { map ++ dir.map }
 
-	def apply(name:String) = entries get name
+	def apply(name:String) = map get name
 
 	lazy val link = encrypted.head.link
 
 	override def equals(a:Any) = {
 		if (!a.isInstanceOf[Directory]) false
-		else a.asInstanceOf[Directory].entries == entries
+		else a.asInstanceOf[Directory].map == map
 	}
 
 	override lazy val toString =
-		if (entries.isEmpty) "Directory()"
-		else "Directory(%s)" format (entries.values map { _.toString } reduce { _ + ", " + _ })
+		if (map.isEmpty) "Directory()"
+		else "Directory(%s)" format (map.values map { _.toString } reduce { _ + ", " + _ })
 
 	lazy val encrypted:Iterable[EncryptedBlock] = {
-		if (entries.size > Short.MaxValue)
-			throw new FormatException("Cannot store %d directory entries" format entries.size)
+		if (map.size > Short.MaxValue)
+			throw new FormatException("Cannot store %d directory entries" format map.size)
 
 		// Get byte-level representation of directory entries.
-		val entryBytes = entries.values map { entry =>
+		val entryBytes = map.values map { entry =>
 			val name = entry.name.getBytes
 			val size = entry.link.bytes + name.length
 

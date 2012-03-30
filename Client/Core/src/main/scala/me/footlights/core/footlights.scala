@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Jonathan Anderson
+ * Copyright 2012 Jonathan Anderson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.core;
+package me.footlights.core
 
-import java.net.URI;
-import java.util.Collection;
+import java.net.URI
 
-import scala.Either;
-import scala.Option;
+import me.footlights.api
 
-import me.footlights.api.KernelInterface;
-import me.footlights.core.apps.*;
-import me.footlights.core.crypto.Link;
-import me.footlights.core.data.File;
-import me.footlights.core.data.store.Stat;
+import apps.AppWrapper
+import crypto.Link
+import data.{Directory,File}
+import data.store.Stat
 
 
-/** Interface to the software core */
-public interface Footlights extends KernelInterface
-{
+/** Interface to the software core. */
+trait Footlights extends api.KernelInterface {
 	/** Open a particular {@link Link}. */
-	public Option<File> open(Link link);
-
-	/** Save a generated {@link File} to the filesystem. */
-	public Option<File> save(File file);
+	def open(link:Link): Option[File]
 
 	/** Save data to a local {@link java.io.File}. */
-	public void saveLocal(File file, java.io.File filename);
+	def saveLocal(file:File, filename:java.io.File)
 
 	/**
 	 * Convert a placeholder name (e.g. "user.name") into a meaningful value.
@@ -47,21 +40,21 @@ public interface Footlights extends KernelInterface
 	 * cannot request placeholder evaluation directly; it has to be done by a trusted bit of UI
 	 * code, which inserts the proxied content in such a way that the app UI can't read it.
 	 */
-	public String evaluate(String placeholder);
+	def evaluate(placeholder:String): String
 
-	public void registerUI(UI ui);
-	public void deregisterUI(UI ui);
+	def registerUI(ui:UI)
+	def deregisterUI(ui:UI)
 
-	public Option<java.util.jar.JarFile> localizeJar(URI uri);
+	def localizeJar(uri:URI): Option[java.util.jar.JarFile]
 
 	/**
 	 * List some of the {@link File} names which are known to exist in the {@link Store}.
 	 *
 	 * This list describes files stored in local cache, not remotely on the global CAS.
 	 */
-	public Collection<Stat> listFiles();
+	def listFiles: Iterable[Stat]
 
-	public Collection<AppWrapper> runningApplications();
-	public Either<Exception,AppWrapper> loadApplication(URI uri) throws AppStartupException;
-	public void unloadApplication(AppWrapper plugin);
+	def runningApplications(): Seq[AppWrapper]
+	def loadApplication(uri:URI): Either[Exception,AppWrapper]
+	def unloadApplication(app:AppWrapper)
 }

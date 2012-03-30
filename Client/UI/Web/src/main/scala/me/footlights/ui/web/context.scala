@@ -131,9 +131,8 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 					.append("context.log('UI initialized.');")
 
 			case Reset =>
-				while (footlights.runningApplications().size() > 0)
-					footlights.unloadApplication(
-						footlights.runningApplications().iterator().next());
+				while (!footlights.runningApplications.isEmpty)
+					footlights unloadApplication footlights.runningApplications.head
 
 				reset()
 				new JavaScript().append("context.globals['window'].location.reload()")

@@ -16,7 +16,6 @@
 package me.footlights.ui;
 
 import java.awt.event.*;
-import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,9 +51,11 @@ public class ApplicationList extends JPanel
 	{
 		this.apps.removeAll();
 
-		Collection<AppWrapper> apps = footlights.runningApplications();
-		for (final AppWrapper app : apps)
+		scala.collection.Seq<AppWrapper> apps = footlights.runningApplications();
+		for (int i = 0; i < apps.size(); i++)
 		{
+			final AppWrapper app = apps.apply(i);
+
 			JPanel appPanel = new JPanel();
 			appPanel.setBorder(BorderFactory.createRaisedBevelBorder());
 			appPanel.setLayout(new BoxLayout(appPanel, BoxLayout.PAGE_AXIS));

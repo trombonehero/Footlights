@@ -50,6 +50,8 @@ class Directory(private val map:Map[String,Entry]) {
 
 	def apply(name:String) = map get name
 
+	def entries = map.values
+
 	lazy val link = encrypted.head.link
 
 	override def equals(a:Any) = {

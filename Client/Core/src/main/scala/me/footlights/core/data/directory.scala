@@ -53,6 +53,7 @@ class Directory(private val map:Map[String,Entry]) {
 	def entries = map.values
 
 	lazy val link = encrypted.head.link
+	lazy val name = link.fingerprint.toURI
 
 	override def equals(a:Any) = {
 		if (!a.isInstanceOf[Directory]) false

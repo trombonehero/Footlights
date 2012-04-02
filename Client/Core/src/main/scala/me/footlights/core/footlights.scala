@@ -30,6 +30,21 @@ trait Footlights extends api.KernelInterface {
 	/** Open a particular {@link Link}. */
 	def open(link:Link): Option[File]
 
+	/** Open a directory by {@link Link}. */
+	def openDirectory(link:Link): Option[Directory]
+
+	/** Open a directory whose decryption key is known to the kernel. */
+	def openDirectory(name:URI): Option[Directory]
+
+	/** Open a hierarchical name, relative to a base {@link Directory}. */
+	def openat(path:Iterable[String], base:Directory): Option[File]
+
+	/** Save a generated {@link File} to the filesystem. */
+	def save(file:File): Option[File]
+
+	/** Save an immutable {@link Directory} to the filesystem. */
+	def save(dir:Directory): Option[Directory]
+
 	/** Save data to a local {@link java.io.File}. */
 	def saveLocal(file:File, filename:java.io.File)
 

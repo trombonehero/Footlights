@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
 import me.footlights.core.{Footlights,HasBytes,IO}
 import me.footlights.core.crypto.{Fingerprint,Link,MutableKeychain}
 import me.footlights.core.data
-import me.footlights.core.data.File
+import me.footlights.core.data.{Directory,File}
 
 import me.footlights.api
 
@@ -50,6 +50,48 @@ trait Filesystem extends Footlights {
 			open
 	}
 
+	/** Open a {@link Directory} whose key is stored in our {@link Keychain}. */
+	override def openDirectory(name:URI):Option[Directory] =
+		Option(name) map
+			Fingerprint.decode flatMap
+			keychain.getLink flatMap
+			openDirectory
+
+	override def openDirectory(link:Link):Option[Directory] =
+		store fetchDirectory link fold(ex => throw ex, d => Some(d))
+
+	/** We cannot meaningfully create a {@link MutableDirectory} without a persistent name. */
+	override def openDirectory(name:String):Option[api.Directory] = None
+
+	/** Open a file using a hierarchical name that recurses through directories. */
+	override def open(name:String):Option[api.File] = {
+		val names = name split "/"
+
+		// The name must be of the form "urn:base-name/path/relative/to/base-name".
+		var base = openDirectory(URI create names.head) getOrElse {
+			throw new java.io.IOException("So such base directory '%s'" format names.head)
+		}
+
+		openat(names.tail, base)
+	}
+
+	/** Open a file using a hierarchical name relative to a base directory. */
+	override def openat(names:Iterable[String], base:data.Directory) = {
+		// Walk down through the directory hierarchy.
+		var dir = base
+		for (name <- names.init) {
+			dir = dir(name) filter { _.isDir } map { _.link } map
+				store.fetchDirectory flatMap {
+					_.fold(ex => throw ex, d => Some(d))
+				} get
+		}
+
+		// Retrieve the file from the final directory.
+		dir(names.last) filter { _.isFile } map { _.link } flatMap store.fetch orElse {
+			throw new java.io.IOException("No such file '%s'" format (names reduce { _ + "/" + _ }))
+		}
+	}
+
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
 	override def save(data:ByteBuffer):Option[api.File] =
 		save { File.newBuilder.setContent(data).freeze }
@@ -59,6 +101,13 @@ trait Filesystem extends Footlights {
 		store store file.toSave
 		log fine { "saved '%s'" format file }
 		Some(file)
+	}
+
+	/** Save an immutable {@link Directory} to the {@link Store}. */
+	def save(dir:Directory) = {
+		store store dir.encrypted
+		log fine { "saved dir '%s'" format dir }
+		Some(dir)
 	}
 
 	/**
@@ -80,8 +129,6 @@ trait Filesystem extends Footlights {
 
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks
-
-	}
 
 	private val log = java.util.logging.Logger getLogger classOf[Filesystem].getCanonicalName
 }

@@ -41,7 +41,7 @@ class AppsTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shoul
 	var wrapper:AppWrapper = _
 	before {
 		appKeychain = new MutableKeychain(Keychain())
-		wrapper = AppWrapper(TestApp.getClass, name, kernel, appKeychain, prefs, log)
+		wrapper = AppWrapper(TestApp.getClass, name, kernel, root, appKeychain, prefs, log)
 	}
 
 	"An AppWrapper " - {
@@ -69,6 +69,7 @@ class AppsTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shoul
 	var link = mock[me.footlights.core.crypto.Link]
 	var log = mock[Logger]
 	var prefs = mock[ModifiablePreferences]
+	var root = mock[data.MutableDirectory]
 
 	/** We need to declare this explicitly because of the Evil Stuff we do on app init. */
 	object TestApp {

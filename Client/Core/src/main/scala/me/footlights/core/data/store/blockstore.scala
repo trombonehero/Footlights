@@ -81,6 +81,21 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 		}
 	}
 
+	/** Retrieve a stored {@link Directory}. */
+	def fetchDirectory(link:Link):Either[Exception,Directory] = {
+		var next = Option(link)
+		val plaintext = Iterator continually {
+			next flatMap retrieveCiphertext map { _.plaintext } tee { block =>
+				next = block.links match {
+					case links if links.length > 0 => Option(links.head)
+					case _ => None
+				}
+			}
+		} takeWhile { _.isDefined } flatten
+
+		Directory parse plaintext.toIterable
+	}
+
 	/**
 	 * If we have a cache, this method should not block for I/O. To ensure that the block has
 	 * really been written to disk, the network, etc., call {@link #flush()}.

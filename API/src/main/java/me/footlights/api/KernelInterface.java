@@ -33,6 +33,25 @@ public interface KernelInterface
 	/** Open a file by its URN. */
 	public Option<File> open(URI name) throws IOException;
 
+	/**
+	 * Open a file using a hierarchical directory namespace.
+	 *
+	 * The name given can be rooted in either a URN (e.g. "urn:foo/some/path/to/file") or an
+	 * app-specific root (e.g. "/my/path/to/a/file").
+	 */
+	public Option<File> open(String name);
+
+	/**
+	 * Open a mutable directory.
+	 *
+	 * A mutable directory is actually a wrapper around an immutable construct, but the details
+	 * are hidden from applications.
+	 *
+	 * An application that wants a hierarchical directory structure can start with a call to
+	 * kernel.openDirectory("/"), which is the "virtual root" for the application.
+	 */
+	public Option<Directory> openDirectory(String name);
+
 	/** Open a file on the local machine (e.g. a photo to upload). */
 	public Option<File> openLocalFile() throws IOException;
 

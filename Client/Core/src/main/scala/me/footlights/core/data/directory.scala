@@ -25,18 +25,70 @@ import me.footlights.core.crypto.Link
 
 package me.footlights.core.data {
 
-class Entry(val name:String, val isDir:Boolean, val link:Link) {
-	val isFile = !isDir
+/**
+ * A mapping from application-specified names to {@link File} and {@link Directory} objects.
+ *
+ * A {@link Directory} is mutable from an application perspective, but maps onto
+ * immutable structures behind the {@link KernelInterface}.
+ *
+ * @param  notify     called when the {@link MutableDirectory} changes
+ */
+class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Directory => Unit)
+	extends api.Directory {
 
-	override lazy val toString = name + (if (isDir) "/" else "")
-	override def equals(a:Any) = {
-		if (!a.isInstanceOf[Entry]) false
-		else {
-			val other = a.asInstanceOf[Entry]
-			(other.name == name) && (other.isDir == isDir) && (other.link == link)
+	override def snapshotName = dir.name
+	override def entries = asJavaIterable { dir.entries map entry2entry }
+
+	override def open(name:String) = footlights openat (name split "/", dir)
+
+	override def get(name:String) = dir(name) map entry2entry
+	override def save(name:String, file:api.File) = file match {
+		case f:File =>
+			val e = Entry(name, f)
+			dir += e
+			notify(dir)
+			entry2entry(e)
+	}
+
+	override def save(name:String, d:api.Directory) = d match {
+		case m:MutableDirectory => save(name, m.dir)
+	}
+
+	def openMutableDirectory(name:String): Option[api.Directory] = {
+		var current:Option[api.Directory] = Option(this)
+		for (component <- name split "/")
+			current = current flatMap { _ get component } flatMap { _.directory }
+
+		current
+	}
+
+	private def save(name:String, d:Directory) = {
+		val e = Entry(name, d)
+		dir += e
+		notify(dir)
+		entry2entry(e)
+	}
+
+	private def entry2entry(e:Entry): api.Directory.Entry = new api.Directory.Entry {
+		override def isDir = e.isDir
+		override def directory = {
+			if (e.isDir) {
+				footlights openDirectory e.link map {
+					new MutableDirectory(_, footlights, notify = save(e.name, _))
+				}
+			} else None
 		}
+		override def file = if (e.isDir) None else footlights open e.link
+
+		override def toString = "('%s' => %s)" format (e.name, e.link)
 	}
 }
+
+object MutableDirectory {
+	def apply(footlights:core.Footlights)(dir:Directory)(notify:Directory => Unit) =
+		new MutableDirectory(dir, footlights, notify)
+}
+
 
 /**
  * Provides a name -> file mapping
@@ -135,26 +187,31 @@ object Directory {
 	def apply(entries:Map[String,Entry] = Map()) = new Directory(entries)
 
 	def parse(blocks:Iterable[Block]): Either[Exception,Directory] = {
+		var terminated = false
 		var entries = blocks map { block =>
-			val content = block.content
-			val magic = new Array[Byte](Magic.length)
-			content get magic
+			if (terminated) Nil
+			else {
+				val content = block.content
+				val magic = new Array[Byte](Magic.length)
+				content get magic
 
-			val isTerminator = magic.toSeq match {
-				case Terminator => true
-				case Magic => false
-				case other:Any =>
-					return Left(new FormatException("Invalid directory magic '%s'" format other))
-			}
+				val isTerminator = magic.toSeq match {
+					case Terminator => true
+					case Magic => false
+					case other:Any =>
+						return Left(new FormatException("Invalid directory magic '%s'" format other))
+				}
+				terminated = isTerminator
 
-			val links:Iterable[Link] = if (isTerminator) block.links else block.links.tail
-			for (link <- links) yield {
-				val namelen = content getShort
-				val isDir = (namelen & 0x8000) == 0x8000
-				val name = new Array[Byte](namelen & 0x7FFF)
-				content get name
+				val links:Iterable[Link] = if (isTerminator) block.links else block.links.tail
+				for (link <- links) yield {
+					val namelen = content getShort
+					val isDir = (namelen & 0x8000) == 0x8000
+					val name = new Array[Byte](namelen & 0x7FFF)
+					content get name
 
-				new Entry(new String(name), isDir, link)
+					new Entry(new String(name), isDir, link)
+				}
 			}
 		} reduce { _ ++ _ } map { entry => (entry.name -> entry) } toMap
 
@@ -169,6 +226,24 @@ object Directory {
 
 	/** Special magic for the last block in the directory chain. */
 	private val Terminator = Seq(0xF0, 0x07, 0xD1, 0x13) map { _.toByte }
+}
+
+
+/** A directory entry (a file or a subdirectory). */
+class Entry(val name:String, val isDir:Boolean, val link:Link) {
+	val isFile = !isDir
+
+	def dir = if (isDir) Some(link) else None
+	def file = if (isDir) None else Some(link)
+
+	override lazy val toString = name + (if (isDir) "/" else "")
+	override def equals(a:Any) = {
+		if (!a.isInstanceOf[Entry]) false
+		else {
+			val other = a.asInstanceOf[Entry]
+			(other.name == name) && (other.isDir == isDir) && (other.link == link)
+		}
+	}
 }
 
 object Entry {

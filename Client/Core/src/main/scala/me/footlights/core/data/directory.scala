@@ -202,7 +202,7 @@ object Directory {
 
 	def parse(blocks:Iterable[Block]): Either[Exception,Directory] = {
 		var terminated = false
-		var entries = blocks map { block =>
+		val entries = blocks map { block =>
 			if (terminated) Nil
 			else {
 				val content = block.content
@@ -224,12 +224,13 @@ object Directory {
 					val name = new Array[Byte](namelen & 0x7FFF)
 					content get name
 
-					new Entry(new String(name), isDir, link)
+					(new String(name) -> new Entry(new String(name), isDir, link))
 				}
 			}
-		} reduce { _ ++ _ } map { entry => (entry.name -> entry) } toMap
+		}
+		val flattened = (Iterable[(String,Entry)]() /: entries) { _ ++ _ } toMap
 
-		Right(new Directory(entries))
+		Right(new Directory(flattened))
 	}
 
 	implicit def file2entry(x:(String,File)) = Entry(x._1, x._2)

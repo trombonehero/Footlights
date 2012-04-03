@@ -49,9 +49,23 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 			notify(dir)
 			entry2entry(e)
 	}
+	override def save(name:String, bytes:ByteBuffer) =
+		footlights save bytes map { save(name, _) } get
 
 	override def save(name:String, d:api.Directory) = d match {
 		case m:MutableDirectory => save(name, m.dir)
+	}
+
+	override def mkdir(name:String) = {
+		get(name) flatMap { entry =>
+			entry.file foreach { f =>
+				throw new java.io.IOException("%s is a file: %s" format (name, f)) }
+			entry.directory
+		} getOrElse {
+			val dir = MutableDirectory(footlights)(Directory())(save(name, _))
+			save(name, dir)
+			dir
+		}
 	}
 
 	def openMutableDirectory(name:String): Option[api.Directory] = {

@@ -57,6 +57,9 @@ trait Footlights extends api.KernelInterface {
 	 */
 	def evaluate(placeholder:String): String
 
+	/** Ask the user a question. */
+	private[core] def promptUser(prompt:String, title:String, default:Option[String]): Option[String]
+
 	def registerUI(ui:UI)
 	def deregisterUI(ui:UI)
 

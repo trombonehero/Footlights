@@ -38,6 +38,8 @@ trait KernelPrivilege extends Footlights {
 	abstract override def open(link:Link)          = Privilege.sudo { () => super.open(link) }
 	abstract override def save(data:ByteBuffer)    = Privilege.sudo { () => super.save(data) }
 	abstract override def saveLocalFile(f:File)    = Privilege.sudo { () => super.saveLocalFile(f) }
+	abstract override def promptUser(prompt:String, title:String, default:Option[String]) =
+		Privilege.sudo { () => super.promptUser(prompt, title, default) }
 }
 
 /** Represents JVM privilege. */

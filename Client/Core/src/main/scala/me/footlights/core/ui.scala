@@ -18,6 +18,7 @@ import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.util.logging.Logger
 
+import javax.swing
 import javax.swing.JFileChooser
 
 import scala.collection.mutable.Set
@@ -123,6 +124,17 @@ trait SwingPowerboxes extends Footlights {
 		}
 
 		filename map { localFileName => saveLocal(f, localFileName) }
+	}
+
+	override def promptUser(prompt:String, default:Option[String]) =
+		promptUser(prompt, "Footlights", default)
+
+	private[core] override def promptUser(prompt:String, title:String, default:Option[String]) = {
+		swing.JOptionPane.showInputDialog(null, prompt, title, swing.JOptionPane.PLAIN_MESSAGE,
+				null, null, default getOrElse null) match {
+			case s:String => Some(s)
+			case _ => None
+		}
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }

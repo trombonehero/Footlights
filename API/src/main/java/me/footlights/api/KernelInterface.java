@@ -57,4 +57,12 @@ public interface KernelInterface
 
 	/** Save data into a local file. */
 	public void saveLocalFile(File file) throws IOException;
+
+	/**
+	 * Ask the user a question.
+	 *
+	 * The mechanism (e.g. pop-up vs. more gentle prompt) is undefined, but this method is
+	 * synchronous.
+	 */
+	public Option<String> promptUser(String prompt, Option<String> defaultValue);
 }

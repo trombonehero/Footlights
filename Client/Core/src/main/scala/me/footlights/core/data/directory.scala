@@ -85,18 +85,19 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 	}
 
 	private def entry2entry(e:Entry): api.Directory.Entry = new api.Directory.Entry {
-		override def isDir = e.isDir
-		override def directory = {
+		override val isDir = e.isDir
 		override val name = e.name
+
+		override lazy val directory = {
 			if (e.isDir) {
 				footlights openDirectory e.link map {
 					new MutableDirectory(_, footlights, notify = save(e.name, _))
 				}
 			} else None
 		}
-		override def file = if (e.isDir) None else footlights open e.link
+		override lazy val file = if (e.isDir) None else footlights open e.link
 
-		override def toString = "('%s' => %s)" format (e.name, e.link)
+		override val toString = "('%s' => %s)" format (e.name, e.link)
 	}
 }
 

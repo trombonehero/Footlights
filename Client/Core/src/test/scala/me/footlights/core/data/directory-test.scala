@@ -21,8 +21,9 @@ import scala.collection.JavaConversions._
 
 import org.junit.runner.RunWith
 
+import org.mockito
 import org.mockito.Matchers._
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{when,verify}
 
 import org.powermock.api.mockito.PowerMockito
 
@@ -31,8 +32,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import me.footlights.core
+import me.footlights.core.CustomMatchers._
 import me.footlights.core.crypto
-import me.footlights.core.crypto.Link
 import me.footlights.core.data.store._
 import me.footlights.core.security
 
@@ -43,6 +45,8 @@ import Directory._
 
 @RunWith(classOf[JUnitRunner])
 class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
+	before { mutable = MutableDirectory(footlights)(Directory())(mutableChanged) }
+
 	"A Directory should be able to " - {
 		"store files." in {
 			val d = Directory() + ("foo" -> file1) + ("bar" -> file2)
@@ -88,7 +92,21 @@ class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 		}
 	}
 
-	private val link1 = Link.newBuilder
+	"A %s should be able to ".format(classOf[MutableDirectory].getSimpleName) - {
+		"make a subdirectory." in {
+			val DirName = "foo"
+			mutable mkdir DirName
+
+			verify { mutableChanged } apply((d:Directory) => d(DirName) isDefined)
+
+			mutable(DirName) match {
+				case Some(entry) => entry.name should be (DirName)
+				case _ => fail("mutable('%s') should return Some(entry)" format DirName)
+			}
+		}
+	}
+
+	private val link1 = crypto.Link.newBuilder
 		.setFingerprint(crypto.Fingerprint.newBuilder setContent("link1".getBytes) build)
 		.setKey(crypto.SecretKey.newGenerator.generate)
 		.build
@@ -98,7 +116,7 @@ class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 	when { dir1.link } thenReturn link1
 	when { file1.link } thenReturn link1
 
-	private val link2 = Link.newBuilder
+	private val link2 = crypto.Link.newBuilder
 		.setFingerprint(crypto.Fingerprint.newBuilder setContent("link2".getBytes) build)
 		.setKey(crypto.SecretKey.newGenerator.generate)
 		.build
@@ -107,6 +125,11 @@ class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 	private val file2 = mock[File]
 	when { dir2.link } thenReturn link1
 	when { file2.link } thenReturn link2
+
+	private val footlights = mock[core.Footlights]
+
+	private var mutable:MutableDirectory = _
+	private val mutableChanged = mock[Directory => Unit]
 }
 
 }

@@ -34,6 +34,7 @@ public interface Directory
 	{
 		public boolean isDir();
 
+		public String name();
 		public Option<Directory> directory();
 		public Option<File> file();
 	}

@@ -41,6 +41,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 
 	override def open(name:String) = footlights openat (name split "/", dir)
 
+	def apply(name:String) = get(name)
 	override def get(name:String) = dir(name) map entry2entry
 	override def save(name:String, file:api.File) = file match {
 		case f:File =>
@@ -86,6 +87,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 	private def entry2entry(e:Entry): api.Directory.Entry = new api.Directory.Entry {
 		override def isDir = e.isDir
 		override def directory = {
+		override val name = e.name
 			if (e.isDir) {
 				footlights openDirectory e.link map {
 					new MutableDirectory(_, footlights, notify = save(e.name, _))

@@ -78,10 +78,10 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 
 
 	/** Load the "main" class, if one is specified in the manifest. */
-	private[boot] def loadMainClass = classpath.mainClassName orElse {
-		throw new ClassNotFoundException(
-			"%s does not specify a main Footlights class" format classpath.externalURL)
-	} map attemptLoadingClass get
+	private[boot] def loadMainClass:Either[String,Class[_]] =
+		classpath.mainClassName map
+		attemptLoadingClass getOrElse
+		Left("%s does not specify a main Footlights class" format classpath.externalURL)
 
 	/** Does this classpath define a UI? */
 	private[boot] def isUi = classpath.uiName.isDefined

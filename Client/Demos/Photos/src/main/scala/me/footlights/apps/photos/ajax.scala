@@ -18,7 +18,10 @@ import java.net.URI
 import me.footlights.api.{Preferences,WebRequest}
 import me.footlights.api.ajax.{AjaxHandler,JavaScript}
 import me.footlights.api.ajax.JavaScript.sanitizeText
+import me.footlights.api.support.Either._
+
 import me.footlights.apps.photos.PhotosApp;
+
 
 package me.footlights.apps.photos {
 
@@ -38,13 +41,15 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 				js
 
 			case "do_upload" =>
-				app.upload map { _.name.toString } map { filename =>
-					setStatus {
-						"Downloaded '%s'." format filename
-					} append {
-						"context.globals['new_photo']('%s');" format filename
-					}
-				} getOrElse setStatus { "Nothing uploaded (cancelled?)." }
+				app.upload map { _.name.toString } fold(
+					ex => setStatus { "Error uploading: %s" format ex },
+					filename =>
+						setStatus {
+							"Downloaded '%s'." format filename
+						} append {
+							"context.globals['new_photo']('%s');" format filename
+						}
+				)
 
 			case RemoveImage(name) =>
 				app remove new URI(name)

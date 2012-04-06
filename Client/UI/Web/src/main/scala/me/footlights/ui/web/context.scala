@@ -26,6 +26,7 @@ import scala.actors.Futures._
 import me.footlights.api.WebRequest
 import me.footlights.api.ajax.{AjaxResponse,JavaScript,JSON}
 import me.footlights.api.ajax.JSON._
+import me.footlights.api.support.Either._
 import me.footlights.core.Footlights
 import me.footlights.core.apps.AppWrapper
 import me.footlights.core.data
@@ -43,7 +44,7 @@ abstract class Context(base:Class[_]) extends WebServer {
 	protected def handleAjax(req:WebRequest): AjaxResponse
 
 	/** Open a {@link data.File}, perhaps using a app-specific keychain. */
-	protected def openFile(name:URI): Option[data.File]
+	protected def openFile(name:URI): Either[Exception,data.File]
 
 	/** Subclasses <i>may</i> provide a default response for empty requests. */
 	protected def defaultResponse() = Response error new FileNotFoundException
@@ -165,7 +166,10 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 				}
 
 			case FillPlaceholder(name) => {
-				JSON("key" -> name, "value" -> footlights.evaluate(name))
+				JSON(
+					"key" -> name,
+					"value" -> ((footlights evaluate name getOrElse "(unknown)"):String)
+				)
 			}
 		}
 	}

@@ -22,6 +22,9 @@ import me.footlights.api.support.Tee._
 import me.footlights.apps.photos.Ajax;
 import me.footlights.apps.photos.PhotosApp;
 
+import me.footlights.api.support.Either._
+
+
 package me.footlights.apps.photos {
 
 /**

@@ -19,6 +19,9 @@ import me.footlights.api.ajax.JavaScript.sanitizeText
 
 import java.net.{URI,URLEncoder,URLDecoder}
 
+import me.footlights.api.support.Either._
+
+
 package me.footlights.apps.uploader {
 
 /** Translates Ajax events to/from model events. */

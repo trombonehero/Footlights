@@ -60,5 +60,10 @@ public interface Directory
 	/** Store a nested {@link Directory} using a relative name. */
 	public Either<Exception,Entry> save(String name, Directory directory);
 
+	/**
+	 * Create a subdirectory with a given name.
+	 *
+	 * This will fail if the given name is already used by an existing file or directory.
+	 */
 	public Either<Exception,Directory> mkdir(String name);
 }

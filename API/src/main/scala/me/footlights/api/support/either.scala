@@ -22,12 +22,16 @@ package me.footlights.api.support
  * Rather than (((foo.right map f).right map g).right map h), provide foreach, map and flatMap
  * like Option. This is sensible because we always use Either[exceptional case, normal case],
  * so map ought to normally operate on the right case.
+ *
+ * Also, add the tee method like in {@link Tee}.
  */
 class MappableEither[A,B](e: Either[A,B]) {
 	def foreach(f:B => Any): Unit = e.right foreach f
 
 	def map[C](f:B => C): Either[A,C] = e.right map f
 	def flatMap[C](f:B => Either[A,C]): Either[A,C] = e.right flatMap f
+
+	def tee(f:B => Any): Either[A,B] = { e.right foreach f; e }
 }
 
 object Either {

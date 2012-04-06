@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Jonathan Anderson
+ * Copyright 2011-2012 Jonathan Anderson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import scala.collection.JavaConversions._
 
 import me.footlights.api
 import me.footlights.api.KernelInterface
+import me.footlights.api.support.Either._
 import me.footlights.core.data.store.CASClient
 
 package me.footlights.core {
@@ -71,15 +72,17 @@ abstract class Kernel(
 	 * JAR file inside the OS' filesystem.
 	 */
 	override def localizeJar(uri:URI) = {
-		val absoluteLink =
-			if (uri.isOpaque) keychain getLink Fingerprint.decode(uri)
+		val absoluteLink:Either[Exception,crypto.Link] =
+			if (uri.isOpaque)
+				keychain getLink Fingerprint.decode(uri) toRight {
+					new Exception("Key for URI '%s' not stored in keychain" format uri)
+				}
 			else if (uri.getScheme != null) resolver.resolve(uri.toURL)
-			else {
-				log warning ("Tried to localize scheme-less URI '%s'" format uri.toString)
-				None
-			}
+			else Left(new Exception("Tried to localize scheme-less URI '%s'" format uri.toString))
 
-		absoluteLink flatMap store.fetch map { _.getInputStream } map {
+		absoluteLink flatMap {
+			store fetch _ toRight(new Exception("%s not in store" format uri))
+		} map { _.getInputStream } map {
 			java.nio.channels.Channels.newChannel
 		} map { in =>
 			val tmpFile = java.io.File.createTempFile("footlights-dep", ".jar")
@@ -92,7 +95,10 @@ abstract class Kernel(
 	/** Read {@link Preferences} from a file. */
 	protected def readPrefs(filename:URI) = {
 		log info ("Reading preferences: %s" format filename)
-		open(filename) map { case file:data.File => Map() ++ Preferences.parse(file.getContents) }
+		open(filename) fold (
+			ex => None,
+			_ match { case file:data.File => Some(Map() ++ Preferences.parse(file.getContents)) }
+		)
 	}
 
 	private val log = Logger getLogger classOf[Kernel].getCanonicalName

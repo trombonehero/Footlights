@@ -24,6 +24,9 @@ import java.util.logging.Logger
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
+import me.footlights.api.support.Either._
+
+
 package me.footlights.core {
 
 import data.File
@@ -36,43 +39,38 @@ class IO(proxy:java.net.Proxy) {
 	 * Get bytes from a {@link java.io.File}, using whatever underlying mechanism will be most
 	 * efficient for the file's size.
 	 */
-	def read(f:Option[java.io.File]): Option[ByteBuffer] = f flatMap { file =>
-		if (!file.exists) None
+	def read(file:java.io.File): Either[Exception,ByteBuffer] =
+		if (!file.exists) Left(new IllegalArgumentException("%s does not exist" format file))
 		else {
 			val channel = new FileInputStream(file).getChannel
 
 			file.length match {
 				// We only handle files with length < 2^31
-				case n if n > Integer.MAX_VALUE => {
-					log severe(
-						"Tried to open " + file.length + " B file; we only handle up to "
-						+ Integer.MAX_VALUE + " B")
-					None
-				}
+				case n if n > Integer.MAX_VALUE =>
+					Left(new java.io.IOException(
+							"Tried to open " + file.length + " B file; we only handle up to " +
+							Integer.MAX_VALUE + " B"))
 
 				// If we're opening a large file, let the OS map it into memory.
-				case n if n > 10000 => Option(channel.map(MapMode.READ_ONLY, 0, file.length()))
+				case n if n > 10000 => Right(channel.map(MapMode.READ_ONLY, 0, file.length()))
 
 				// For smaller files, it can be more efficient to simply read the bytes out.
-				case n:Long => {
+				case n:Long =>
 					val buffer = ByteBuffer allocateDirect n.toInt
 					channel read { buffer }
 					buffer.flip
-					Option(buffer)
-				}
+					Right(buffer)
 			}
 		}
-	}
 
 	def writer(file:java.io.File) = new FileOutputStream(file).getChannel
 
 
 	def fetch(url: URL) = {
+		// TODO: use URL.openConnection(Proxy)
 		(try {
-			// TODO: use URL.openConnection(Proxy)
-			Option(url.openConnection(proxy).getInputStream)
-		} catch {
-			case ioe:IOException => None
+			Right(url openConnection proxy getInputStream) } catch { case ex:Exception =>
+			Left(ex)
 		}) map { in =>
 			val data = new ListBuffer[Option[ByteBuffer]]
 			while (in.available() > 0)

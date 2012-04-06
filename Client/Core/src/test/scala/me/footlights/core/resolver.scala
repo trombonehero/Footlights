@@ -44,7 +44,7 @@ class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 			val file = mockFile(f, Option("AES:00000000000000000000000000000042"))
 			when(io.fetch(url)) thenReturn { file }
 
-			resolver resolve url should equal(Option(
+			resolver resolve url should equal(Right(
 					Link.newBuilder()
 						.setFingerprint(f)
 						.setKey(SecretKey.newGenerator()
@@ -62,7 +62,7 @@ class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 			val l = mock[Link]
 			when { keychain getLink f } thenReturn Some(l)
 
-			(resolver resolve url get) should equal(l)
+			resolver resolve url should equal (Right(l))
 		}
 	}
 
@@ -83,7 +83,7 @@ class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 
 		val f = mock[File]
 		when { f getContents } thenReturn { ByteBuffer wrap json.getBytes }
-		Option(f)
+		Right(f)
 	}
 }
 

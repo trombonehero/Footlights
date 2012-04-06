@@ -15,10 +15,10 @@
  */
 package me.footlights.api;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 
+import scala.Either;
 import scala.Option;
 
 
@@ -28,10 +28,10 @@ public interface KernelInterface
 	/**
 	 * Save data to a logical file.
 	 */
-	public Option<File> save(ByteBuffer data) throws IOException;
+	public Either<Exception,File> save(ByteBuffer data);
 
 	/** Open a file by its URN. */
-	public Option<File> open(URI name) throws IOException;
+	public Either<Exception,File> open(URI name);
 
 	/**
 	 * Open a file using a hierarchical directory namespace.
@@ -39,7 +39,7 @@ public interface KernelInterface
 	 * The name given can be rooted in either a URN (e.g. "urn:foo/some/path/to/file") or an
 	 * app-specific root (e.g. "/my/path/to/a/file").
 	 */
-	public Option<File> open(String name);
+	public Either<Exception,File> open(String name);
 
 	/**
 	 * Open a mutable directory.
@@ -50,13 +50,13 @@ public interface KernelInterface
 	 * An application that wants a hierarchical directory structure can start with a call to
 	 * kernel.openDirectory("/"), which is the "virtual root" for the application.
 	 */
-	public Option<Directory> openDirectory(String name);
+	public Either<Exception,Directory> openDirectory(String name);
 
 	/** Open a file on the local machine (e.g. a photo to upload). */
-	public Option<File> openLocalFile() throws IOException;
+	public Either<Exception,File> openLocalFile();
 
 	/** Save data into a local file. */
-	public void saveLocalFile(File file) throws IOException;
+	public Either<Exception,File> saveLocalFile(File file);
 
 	/**
 	 * Ask the user a question.
@@ -64,5 +64,5 @@ public interface KernelInterface
 	 * The mechanism (e.g. pop-up vs. more gentle prompt) is undefined, but this method is
 	 * synchronous.
 	 */
-	public Option<String> promptUser(String prompt, Option<String> defaultValue);
+	public Either<Exception,String> promptUser(String prompt, Option<String> defaultValue);
 }

@@ -23,7 +23,9 @@ import javax.swing.JFileChooser
 
 import scala.collection.mutable.Set
 
-import me.footlights.api.{File,KernelInterface}
+import me.footlights.api
+import me.footlights.api.KernelInterface
+import me.footlights.api.support.Either._
 import me.footlights.api.support.Tee._
 
 
@@ -31,6 +33,8 @@ package me.footlights.core {
 
 import apps.AppWrapper
 
+class UIException(message:String) extends Exception(message)
+class CanceledException(message:String = "User canceled operation") extends UIException(message)
 
 /** A User Interface */
 abstract class UI(val name:String, footlights:Footlights)
@@ -53,11 +57,11 @@ object UI {
 		override val message = "Unloading app " + app
 	}
 
-	class FileOpenedEvent(val file:File) extends Event {
+	class FileOpenedEvent(val file:api.File) extends Event {
 		override val message = "Opened " + file
 	}
 
-	class FileSavedEvent(val file:File) extends Event {
+	class FileSavedEvent(val file:api.File) extends Event {
 		override val message = "Saved " + file
 	}
 }
@@ -75,20 +79,20 @@ trait UIManager extends Footlights {
 
 	abstract override def open(filename:URI) = {
 		val f = super.open(filename)
-		f map { new UI.FileOpenedEvent(_) } foreach fire
+		f map { new UI.FileOpenedEvent(_) } map fire
 		f
 	}
 
 	abstract override def save(data:ByteBuffer) = {
 		val f = super.save(data)
-		f map { new UI.FileSavedEvent(_) } foreach fire
+		f map { new UI.FileSavedEvent(_) } map fire
 		f
 	}
 
 	abstract override def loadApplication(uri:URI) = {
 		val wrapper = super.loadApplication(uri)
 //		wrapper.left foreach { fire()}
-		wrapper.right foreach { wrapper => fire(new AppLoadedEvent(wrapper)) }
+		wrapper map { new AppLoadedEvent(_) } foreach fire
 		wrapper
 	}
 
@@ -104,26 +108,26 @@ trait UIManager extends Footlights {
 trait SwingPowerboxes extends Footlights {
 	protected def io:IO
 
-	override def openLocalFile():Option[_root_.me.footlights.api.File] = {
+	override def openLocalFile():Either[Exception,api.File] = {
 		val d = new JFileChooser
 		val filename = d.showOpenDialog(null) match {
-			case JFileChooser.APPROVE_OPTION => Option(d.getSelectedFile())
-			case _ => { log.fine("User cancelled file open dialog"); None }
+			case JFileChooser.APPROVE_OPTION => Right(d.getSelectedFile())
+			case _ => Left[Exception,java.io.File](new CanceledException)
 		}
 
-		io read filename flatMap save tee { f => log fine ("Opened local file: %s" format f) }
+		filename flatMap io.read flatMap save
 	}
 
-	override def saveLocalFile(file:me.footlights.api.File) = {
+	override def saveLocalFile(file:me.footlights.api.File):Either[Exception,api.File] = {
 		val f = file match { case f:me.footlights.core.data.File => f }
 
 		val d = new JFileChooser
 		val filename = d.showSaveDialog(null) match {
-			case JFileChooser.APPROVE_OPTION => Option(d.getSelectedFile)
-			case _ => { log.fine("User cancelled save file dialog"); None }
+			case JFileChooser.APPROVE_OPTION => Right(d.getSelectedFile)
+			case _ => Left[Exception,java.io.File](new CanceledException)
 		}
 
-		filename map { localFileName => saveLocal(f, localFileName) }
+		filename flatMap { localFileName => saveLocal(f, localFileName) }
 	}
 
 	override def promptUser(prompt:String, default:Option[String]) =
@@ -132,8 +136,8 @@ trait SwingPowerboxes extends Footlights {
 	private[core] override def promptUser(prompt:String, title:String, default:Option[String]) = {
 		swing.JOptionPane.showInputDialog(null, prompt, title, swing.JOptionPane.PLAIN_MESSAGE,
 				null, null, default getOrElse null) match {
-			case s:String => Some(s)
-			case _ => None
+			case s:String => Right(s)
+			case _ => Left(new CanceledException())
 		}
 	}
 

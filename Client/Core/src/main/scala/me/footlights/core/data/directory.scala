@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 
 import scala.collection.JavaConversions._
 
 import me.footlights.api
+import me.footlights.api.support.Either._
 import me.footlights.core
 import me.footlights.core.crypto.Link
 
@@ -48,31 +50,33 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 			val e = Entry(name, f)
 			dir += e
 			notify(dir)
-			entry2entry(e)
+			Right(entry2entry(e))
 	}
 	override def save(name:String, bytes:ByteBuffer) =
-		footlights save bytes map { save(name, _) } get
+		footlights save bytes flatMap { save(name, _) }
 
 	override def save(name:String, d:api.Directory) = d match {
-		case m:MutableDirectory => save(name, m.dir)
+		case m:MutableDirectory => Right(entry2entry(save(name, m.dir)))
 	}
 
 	override def mkdir(name:String) = {
-		get(name) flatMap { entry =>
-			entry.file foreach { f =>
-				throw new java.io.IOException("%s is a file: %s" format (name, f)) }
-			entry.directory
+		get(name) map { e =>
+			Left(new IllegalArgumentException("%s already exists: %s" format (name, e)))
 		} getOrElse {
-			val dir = MutableDirectory(footlights)(Directory())(save(name, _))
-			save(name, dir)
-			dir
+			save(name, MutableDirectory(footlights)(Directory())(save(name, _))) flatMap {
+				_.directory
+			}
 		}
 	}
 
-	def openMutableDirectory(name:String): Option[api.Directory] = {
-		var current:Option[api.Directory] = Option(this)
+	def openMutableDirectory(name:String): Either[Exception,api.Directory] = {
+		var current:Either[Exception,api.Directory] = Right(this)
 		for (component <- name split "/")
-			current = current flatMap { _ get component } flatMap { _.directory }
+			current = current map { _ get component } flatMap {
+				case Some(entry) => entry.directory
+				case _ => Left(new IllegalArgumentException(
+						"No such component '%s' in path '%s'" format (component, name)))
+			}
 
 		current
 	}
@@ -81,7 +85,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 		val e = Entry(name, d)
 		dir += e
 		notify(dir)
-		entry2entry(e)
+		e
 	}
 
 	private def entry2entry(e:Entry): api.Directory.Entry = new api.Directory.Entry {
@@ -89,13 +93,18 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 		override val name = e.name
 
 		override lazy val directory = {
-			if (e.isDir) {
+			if (e.isDir)
 				footlights openDirectory e.link map {
 					new MutableDirectory(_, footlights, notify = save(e.name, _))
 				}
-			} else None
+			else
+				Left(new IOException("'%s' is not a directory" format name))
 		}
-		override lazy val file = if (e.isDir) None else footlights open e.link
+		override lazy val file =
+			if (e.isDir)
+				Left(new IOException("'%s' is a directory, not a file" format name))
+			else
+				footlights open e.link
 
 		override val toString = "('%s' => %s)" format (e.name, e.link)
 	}
@@ -204,36 +213,38 @@ object Directory {
 	def apply(entries:Map[String,Entry] = Map()) = new Directory(entries)
 
 	def parse(blocks:Iterable[Block]): Either[Exception,Directory] = {
-		var terminated = false
-		val entries = blocks map { block =>
-			if (terminated) Nil
-			else {
-				val content = block.content
-				val magic = new Array[Byte](Magic.length)
-				content get magic
+		if (blocks.isEmpty) Left(new IllegalArgumentException("A Directory must have blocks"))
+		else {
+			var terminated = false
+			val entries = blocks map { block =>
+				if (terminated) Nil
+				else {
+					val content = block.content
+					val magic = new Array[Byte](Magic.length)
+					content get magic
 
-				val isTerminator = magic.toSeq match {
-					case Terminator => true
-					case Magic => false
-					case other:Any =>
-						return Left(new FormatException("Invalid directory magic '%s'" format other))
+					val isTerminator = magic.toSeq match {
+						case Terminator => true
+						case Magic => false
+						case other:Any =>
+							return Left(new FormatException("Bad directory magic %s" format other))
+					}
+					terminated = isTerminator
+
+					val links:Iterable[Link] = if (isTerminator) block.links else block.links.tail
+					for (link <- links) yield {
+						val namelen = content getShort
+						val isDir = (namelen & 0x8000) == 0x8000
+						val name = new Array[Byte](namelen & 0x7FFF)
+						content get name
+
+						(new String(name) -> new Entry(new String(name), isDir, link))
+					}
 				}
-				terminated = isTerminator
+			} reduce { _ ++ _ } toMap
 
-				val links:Iterable[Link] = if (isTerminator) block.links else block.links.tail
-				for (link <- links) yield {
-					val namelen = content getShort
-					val isDir = (namelen & 0x8000) == 0x8000
-					val name = new Array[Byte](namelen & 0x7FFF)
-					content get name
-
-					(new String(name) -> new Entry(new String(name), isDir, link))
-				}
-			}
+			Right(new Directory(entries))
 		}
-		val flattened = (Iterable[(String,Entry)]() /: entries) { _ ++ _ } toMap
-
-		Right(new Directory(flattened))
 	}
 
 	implicit def file2entry(x:(String,File)) = Entry(x._1, x._2)

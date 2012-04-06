@@ -28,25 +28,25 @@ import data.store.Stat
 /** Interface to the software core. */
 trait Footlights extends api.KernelInterface {
 	/** Open a particular {@link Link}. */
-	def open(link:Link): Option[File]
+	def open(link:Link): Either[Exception,File]
 
 	/** Open a directory by {@link Link}. */
-	def openDirectory(link:Link): Option[Directory]
+	def openDirectory(link:Link): Either[Exception,Directory]
 
 	/** Open a directory whose decryption key is known to the kernel. */
-	def openDirectory(name:URI): Option[Directory]
+	def openDirectory(name:URI): Either[Exception,Directory]
 
 	/** Open a hierarchical name, relative to a base {@link Directory}. */
-	def openat(path:Iterable[String], base:Directory): Option[File]
+	def openat(path:Iterable[String], base:Directory): Either[Exception,File]
 
 	/** Save a generated {@link File} to the filesystem. */
-	def save(file:File): Option[File]
+	def save(file:File): Either[Exception,File]
 
 	/** Save an immutable {@link Directory} to the filesystem. */
-	def save(dir:Directory): Option[Directory]
+	def save(dir:Directory): Either[Exception,Directory]
 
 	/** Save data to a local {@link java.io.File}. */
-	def saveLocal(file:File, filename:java.io.File)
+	def saveLocal(file:File, filename:java.io.File): Either[Exception,File]
 
 	/**
 	 * Convert a placeholder name (e.g. "user.name") into a meaningful value.
@@ -55,15 +55,16 @@ trait Footlights extends api.KernelInterface {
 	 * cannot request placeholder evaluation directly; it has to be done by a trusted bit of UI
 	 * code, which inserts the proxied content in such a way that the app UI can't read it.
 	 */
-	def evaluate(placeholder:String): String
+	def evaluate(placeholder:String): Option[String]
 
 	/** Ask the user a question. */
-	private[core] def promptUser(prompt:String, title:String, default:Option[String]): Option[String]
+	private[core] def promptUser(prompt:String, title:String, default:Option[String]):
+		Either[UIException,String]
 
 	def registerUI(ui:UI)
 	def deregisterUI(ui:UI)
 
-	def localizeJar(uri:URI): Option[java.util.jar.JarFile]
+	def localizeJar(uri:URI): Either[Exception,java.util.jar.JarFile]
 
 	/**
 	 * List some of the {@link File} names which are known to exist in the {@link Store}.

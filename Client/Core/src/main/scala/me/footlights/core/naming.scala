@@ -24,6 +24,9 @@ import sun.net.www.protocol.http.HttpURLConnection
 
 import org.apache.commons.codec.binary.Hex
 
+import me.footlights.api.support.Either._
+
+
 package me.footlights.core {
 
 import crypto.{Fingerprint,Keychain,Link,SecretKey}
@@ -41,47 +44,48 @@ class Resolver private(io:IO, keychain: Keychain)
 	 * may optionally contain a "key" member as well, but if not, we expect the relevant key
 	 * to already be in our {@link Keychain}.
 	 */
-	def resolve(url: URL):Option[Link] = {
+	def resolve(url: URL):Either[Exception,Link] = {
 		fetchJSON(url) flatMap { json =>
-			json.get("fingerprint") map {
-				_ match { case s:String => Fingerprint.decode(s) }
-			} flatMap { fingerprint =>
-				// Check for a key.
-				json.get("key") match {
-					// If a key has been explicitly specified, use it.
-					case Some(s:String) => {
-						val tokens = s.split(":")
-						tokens.length match {
-							case 2 =>
-								Some(Link.newBuilder
-									.setFingerprint(fingerprint)
+			json get "fingerprint" toRight(
+				new Exception("No fingerprint in %s" format json)) map {
+				case s:String => Fingerprint decode s
+			} flatMap { f =>
+				json get "key" map {
+					case s:String =>
+						s split ":" toList match {
+							case algorithm :: bytes :: Nil =>
+								Right(Link.newBuilder
+									.setFingerprint(f)
 									.setKey(
 										SecretKey.newGenerator
-											.setAlgorithm(tokens(0))
-											.setBytes(Hex.decodeHex(tokens(1).toCharArray()))
+											.setAlgorithm(algorithm)
+											.setBytes(Hex decodeHex bytes.toCharArray)
 											.generate)
 									.build)
 
-							case _ => None
+							case a:Any =>
+								Left(new Exception("Key should be alg:bytes, not '%s'" format a))
 						}
-					}
 
-					// No key specified; we expect the key to be in the keychain.
-					case _ => keychain getLink fingerprint
+					case a:Any =>
+						Left(new Exception("Key in JSON was not a string: '%s'" format a))
+				} getOrElse {
+					keychain getLink f toRight(new Exception("No key in JSON or keychain"))
 				}
 			}
 		}
 	}
 
-	def fetchJSON(url: URL):Option[Map[String,_]] =
+	def fetchJSON(url: URL):Either[Exception,Map[String,_]] =
 		io fetch url map { _.getContents } map { buffer =>
 			val bytes = new Array[Byte](buffer.remaining)
 			buffer.get(bytes)
+
 			new String(bytes)
-		} flatMap { JSON.parseFull(_) } flatMap {
+		} map JSON.parseFull flatMap {
 			// Convert (Any->Any) mapping into (String->Any).
-			case m:Map[_,_] => Option(for ((k,v) <- m) yield (k.toString(), v))
-			case _ => None
+			case Some(m:Map[_,_]) => Right(for ((k,v) <- m) yield (k.toString(), v))
+			case _ => Left(new Exception("Unable to parse JSON at %s" format url))
 		}
 }
 

@@ -1,7 +1,6 @@
 package me.footlights.demos.good;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,6 +8,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import scala.Either;
 import scala.Option;
 
 import me.footlights.api.File;
@@ -118,13 +118,15 @@ class DemoAjaxHandler extends Context
 					response.append(makeDiv("but we can't! our kernel reference is null."));
 				else
 				{
-					try
+					Either<Exception,File> result = kernel.save(ByteBuffer.wrap("Hello, world!".getBytes()));
+					if (result.isRight())
 					{
-						File file = kernel.save(ByteBuffer.wrap("Hello, world!".getBytes())).get();
+						File file = result.right().get();
 						response.append(makeDiv("saved file: " + file));
 					}
-					catch (IOException e)
+					else
 					{
+						Exception e = result.left().get();
 						response.append(makeDiv("Error saving data: " + e));
 						log.log(Level.SEVERE, "Error saving data", e);
 					}
@@ -165,14 +167,20 @@ class DemoAjaxHandler extends Context
 			@Override public JavaScript service(WebRequest request)
 				throws FileNotFoundException, SecurityException, Throwable
 			{
-				Option<File> file = kernel.openLocalFile();
-				if (file.isEmpty())
+				Either<Exception,File> result = kernel.openLocalFile();
+				if (result.isRight())
+				{
+					File file = result.right().get();
 					return new JavaScript()
-						.append("context.log('User cancelled file dialog');");
+						.append(
+							makeDiv("Opened " + file.getInputStream().available() + " B file"));
+				}
+				else
+					return new JavaScript()
+						.append("context.log('No file opened: ")
+						.appendText(result.left().get().toString())
+						.append(".');");
 
-				return new JavaScript()
-					.append(
-						makeDiv("Opened " + file.get().getInputStream().available() + " B file"));
 			}
 		});
 

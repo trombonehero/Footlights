@@ -15,10 +15,10 @@
  */
 package me.footlights.api;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 
+import scala.Either;
 import scala.Option;
 
 
@@ -35,8 +35,8 @@ public interface Directory
 		public boolean isDir();
 
 		public String name();
-		public Option<Directory> directory();
-		public Option<File> file();
+		public Either<Exception,Directory> directory();
+		public Either<Exception,File> file();
 	}
 
 	/** The name of the immutable directory which represents the current directory state. */
@@ -46,19 +46,19 @@ public interface Directory
 	public Iterable<Entry> entries();
 
 	/** Open a {@link File} by relative name. */
-	public Option<File> open(String name);
+	public Either<Exception,File> open(String name);
 
 	/** Retrieve an {@link Entry} by relative name. */
 	public Option<Entry> get(String name);
 
 	/** Store a {@link File} using a relative name. */
-	public Entry save(String name, File file);
+	public Either<Exception,Entry> save(String name, File file);
 
 	/** Save some data using a relative name. */
-	public Entry save(String name, ByteBuffer data);
+	public Either<Exception,Entry> save(String name, ByteBuffer data);
 
 	/** Store a nested {@link Directory} using a relative name. */
-	public Entry save(String name, Directory directory);
+	public Either<Exception,Entry> save(String name, Directory directory);
 
-	public Directory mkdir(String name) throws IOException;
+	public Either<Exception,Directory> mkdir(String name);
 }

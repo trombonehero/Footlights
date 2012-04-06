@@ -45,7 +45,12 @@ import Directory._
 
 @RunWith(classOf[JUnitRunner])
 class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
-	before { mutable = MutableDirectory(footlights)(Directory())(mutableChanged) }
+	before {
+		footlights = mock[core.Footlights]
+		when { footlights openDirectory any[crypto.Link]() } thenReturn { Right(dir1) }
+
+		mutable = MutableDirectory(footlights)(Directory())(mutableChanged)
+	}
 
 	"A Directory should be able to " - {
 		"store files." in {
@@ -126,8 +131,7 @@ class DirectoryTest extends FreeSpec with BeforeAndAfter with MockitoSugar with 
 	when { dir2.link } thenReturn link1
 	when { file2.link } thenReturn link2
 
-	private val footlights = mock[core.Footlights]
-
+	private var footlights:core.Footlights = _
 	private var mutable:MutableDirectory = _
 	private val mutableChanged = mock[Directory => Unit]
 }

@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 
 import scala.collection.JavaConversions._
 
+import me.footlights.api.support.Either._
 import me.footlights.core.{Footlights,HasBytes,IO}
 import me.footlights.core.crypto.{Fingerprint,Link,MutableKeychain}
 import me.footlights.core.data
@@ -39,40 +41,41 @@ trait Filesystem extends Footlights {
 	protected def keychain:MutableKeychain
 	protected def store:Store
 
-	override def open(link:Link):Option[File] = store fetch link
+	override def open(link:Link):Either[Exception,File] = store fetch link match {
+		case Some(x) => Right(x)
+		case None => Left(new IOException("'%s' not found in block store" format link))
+	}
 
 	/** Open a file, named by its content, e.g. "urn:sha-256:0123456789abcdef01234...". */
-	override def open(name:URI):Option[api.File] = {
+	override def open(name:URI):Either[Exception,api.File] = {
 		log fine { "open('%s')" format name }
 		Option(name) map
 			Fingerprint.decode flatMap
-			keychain.getLink flatMap
-			open
+			keychain.getLink map
+			open getOrElse
+			Left(new IOException("Unable to open '%s' (unknown reason, sorry)" format name))
 	}
 
 	/** Open a {@link Directory} whose key is stored in our {@link Keychain}. */
-	override def openDirectory(name:URI):Option[Directory] =
-		Option(name) map
+	override def openDirectory(name:URI):Either[Exception,Directory] =
+		Some(name) map
 			Fingerprint.decode flatMap
-			keychain.getLink flatMap
-			openDirectory
+			keychain.getLink map
+			openDirectory get
 
-	override def openDirectory(link:Link):Option[Directory] =
-		store fetchDirectory link fold(ex => throw ex, d => Some(d))
+	override def openDirectory(link:Link):Either[Exception,Directory] =
+		store fetchDirectory link
 
 	/** We cannot meaningfully create a {@link MutableDirectory} without a persistent name. */
-	override def openDirectory(name:String):Option[api.Directory] = None
+	override def openDirectory(name:String) =
+		Left(new java.io.IOException("Need a directory to open relative to"))
 
 	/** Open a file using a hierarchical name that recurses through directories. */
-	override def open(name:String):Option[api.File] = {
+	override def open(name:String):Either[Exception,api.File] = {
 		val names = name split "/"
 
 		// The name must be of the form "urn:base-name/path/relative/to/base-name".
-		var base = openDirectory(URI create names.head) getOrElse {
-			throw new java.io.IOException("So such base directory '%s'" format names.head)
-		}
-
-		openat(names.tail, base)
+		openDirectory(URI create names.head) flatMap { base => openat(names.tail, base) }
 	}
 
 	/** Open a file using a hierarchical name relative to a base directory. */
@@ -87,27 +90,29 @@ trait Filesystem extends Footlights {
 		}
 
 		// Retrieve the file from the final directory.
-		dir(names.last) filter { _.isFile } map { _.link } flatMap store.fetch orElse {
-			throw new java.io.IOException("No such file '%s'" format (names reduce { _ + "/" + _ }))
+		dir(names.last) filter { _.isFile } map { _.link } flatMap
+			store.fetch map
+			Right.apply getOrElse {
+			Left(new java.io.IOException("No such file '%s'" format (names reduce { _ + "/" + _ })))
 		}
 	}
 
 	/** Save a buffer of data to a {@link File}, whose name will be derived from the content. */
-	override def save(data:ByteBuffer):Option[api.File] =
+	override def save(data:ByteBuffer):Either[Exception,api.File] =
 		save { File.newBuilder.setContent(data).freeze }
 
 	/** Save a {@link File} that has already been generated to the {@link Store}. */
 	def save(file:File) = {
 		store store file.toSave
 		log fine { "saved '%s'" format file }
-		Some(file)
+		Right(file)
 	}
 
 	/** Save an immutable {@link Directory} to the {@link Store}. */
 	def save(dir:Directory) = {
 		store store dir.encrypted
 		log fine { "saved dir '%s'" format dir }
-		Some(dir)
+		Right(dir)
 	}
 
 	/**
@@ -116,7 +121,7 @@ trait Filesystem extends Footlights {
 	 * We do what we can to make this as atomic an operation as possible: we write to a temporary
 	 * file which is on the same filesystem as the target filename, then rename it to the target.
 	 */
-	override def saveLocal(f:File, filename:java.io.File) = {
+	override def saveLocal(f:File, filename:java.io.File) = try {
 		val tmp = java.io.File.createTempFile("tmp-", "", filename.getParentFile)
 		val out = io writer tmp
 
@@ -125,7 +130,8 @@ trait Filesystem extends Footlights {
 		out close
 
 		tmp renameTo filename
-	}
+		Right(f)
+	} catch { case ex:Exception => Left(ex) }
 
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks

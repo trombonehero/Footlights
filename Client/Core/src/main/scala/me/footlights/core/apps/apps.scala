@@ -25,6 +25,7 @@ import scala.collection.mutable
 
 import me.footlights.api
 import me.footlights.api.{Application, KernelInterface, ModifiablePreferences}
+import me.footlights.api.support.Either._
 import me.footlights.api.support.Pipeline._
 import me.footlights.api.support.Tee._
 
@@ -68,7 +69,10 @@ object AppWrapper {
 		// Create a wrapper around the real kernel which saves keys to an app-specific keychain.
 		val kernelWrapper = new KernelInterface() {
 			override def save(bytes:ByteBuffer) =
-				footlights save bytes tee { case f:data.File => appKeychain store f.link }
+				footlights save bytes map { case f:data.File =>
+					appKeychain store f.link
+					f
+				}
 
 			override def open(name:String) = footlights openat (name split "/", root.dir)
 			override def openDirectory(name:String) = root openMutableDirectory name
@@ -80,8 +84,9 @@ object AppWrapper {
 					throw new java.io.FileNotFoundException("Unable to open '%s'" format name)
 				}
 
-			override def openLocalFile = footlights.openLocalFile tee { case f:data.File =>
+			override def openLocalFile = footlights.openLocalFile map { case f:data.File =>
 				appKeychain store f.link
+				f
 			}
 
 			override def saveLocalFile(file:api.File) = footlights saveLocalFile file
@@ -108,15 +113,18 @@ trait ApplicationManagement extends Footlights {
 
 	override def loadApplication(uri:URI): Either[Exception,AppWrapper] =
 		loadedApps get(uri) map Right.apply getOrElse {
-			val appClass = loadAppClass(uri.toURL).right map {
+			val appClass = loadAppClass(uri.toURL) map {
 				val appKeys = appKeychain(uri)
 				val appPrefs = appPreferences(uri)
-				val appRoot = appRootDir(uri, appKeys)
+				val appRoot = appRootDir(uri, appKeys).fold(
+					ex => throw new Exception("Failed to load application root", ex),
+					dir => dir
+				)
 				val appLog = Logger getLogger uri.toString
 
 				AppWrapper(_, uri, this, appRoot, appKeys, appPrefs, appLog)
 			}
-			appClass.right foreach { loadedApps put (uri, _) }
+			appClass foreach { loadedApps put (uri, _) }
 
 			appClass
 		}
@@ -143,27 +151,31 @@ trait ApplicationManagement extends Footlights {
 	private def appKeychain(appName:URI) = {
 		val appKey = "app.keychain." + appName
 
-		prefs getString appKey map URI.create flatMap open map { case file:data.File =>
-			Keychain parse file.getContents
-		} orElse {
-			Some(Keychain())
-		} map { keys =>
-			log finer "Loaded keychain for '%s': %s".format(appKey, keys)
-			new MutableKeychain(keys, (k:Keychain) => remember(appKey)(k.getBytes))
-		} getOrElse {
-			throw new ProgrammerError("Failed to load or create app-specific Keychain")
-		}
+		prefs getString appKey map
+			URI.create map
+			open flatMap {
+				case Right(file:data.File) => Some(Keychain parse file.getContents)
+				case Left(ex) =>
+					log log (Level.WARNING, "Failed to open keychain '%s'" format appKey, ex)
+					None
+			} orElse
+			Some(Keychain()) map { keys =>
+				log finer "Loaded keychain for '%s': %s".format(appKey, keys)
+				new MutableKeychain(keys, (k:Keychain) => remember(appKey)(k.getBytes))
+			} getOrElse {
+				throw new ProgrammerError("Failed to load or create app-specific Keychain")
+			}
 	}
 
 	private def appRootDir(appName:URI, appKeychain:MutableKeychain) = {
 		val appKey = "app.root." + appName
 
-		prefs getString appKey map URI.create flatMap openDirectory tee {
-			log fine "Loaded root directory for '%s': %s".format(appKey, _)
-		} orElse
-			Some(data.Directory()) map {
+		(prefs getString appKey map
+			URI.create map
+			openDirectory getOrElse
+			Right(data.Directory())) map {
 			new data.MutableDirectory(_, this, (d:data.Directory) => rememberDirectory(appKey)(d))
-		} get
+		}
 	}
 
 
@@ -186,7 +198,12 @@ trait ApplicationManagement extends Footlights {
 
 
 	private def rememberDirectory(prefKey:String)(dir:data.Directory) = {
-		save(dir) tee {
+		(save(dir) match {
+			case Right(dir) => Some(dir)
+			case Left(ex) =>
+				log log (Level.WARNING, "Failed to remember directory '%s'" format prefKey, ex)
+				None
+		}) tee {
 			keychain store _.link } tee { d =>
 			prefs set (prefKey, d.name.toString)
 		} orElse {
@@ -197,7 +214,12 @@ trait ApplicationManagement extends Footlights {
 
 	/** Save some data, its {@link Link} (including symmetric key) and name. */
 	private def remember(prefKey:String)(bytes:ByteBuffer) =
-		save(bytes) map { case f:data.File => f } map { _.link } tee keychain.store map {
+		(save(bytes) match {
+			case Right(f:data.File) => Some(f)
+			case Left(ex) =>
+				log log (Level.WARNING, "Failed to remember '%s'" format prefKey, ex)
+				None
+		}) map { _.link } tee keychain.store map {
 			_.fingerprint.encode
 		} tee {
 			prefs.set(prefKey, _)

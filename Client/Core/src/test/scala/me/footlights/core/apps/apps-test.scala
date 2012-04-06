@@ -51,9 +51,9 @@ class AppsTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Shoul
 
 			when { file link } thenReturn link
 			when { link fingerprint } thenReturn fingerprint
-			when { kernel save data } thenReturn Some(file)
+			when { kernel save data } thenReturn Right(file)
 
-			wrapper.kernel save data should equal (Some(file))
+			wrapper.kernel save data should equal (Right(file))
 			appKeychain getLink fingerprint should equal (Some(link))
 		}
 	}

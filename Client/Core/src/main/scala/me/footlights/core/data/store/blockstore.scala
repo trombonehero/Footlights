@@ -93,7 +93,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 			}
 		} takeWhile { _.isDefined } flatten
 
-		Directory parse plaintext.toIterable
+		if (plaintext.isEmpty)
+			Left(new IllegalArgumentException("%s does not link to (valid) blocks" format link))
+		else
+			Directory parse plaintext.toIterable
 	}
 
 	/**
@@ -307,7 +310,13 @@ object CASClient {
 			} map { new URL(_) }
 
 			setupUrl foreach { log info "Retrieving CAS setup defaults from " + _ + "..." }
-			setupUrl flatMap { resolver fetchJSON }
+			setupUrl flatMap { resolver fetchJSON _ fold(
+						ex => {
+							log log (WARNING, "Unable to fetch JSON", ex)
+							None
+						},
+						json => Some(json)
+					) }
 		}
 
 		// A map of URLs for uploading and downloading CAS content (asynchronous, in case we're

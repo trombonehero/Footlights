@@ -36,6 +36,7 @@ trait KernelPrivilege extends Footlights {
 	abstract override def open(name:URI)           = Privilege.sudo { () => super.open(name) }
 	abstract override def openLocalFile()          = Privilege.sudo { () => super.openLocalFile() }
 	abstract override def open(link:Link)          = Privilege.sudo { () => super.open(link) }
+	abstract override def openDirectory(l:Link)    = Privilege.sudo { () => super.openDirectory(l) }
 	abstract override def save(data:ByteBuffer)    = Privilege.sudo { () => super.save(data) }
 	abstract override def saveLocalFile(f:File)    = Privilege.sudo { () => super.saveLocalFile(f) }
 	abstract override def promptUser(prompt:String, title:String, default:Option[String]) =

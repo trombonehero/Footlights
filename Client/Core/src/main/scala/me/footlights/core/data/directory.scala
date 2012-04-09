@@ -82,6 +82,8 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 	}
 
 	private def save(name:String, d:Directory) = {
+		footlights save d
+
 		val e = Entry(name, d)
 		dir += e
 		notify(dir)

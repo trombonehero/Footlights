@@ -39,6 +39,20 @@ import me.footlights.core.data.FormatException;
 /** A fingerprint for a number of bytes. */
 public class Fingerprint
 {
+	public static Fingerprint of(byte[] bytes)
+	{
+		return Fingerprint.newBuilder()
+			.setContent(bytes)
+			.build();
+	}
+
+	public static Fingerprint of(ByteBuffer bytes)
+	{
+		return Fingerprint.newBuilder()
+			.setContent(bytes)
+			.build();
+	}
+
 	public static Option<Fingerprint> unapply(String s)
 	{
 		try { return Option.apply(decode(new URI(s))); }

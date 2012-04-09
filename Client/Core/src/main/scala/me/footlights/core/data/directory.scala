@@ -87,6 +87,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 		val e = Entry(name, d)
 		dir += e
 		notify(dir)
+
 		e
 	}
 

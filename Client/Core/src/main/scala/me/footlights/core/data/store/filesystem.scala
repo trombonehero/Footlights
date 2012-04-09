@@ -70,6 +70,25 @@ trait Filesystem extends Footlights {
 	override def openDirectory(name:String) =
 		Left(new java.io.IOException("Need a directory to open relative to"))
 
+	/** Open a directory relative to a specified base. */
+	override def openDirectory(names:Iterable[String], base:data.Directory) = {
+		// Walk down through the directory hierarchy.
+		var dir:Either[Exception,data.Directory] = Right(base)
+		for (name <- names.init) {
+			dir = dir flatMap {
+				_(name) filter {
+				_.isDir } map
+				Right.apply getOrElse {
+					val path = names reduce { _ + "/" + _ }
+					Left(new Exception("'%s' not a directory (in path '%s'" format (name, path))) }
+			} map {
+			_.link } flatMap
+			store.fetchDirectory
+		}
+
+		dir
+	}
+
 	/** Open a file using a hierarchical name that recurses through directories. */
 	override def open(name:String):Either[Exception,api.File] = {
 		val names = name split "/"
@@ -80,20 +99,15 @@ trait Filesystem extends Footlights {
 
 	/** Open a file using a hierarchical name relative to a base directory. */
 	override def openat(names:Iterable[String], base:data.Directory) = {
-		// Walk down through the directory hierarchy.
-		var dir = base
-		for (name <- names.init) {
-			dir = dir(name) filter { _.isDir } map { _.link } map
-				store.fetchDirectory flatMap {
-					_.fold(ex => throw ex, d => Some(d))
-				} get
-		}
+		var dir = openDirectory(names.init, base)
 
 		// Retrieve the file from the final directory.
-		dir(names.last) filter { _.isFile } map { _.link } flatMap
+		dir flatMap { _(names.last) filter { _.isFile } map { _.link } flatMap
 			store.fetch map
 			Right.apply getOrElse {
-			Left(new java.io.IOException("No such file '%s'" format (names reduce { _ + "/" + _ })))
+				val path = names reduce { _ + "/" + _ }
+				Left(new java.io.IOException("No such file '%s'" format path))
+			}
 		}
 	}
 

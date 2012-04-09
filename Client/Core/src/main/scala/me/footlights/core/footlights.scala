@@ -36,6 +36,9 @@ trait Footlights extends api.KernelInterface {
 	/** Open a directory whose decryption key is known to the kernel. */
 	def openDirectory(name:URI): Either[Exception,Directory]
 
+	/** Open a directory which is beneath this one. */
+	def openDirectory(names:Iterable[String], base:data.Directory): Either[Exception,Directory]
+
 	/** Open a hierarchical name, relative to a base {@link Directory}. */
 	def openat(path:Iterable[String], base:Directory): Either[Exception,File]
 

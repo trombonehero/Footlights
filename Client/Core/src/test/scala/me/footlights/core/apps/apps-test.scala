@@ -31,6 +31,7 @@ import org.scalatest.mock.MockitoSugar
 import me.footlights.api.{Application,File,KernelInterface,ModifiablePreferences}
 import me.footlights.core.{Footlights}
 import me.footlights.core.data
+import me.footlights.core.crypto
 import me.footlights.core.crypto.{Fingerprint,Keychain,MutableKeychain}
 
 
@@ -39,37 +40,33 @@ package me.footlights.core.apps {
 @RunWith(classOf[JUnitRunner])
 class AppsTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 	var wrapper:AppWrapper = _
-	before {
-		appKeychain = new MutableKeychain(Keychain())
-		wrapper = AppWrapper(TestApp.getClass, name, kernel, root, appKeychain, prefs, log)
-	}
+	before { wrapper = AppWrapper(TestApp.getClass, name, footlights, root) }
 
 	"An AppWrapper " - {
 		"should have the right name." in { wrapper.name should equal (name) }
-		"should store keys in the app-specific keychain." in {
+		"should be able to save a file." in {
 			val data = ByteBuffer allocate 16
 
 			when { file link } thenReturn link
-			when { link fingerprint } thenReturn fingerprint
-			when { kernel save data } thenReturn Right(file)
+			when { footlights save data } thenReturn Right(file)
 
 			wrapper.kernel save data should equal (Right(file))
-			appKeychain getLink fingerprint should equal (Some(link))
 		}
 	}
 
 	val name = new URI("some:name")
-	var appKeychain:MutableKeychain = _
-
 	val app = mock[Application]
 
 	var file = mock[data.File]
-	var fingerprint = mock[Fingerprint]
-	var kernel = mock[Footlights]
-	var link = mock[me.footlights.core.crypto.Link]
-	var log = mock[Logger]
-	var prefs = mock[ModifiablePreferences]
+	var link = crypto.Link.newBuilder
+		.setFingerprint(crypto.Fingerprint of { List(1,2,3) map { _.toByte } toArray })
+		.setKey(crypto.SecretKey.newGenerator.generate)
+		.build
+
+	var footlights = mock[Footlights]
 	var root = mock[data.MutableDirectory]
+	when { root(any()) } thenReturn None
+	when { root get any() } thenReturn None
 
 	/** We need to declare this explicitly because of the Evil Stuff we do on app init. */
 	object TestApp {

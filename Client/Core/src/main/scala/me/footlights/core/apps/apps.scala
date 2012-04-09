@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Jonathan Anderson
+ * Copyright 2011-2012 Jonathan Anderson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import me.footlights.api.support.Pipeline._
 import me.footlights.api.support.Tee._
 
 import me.footlights.core
-import me.footlights.core.{Flusher, Footlights, ModifiableStorageEngine}
+import me.footlights.core.{Flusher, Footlights, ModifiableStorageEngine, Preferences}
 import me.footlights.core.crypto.{Fingerprint, Keychain, MutableKeychain}
 import me.footlights.core.data
 import me.footlights.core.ProgrammerError
@@ -59,34 +59,74 @@ class AppWrapper private(init:Method, val name:URI, val kernel:KernelInterface,
 }
 
 object AppWrapper {
-	def apply(
-			mainClass:Class[_], name:URI, footlights:Footlights, root:data.MutableDirectory,
-			appKeychain:MutableKeychain, prefs:ModifiablePreferences, log:Logger) = {
+	def apply(mainClass:Class[_], name:URI, footlights:Footlights, root:api.Directory) = {
 
 		val init = mainClass.getMethod("init",
 				classOf[KernelInterface], classOf[ModifiablePreferences], classOf[Logger])
 
+		val log = Logger getLogger name.toString
+		val appRootDir = root get "root" map { _.directory } getOrElse { root mkdir "root" }
+
+		val keychain = {
+			val key = "keychain"
+
+			root get key map {
+				_.file } map { case f:data.File =>
+				f.getContents } map
+				Keychain.parse orElse { Some(Keychain()) } map { keys =>
+				new MutableKeychain(keys, (modified:Keychain) => root save (key, modified.getBytes))
+			} get
+		}
+
+		val prefs = {
+			val key = "prefs"
+
+			val values = root get key map {
+				_.file.get } map { case f:data.File =>
+				f.getContents } map
+				Preferences.parse map {
+				Map() ++ _ } getOrElse Map()
+
+			val mutableMap = scala.collection.mutable.Map(values.toSeq: _*)
+
+			ModifiableStorageEngine(mutableMap, Some(root save (key, _)))
+		}
+
 		// Create a wrapper around the real kernel which saves keys to an app-specific keychain.
 		val kernelWrapper = new KernelInterface() {
 			override def save(bytes:ByteBuffer) =
-				footlights save bytes map { case f:data.File =>
-					appKeychain store f.link
-					f
+				footlights save bytes tee { case f:data.File => keychain store f.link }
+
+			override def open(name:String) = footlights openat (name split "/", root)
+			override def openDirectory(dirname:String) = {
+				val path = dirname split "/"
+
+				var dir = appRootDir
+				for (name <- path) {
+					dir = dir flatMap {
+						_ get name map
+						Right.apply getOrElse
+						Left(new Exception("No directory '%s' in %s" format (name, dirname))) flatMap {
+						_.directory }
+					}
 				}
 
-			override def open(name:String) = footlights openat (name split "/", root.dir)
-			override def openDirectory(name:String) = root openMutableDirectory name
+				dir
+			}
+/*
+				root get name map { _.directory } map Right.apply getOrElse {
+					Left(new Exception("No such ))
+				}*/
 
 			override def open(name:URI) =
-				appKeychain getLink { Fingerprint decode name } orElse {
+				keychain getLink { Fingerprint decode name } orElse {
 					throw new AccessControlException("Unable to find key for '%s'" format name)
 				} map footlights.open getOrElse {
 					throw new java.io.FileNotFoundException("Unable to open '%s'" format name)
 				}
 
-			override def openLocalFile = footlights.openLocalFile map { case f:data.File =>
-				appKeychain store f.link
-				f
+			override def openLocalFile = footlights.openLocalFile tee { case f:data.File =>
+				keychain store f.link
 			}
 
 			override def saveLocalFile(file:api.File) = footlights saveLocalFile file
@@ -113,18 +153,11 @@ trait ApplicationManagement extends Footlights {
 
 	override def loadApplication(uri:URI): Either[Exception,AppWrapper] =
 		loadedApps get(uri) map Right.apply getOrElse {
-			val appClass = loadAppClass(uri.toURL) map {
-				val appKeys = appKeychain(uri)
-				val appPrefs = appPreferences(uri)
-				val appRoot = appRootDir(uri, appKeys).fold(
-					ex => throw new Exception("Failed to load application root", ex),
-					dir => dir
-				)
-				val appLog = Logger getLogger uri.toString
-
-				AppWrapper(_, uri, this, appRoot, appKeys, appPrefs, appLog)
+			val appClass = loadAppClass(uri.toURL).right map {
+				AppWrapper(_, uri, this, applicationRoot(uri))
 			}
-			appClass foreach { loadedApps put (uri, _) }
+
+			appClass.right foreach { loadedApps put (uri, _) }
 
 			appClass
 		}
@@ -133,51 +166,24 @@ trait ApplicationManagement extends Footlights {
 		loadedApps find { kv => kv._2 == app } foreach { kv => loadedApps remove kv._1 }
 
 
+	/** The root directory which holds an application's state (prefs, keychain, filesystem...). */
+	private def applicationRoot(appName:URI): data.MutableDirectory =
+		applications(appName.toString) map {
+			_.directory } getOrElse {
+			applications mkdir appName.toString } map { case d:data.MutableDirectory => d } get
+
+
+
 	/**
-	 * Create a {@link ModifiablePreferences} for an application.
+	 * The method provided by the lower-level {@link ClassLoader} which actually loads applications.
 	 *
-	 * This {@link ModifiablePreferences} object will start populated with saved preferences,
-	 * if any exist, but it will also have the ability to save new preferences to a {@link File}.
+	 * This will only succeed if we are running with appropriate JVM privileges (which we should,
+	 * since this is part of {@link Kernel} initialization).
 	 */
-	private def appPreferences(appName:URI) = {
-		val appKey = "app.prefs." + appName
-		val map = mutable.Map() ++
-			(prefs getString appKey map URI.create flatMap readPrefs getOrElse Map())
+	private val loadApplicationMethod = appLoader.getClass.getDeclaredMethod(
+			"loadApplication", classOf[URL])
 
-		ModifiableStorageEngine(map, Some(remember(appKey)))
-	}
-
-	/** Create a {@link Keychain} for an application which can save itself. */
-	private def appKeychain(appName:URI) = {
-		val appKey = "app.keychain." + appName
-
-		prefs getString appKey map
-			URI.create map
-			open flatMap {
-				case Right(file:data.File) => Some(Keychain parse file.getContents)
-				case Left(ex) =>
-					log log (Level.WARNING, "Failed to open keychain '%s'" format appKey, ex)
-					None
-			} orElse
-			Some(Keychain()) map { keys =>
-				log finer "Loaded keychain for '%s': %s".format(appKey, keys)
-				new MutableKeychain(keys, (k:Keychain) => remember(appKey)(k.getBytes))
-			} getOrElse {
-				throw new ProgrammerError("Failed to load or create app-specific Keychain")
-			}
-	}
-
-	private def appRootDir(appName:URI, appKeychain:MutableKeychain) = {
-		val appKey = "app.root." + appName
-
-		(prefs getString appKey map
-			URI.create map
-			openDirectory getOrElse
-			Right(data.Directory())) map {
-			new data.MutableDirectory(_, this, (d:data.Directory) => rememberDirectory(appKey)(d))
-		}
-	}
-
+	loadApplicationMethod.setAccessible(true)
 
 	/** Load an application's main class from a given classpath. */
 	private def loadAppClass(classpath:URL):Either[Exception,Class[_]] =
@@ -196,49 +202,25 @@ trait ApplicationManagement extends Footlights {
 				)
 		}
 
-
-	private def rememberDirectory(prefKey:String)(dir:data.Directory) = {
-		(save(dir) match {
-			case Right(dir) => Some(dir)
-			case Left(ex) =>
-				log log (Level.WARNING, "Failed to remember directory '%s'" format prefKey, ex)
-				None
-		}) tee {
-			keychain store _.link } tee { d =>
-			prefs set (prefKey, d.name.toString)
-		} orElse {
-			log warning "Failed to save root dir '%s'".format(prefKey)
-			None
-		}
-	}
-
-	/** Save some data, its {@link Link} (including symmetric key) and name. */
-	private def remember(prefKey:String)(bytes:ByteBuffer) =
-		(save(bytes) match {
-			case Right(f:data.File) => Some(f)
-			case Left(ex) =>
-				log log (Level.WARNING, "Failed to remember '%s'" format prefKey, ex)
-				None
-		}) map { _.link } tee keychain.store map {
-			_.fingerprint.encode
-		} tee {
-			prefs.set(prefKey, _)
-		} orElse {
-			log warning "Failed to save '" + prefKey + "'"
-			None
+	/** The root directory where application data is stored. */
+	private lazy val applications = {
+		val key = "applications"
+		def remember(dir:data.Directory) = {
+			save(dir) map { _.link } tee
+				keychain.store map {
+				_.fingerprint.encode } foreach {
+				prefs set (key, _)
+			}
 		}
 
-
-	/**
-	 * The method provided by the lower-level {@link ClassLoader} which actually loads applications.
-	 *
-	 * This will only succeed if we are running with appropriate JVM privileges (which we should,
-	 * since this is part of {@link Kernel} initialization).
-	 */
-	private val loadApplicationMethod = appLoader.getClass.getDeclaredMethod(
-			"loadApplication", classOf[URL])
-
-	loadApplicationMethod.setAccessible(true)
+		prefs getString key map
+			URI.create map
+			openDirectory getOrElse {
+			Right(data.Directory()) } tee {
+			log info "Applications root: %s".format(_) } map {
+			new data.MutableDirectory(_, this, remember)
+		}
+	} get
 
 	private val log = Logger getLogger { classOf[ApplicationManagement] getCanonicalName }
 }

@@ -25,7 +25,9 @@ package me.footlights.api.support
  *
  * Also, add the tee method like in {@link Tee}.
  */
-class MappableEither[A,B](e: Either[A,B]) {
+class MappableEither[A <: Throwable, B](e: Either[A,B]) {
+	def get(): B = e.right getOrElse { throw e.left.get }
+
 	def foreach(f:B => Any): Unit = e.right foreach f
 
 	def map[C](f:B => C): Either[A,C] = e.right map f
@@ -35,5 +37,5 @@ class MappableEither[A,B](e: Either[A,B]) {
 }
 
 object Either {
-	implicit def either2mappable[A,B](e: Either[A,B]) = new MappableEither(e)
+	implicit def either2mappable[A <: Throwable, B](e: Either[A,B]) = new MappableEither(e)
 }

@@ -98,6 +98,10 @@ trait Filesystem extends Footlights {
 	}
 
 	/** Open a file using a hierarchical name relative to a base directory. */
+	override def openat(names:Iterable[String], base:api.Directory) = base match {
+		case d:data.MutableDirectory => openat(names, d.dir)
+	}
+
 	override def openat(names:Iterable[String], base:data.Directory) = {
 		var dir = openDirectory(names.init, base)
 

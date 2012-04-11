@@ -74,7 +74,7 @@ trait Filesystem extends Footlights {
 	override def openDirectory(names:Iterable[String], base:data.Directory) = {
 		// Walk down through the directory hierarchy.
 		var dir:Either[Exception,data.Directory] = Right(base)
-		for (name <- names) {
+		for (name <- names if !name.isEmpty) {
 			dir = dir flatMap {
 				_(name) filter {
 				_.isDir } map

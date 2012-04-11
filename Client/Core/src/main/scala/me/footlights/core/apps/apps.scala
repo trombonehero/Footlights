@@ -70,7 +70,7 @@ object AppWrapper {
 		val keychain = {
 			val key = "keychain"
 
-			root get key map { case f:data.File =>
+			root get key map { _.file } map { case Right(f:data.File) =>
 				f.getContents } map
 				Keychain.parse getOrElse Right(Keychain()) map { keys =>
 				new MutableKeychain(keys, (modified:Keychain) => root save (key, modified.getBytes))

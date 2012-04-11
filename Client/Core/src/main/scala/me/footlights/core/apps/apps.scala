@@ -96,7 +96,9 @@ object AppWrapper {
 			override def save(bytes:ByteBuffer) =
 				footlights save bytes tee { case f:data.File => keychain store f.link }
 
-			override def open(name:String) = footlights openat (name split "/", root)
+			override def open(name:String) =
+				appRootDir flatMap { footlights openat (name split "/", _) }
+
 			override def openDirectory(dirname:String) = {
 				val path = dirname split "/"
 

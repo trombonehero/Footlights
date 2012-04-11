@@ -128,6 +128,7 @@ object AppWrapper {
 			override def saveLocalFile(file:api.File) = footlights saveLocalFile file
 
 			override def promptUser(prompt:String) = promptUser(prompt, None)
+			override def promptUser(prompt:String, default:Option[String]) =
 				footlights.promptUser(prompt, name.toString, default)
 		}
 

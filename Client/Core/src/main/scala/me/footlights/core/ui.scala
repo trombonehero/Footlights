@@ -130,6 +130,7 @@ trait SwingPowerboxes extends Footlights {
 		filename flatMap { localFileName => saveLocal(f, localFileName) }
 	}
 
+	override def promptUser(prompt:String) = promptUser(prompt, None)
 	override def promptUser(prompt:String, default:Option[String]) =
 		promptUser(prompt, "Footlights", default)
 

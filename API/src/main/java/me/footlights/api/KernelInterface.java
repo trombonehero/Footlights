@@ -65,4 +65,7 @@ public interface KernelInterface
 	 * synchronous.
 	 */
 	public Either<Exception,String> promptUser(String prompt, Option<String> defaultValue);
+
+	/** Convenience method with no default value. */
+	public Either<Exception,String> promptUser(String prompt);
 }

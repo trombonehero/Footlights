@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import java.net.{URI,URL}
 import java.nio.ByteBuffer
 
@@ -33,6 +32,7 @@ import me.footlights.api.support.Either._
 import me.footlights.core.Preferences
 import me.footlights.core.crypto.{Fingerprint,Keychain,Link,SecretKey}
 import me.footlights.core.data.store._
+
 
 package me.footlights.core.data {
 

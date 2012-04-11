@@ -113,10 +113,6 @@ object AppWrapper {
 
 				dir
 			}
-/*
-				root get name map { _.directory } map Right.apply getOrElse {
-					Left(new Exception("No such ))
-				}*/
 
 			override def open(name:URI) =
 				keychain getLink { Fingerprint decode name } orElse {

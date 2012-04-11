@@ -29,6 +29,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import me.footlights.api.support.Either._
 import me.footlights.core.Preferences
 import me.footlights.core.crypto.{Fingerprint,Keychain,Link,SecretKey}
 import me.footlights.core.data.store._
@@ -65,7 +66,7 @@ class RealFileIT extends FreeSpec with BeforeAndAfter with MockitoSugar with Sho
 			val keyName = Fingerprint decode
 				"urn:sha-256:4S7RGYCAC4PI5QTA5B7CNFPYYUYERWW6YT5CO6W4JRSDDDVQVHFA===="
 
-			keychain getLink keyName should not be ('empty)
+			keychain.get getLink keyName should not be ('empty)
 		}
 
 		"should give back real files with the same names that went in." in {

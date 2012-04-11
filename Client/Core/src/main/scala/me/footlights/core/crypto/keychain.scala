@@ -165,47 +165,52 @@ object Keychain {
 		new ImmutableKeychain(identities, links)
 
 
-	def parse(bytes:ByteBuffer) = {
+	// TODO: return Either[Exception, Keychain]
+	def parse(bytes:ByteBuffer): Either[Exception, Keychain] = {
 		var identities = Map[Fingerprint,SigningIdentity]()
 		var links = Map[Fingerprint,Link]()
 
 		val magic = new Array[Byte](Magic.length)
 		bytes get magic
 		if (magic.deep != Magic.deep)
-			throw new FormatException("Invalid keychain magic: " + magic.array.toList)
+			Left(new FormatException("Invalid keychain magic: " + magic.array.toList))
 
-		val (privateSize, symmetricSize) = (bytes getInt, bytes getInt)
-		for (i <- 0 until privateSize) {
-			val (namelen, keylen) = (bytes getInt, bytes getInt)
-			val (name, key) = (new Array[Byte](namelen), new Array[Byte](keylen))
+		else try {
+			val (privateSize, symmetricSize) = (bytes getInt, bytes getInt)
+			for (i <- 0 until privateSize) {
+				val (namelen, keylen) = (bytes getInt, bytes getInt)
+				val (name, key) = (new Array[Byte](namelen), new Array[Byte](keylen))
 
-			bytes get name
-			bytes get key
+				bytes get name
+				bytes get key
 
-			val fingerprint = Fingerprint decode new String(name)
-			// TODO: SigningIdentity import/export
-			/*
-			val id = SigningIdentity parse key
+				val fingerprint = Fingerprint decode new String(name)
+				// TODO: SigningIdentity import/export
+				/*
+				val id = SigningIdentity parse key
 
-			privateKeys += (fingerprint -> id)
-			*/
+				privateKeys += (fingerprint -> id)
+				*/
+			}
+
+			for (i <- 0 until symmetricSize) {
+				val (namelen, keylen) = (bytes getInt, bytes getInt)
+				val fingerprint = new Array[Byte](namelen)
+				bytes get fingerprint
+
+				val key = new Array[Byte](keylen)
+				bytes get key
+
+				val name = Fingerprint decode { new String(fingerprint) }
+				val secret = SecretKey parse { new URI(new String(key)) }
+
+				links += name -> (secret.createLinkBuilder setFingerprint name setKey secret build)
+			}
+
+			Right(apply(identities, links))
+		} catch {
+			case ex:Exception => Left(ex)
 		}
-
-		for (i <- 0 until symmetricSize) {
-			val (namelen, keylen) = (bytes getInt, bytes getInt)
-			val fingerprint = new Array[Byte](namelen)
-			bytes get fingerprint
-
-			val key = new Array[Byte](keylen)
-			bytes get key
-
-			val name = Fingerprint decode { new String(fingerprint) }
-			val secret = SecretKey parse { new URI(new String(key)) }
-
-			links += name -> (secret.createLinkBuilder setFingerprint name setKey secret build)
-		}
-
-		apply(identities, links)
 	}
 
 

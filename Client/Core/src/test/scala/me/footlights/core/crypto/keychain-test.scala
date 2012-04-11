@@ -27,6 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import me.footlights.api.support.Either._
 import me.footlights.core.Preferences
 
 
@@ -72,8 +73,8 @@ class KeychainTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 			val keychain = Keychain() + link //+ (name, privateKey)
 			val parsed = Keychain parse keychain.getBytes
 
-			parsed should equal (keychain)
-			(parsed getLink name).get.key should equal (symmetricKey)
+			parsed should equal (Right(keychain))
+			(parsed.get getLink name).get.key should equal (symmetricKey)
 		}
 
 		"should be able to save to a Java KeyStore" in {

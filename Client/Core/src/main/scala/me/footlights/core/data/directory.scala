@@ -38,6 +38,8 @@ package me.footlights.core.data {
 class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Directory => Unit)
 	extends api.Directory {
 
+	override def toString = "Mutable %s" format dir
+
 	override def snapshotName = dir.name
 	override def entries = asJavaIterable { dir.entries map entry2entry }
 

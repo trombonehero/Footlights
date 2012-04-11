@@ -70,6 +70,8 @@ class Ajax(app:Uploader) extends AjaxHandler
 						ex => "error: %s" format ex,
 						name => "created directory '%s'" format name
 					)
+				} append {
+					JavaScript ajax PopulateView
 				}
 
 			case UploadFile =>

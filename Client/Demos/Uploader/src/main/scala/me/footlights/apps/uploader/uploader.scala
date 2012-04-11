@@ -18,6 +18,7 @@ import java.util.NoSuchElementException
 import java.util.logging.Logger
 
 import me.footlights.api.{Application,File,KernelInterface,ModifiablePreferences}
+import me.footlights.api.support.Either._
 import me.footlights.api.support.Tee._
 
 package me.footlights.apps.uploader {
@@ -30,21 +31,38 @@ class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) 
 {
 	def ajaxHandler = new Ajax(this)
 
-	private[uploader] def upload() = kernel.openLocalFile tee store
-	private[uploader] def download(name:URI) =
-		kernel open name tee kernel.saveLocalFile
+	private[uploader] def listFiles() = cwd.entries
+	private[uploader] def chdir(dir:String) = {
+		val newdir =
+			if (dir startsWith "/") kernel openDirectory dir
+			else cwd openDirectory dir
 
-	private[uploader] def storedNames =
-		(prefs getString SaveList map split flatten) map { new URI(_) }
-
-	private def store(file:File) = prefs.synchronized {
-		prefs.set(SaveList, (storedNames toList) :+ file.name map { _.toString } reduce join)
+		newdir flatMap { newcwd =>
+			cwd = newcwd
+			currentPath = dir split "/" toList match {
+				case "" :: absolutePath => absolutePath
+				case Nil => Nil
+				case relativePath => currentPath ++ relativePath
+			}
+			Right(dir)
+		}
 	}
+
+	private[uploader] def mkdir() = kernel promptUser ("Directory name", None) tee cwd.mkdir
+
+	private[uploader] def breadcrumbs = currentPath.scan("/")(_ + _ + "/")
+
+	private[uploader] def upload() = kernel.openLocalFile tee store
+	private[uploader] def download(filename:String) = cwd open filename tee kernel.saveLocalFile
+
+	private def store(file:File) =
+		kernel promptUser ("File name", None) map { cwd.save(_, file) }
 
 	private def join(x:String, y:String) = x + ";" + y
 	private def split(x:String) = x split ";" toList
 
-	private val SaveList = "saved_files"
+	private var cwd = kernel openDirectory "/" get
+	private var currentPath = List[String]()
 }
 
 

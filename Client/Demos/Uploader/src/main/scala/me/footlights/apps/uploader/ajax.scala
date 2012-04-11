@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import scala.collection.JavaConversions._
+
 import me.footlights.api.{Preferences,WebRequest}
-import me.footlights.api.ajax.{AjaxHandler,JavaScript}
+import me.footlights.api.ajax.{AjaxHandler,JavaScript,URLEncoded}
 import me.footlights.api.ajax.JavaScript.sanitizeText
-
-import java.net.{URI,URLEncoder,URLDecoder}
-
 import me.footlights.api.support.Either._
 
 
@@ -34,41 +33,78 @@ class Ajax(app:Uploader) extends AjaxHandler
 			case "init" =>
 				new JavaScript().append("context.load('scripts/init.js');")
 
-			case "populate" =>
-				val js = new JavaScript().append("var list = context.globals['list'];")
-				app.storedNames foreach { name =>
-					val sanitized = JavaScript sanitizeText name.toString
-					val encoded = JavaScript sanitizeText URLEncoder.encode(name.toString, "utf-8")
+			case PopulateView =>
+				val js = new JavaScript
 
-					js.append("""
-var a = list.appendElement('div').appendElement('a');
-a.appendText('%s');
-a.onclick = function() { context.ajax('download/%s)'); };
-""" format (sanitized, encoded))
+				js append "var crumbs = context.globals['breadcrumbs'];"
+				js append "crumbs.clear();"
+				js append {
+					app.breadcrumbs map { path =>
+						addLink("crumbs", path, "chdir/%s" format URLEncoded(path))
+					} reduce {
+						_ + "crumbs.appendText(' >> ');" + _
+					}
 				}
+
+				js append "var list = context.globals['list'];"
+				js append "list.clear();"
+				app.listFiles map { entry =>
+					if (entry.isDir) ("%s/" format entry.name, "chdir/%s" format entry.name)
+					else (entry.name, "download/%s" format entry.name)
+				} map { case (name, ajax) =>
+					addLink("list.appendElement('div')", name, ajax)
+				} foreach js.append
+
 				js
 
-			case "do_upload" =>
+			case ChangeDirectory(URLEncoded(path)) =>
 				setStatus {
-					app.upload map { _.name.toString } map { "Downloaded '%s'." format _ } getOrElse
-						"Uploaded nothing (user may have clicked cancel)."
+					app chdir path fold ("error changing directory: " + _, "new path: " + _)
+				} append JavaScript.ajax(PopulateView)
+
+			case MakeDirectory =>
+				setStatus {
+					app.mkdir fold (
+						ex => "error: %s" format ex,
+						name => "created directory '%s'" format name
+					)
 				}
 
-			case DownloadRequest(name) =>
+			case UploadFile =>
 				setStatus {
-					app download { URI create URLDecoder.decode(name, "utf-8") } map {
+					app.upload map { _.name.toString } fold (
+						ex => "Uploaded nothing: %s" format ex,
+						"Downloaded '%s'." format _
+					)
+				}
+
+			case DownloadRequest(URLEncoded(name)) =>
+				setStatus {
+					app download name fold(
+						ex => "Downloaded nothing (%s)" format ex,
 						"Downloaded '%s'" format _.name.toString
-					} getOrElse
-						"Downloaded nothing (user cancelled?)."
+					)
 				}
 		}
 	}
+
+	private def addLink(parent:String, text:String, ajax:String) = """
+(function() {
+	var a = %s.appendElement('a');
+	a.appendText('%s');
+	a.onclick = function() { context.ajax('%s'); };
+})();
+""" format (parent, JavaScript sanitizeText text, ajax)
 
 	private def setStatus(unsafeText:String) =
 		new JavaScript()
 			.append("var status = context.globals['status']; status.clear();")
 			.append("status.appendText('%s');" format (JavaScript sanitizeText unsafeText))
 
+	private val PopulateView = "populate"
+	private val ChangeDirectory = """chdir/(\S+)""".r
+	private val MakeDirectory = "mkdir"
+	private val UploadFile = "do_upload"
 	private val DownloadRequest = """download/(\S+)""".r
 }
 

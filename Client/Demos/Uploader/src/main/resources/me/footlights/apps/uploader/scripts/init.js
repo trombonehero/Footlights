@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var a = context.root.appendElement('a');
-a.onclick = function() { context.ajax('do_upload'); }
-a.appendText('Upload Something');
-
 var status = context.root.appendElement('div');
 context.globals['status'] = status;
 
-context.root.appendElement('div').appendText('Uploaded files:');
+var breadcrumbs = context.root.appendElement('div');
+breadcrumbs.style['background-color'] = 'rgba(153, 153, 153, 0.3)';
+context.globals['breadcrumbs'] = breadcrumbs;
+
+context.root.appendElement('div').appendText('Contents:');
 var list = context.root.appendElement('div');
 list.class = 'console';
 context.globals['list'] = list;
+
+var a = context.root.appendElement('a');
+a.onclick = function() { context.ajax('mkdir'); }
+a.appendText('Create Directory');
+
+context.root.appendText(' | ');
+
+a = context.root.appendElement('a');
+a.onclick = function() { context.ajax('do_upload'); }
+a.appendText('Upload File');
 
 context.ajax('populate');

@@ -102,7 +102,7 @@ object AppWrapper {
 				val path = dirname split "/"
 
 				var dir = appRootDir
-				for (name <- path) {
+				for (name <- path if !name.isEmpty) {
 					dir = dir flatMap {
 						_ get name map
 						Right.apply getOrElse

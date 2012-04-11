@@ -21,6 +21,7 @@ import me.footlights.api.{Application,File,KernelInterface,ModifiablePreferences
 import me.footlights.api.support.Either._
 import me.footlights.api.support.Tee._
 
+
 package me.footlights.apps.uploader {
 
 /**

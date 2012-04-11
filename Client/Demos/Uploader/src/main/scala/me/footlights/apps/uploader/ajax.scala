@@ -30,8 +30,8 @@ class Ajax(app:Uploader) extends AjaxHandler
 	{
 		request.path() match
 		{
-			case "init" =>
-				new JavaScript().append("context.load('scripts/init.js');")
+			case Init =>
+				new JavaScript append "context.load('scripts/init.js');"
 
 			case PopulateView =>
 				val js = new JavaScript
@@ -60,7 +60,9 @@ class Ajax(app:Uploader) extends AjaxHandler
 			case ChangeDirectory(URLEncoded(path)) =>
 				setStatus {
 					app chdir path fold ("error changing directory: " + _, "new path: " + _)
-				} append JavaScript.ajax(PopulateView)
+				} append {
+					JavaScript ajax PopulateView
+				}
 
 			case MakeDirectory =>
 				setStatus {
@@ -92,15 +94,16 @@ class Ajax(app:Uploader) extends AjaxHandler
 (function() {
 	var a = %s.appendElement('a');
 	a.appendText('%s');
-	a.onclick = function() { context.ajax('%s'); };
+	a.onclick = %s;
 })();
-""" format (parent, JavaScript sanitizeText text, ajax)
+""" format (parent, JavaScript sanitizeText text, JavaScript ajax ajax)
 
 	private def setStatus(unsafeText:String) =
 		new JavaScript()
 			.append("var status = context.globals['status']; status.clear();")
 			.append("status.appendText('%s');" format (JavaScript sanitizeText unsafeText))
 
+	private val Init = "init"
 	private val PopulateView = "populate"
 	private val ChangeDirectory = """chdir/(\S+)""".r
 	private val MakeDirectory = "mkdir"

@@ -113,12 +113,13 @@ object AppWrapper {
 				dir
 			}
 
-			override def open(name:URI) =
-				keychain getLink { Fingerprint decode name } orElse {
-					throw new AccessControlException("Unable to find key for '%s'" format name)
-				} map footlights.open getOrElse {
-					throw new java.io.FileNotFoundException("Unable to open '%s'" format name)
-				}
+			override def open(name:URI) = try {
+				keychain getLink { Fingerprint decode name } toRight {
+					new Exception("Unable to find key for '%s'" format name) } flatMap
+					footlights.open
+			} catch {
+				case ex:Exception => Left(ex)
+			}
 
 			override def openLocalFile = footlights.openLocalFile tee { case f:data.File =>
 				keychain store f.link

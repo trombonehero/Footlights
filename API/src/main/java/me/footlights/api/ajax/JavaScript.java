@@ -72,6 +72,7 @@ public class JavaScript implements AjaxResponse
 		return input.replace("'", "\\'").replace("\n", "\\n");
 	}
 
+	@Override public String toString() { return asFunction(); }
 	public String asScript() { return code(); }
 	public String asFunction() { return "(function(){" + code() + "})"; }
 	public String exec() { return asFunction() + "();"; }

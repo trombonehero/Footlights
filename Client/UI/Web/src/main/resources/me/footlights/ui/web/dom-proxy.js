@@ -119,6 +119,8 @@ function proxy(node, context)
 
 		set src(uri)
 		{
+			if (!uri) return;
+
 			if (uri.indexOf('..') != -1) throw "src may not contain '..'";
 
 			if (uri.indexOf(':') == -1) uri = 'static/' + uri;

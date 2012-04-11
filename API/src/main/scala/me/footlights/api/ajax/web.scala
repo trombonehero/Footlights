@@ -13,9 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.net.{URLEncoder,URLDecoder}
+
 import me.footlights.api.WebRequest
 
+
 package me.footlights.api.ajax {
+
+/** Represents a URL-encoded string. */
+class URLEncoded private (s:String) { override val toString = URLEncoder.encode(s, "utf-8") }
+
+/** Helper functions for encoding and decoding. */
+object URLEncoded {
+	def apply(s:String) = new URLEncoded(s)
+	def unapply(s:String) =
+		try { Some(URLDecoder.decode(s, "utf-8")) }
+		catch { case ex:Exception => None }
+}
 
 class RichWebRequest(req:WebRequest) {
 	def map[T](f:WebRequest => T) = f(req)

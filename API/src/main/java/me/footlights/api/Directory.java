@@ -48,6 +48,9 @@ public interface Directory
 	/** Open a {@link File} by relative name. */
 	public Either<Exception,File> open(String name);
 
+	/** Open a {@link Directory} by relative name. */
+	public Either<Exception,Directory> openDirectory(String name);
+
 	/** Retrieve an {@link Entry} by relative name. */
 	public Option<Entry> get(String name);
 

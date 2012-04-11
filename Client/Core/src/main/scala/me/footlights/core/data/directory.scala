@@ -42,6 +42,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 	override def entries = asJavaIterable { dir.entries map entry2entry }
 
 	override def open(name:String) = footlights openat (name split "/", dir)
+	override def openDirectory(name:String) = openMutableDirectory(name)
 
 	def apply(name:String) = get(name)
 	override def get(name:String) = dir(name) map entry2entry

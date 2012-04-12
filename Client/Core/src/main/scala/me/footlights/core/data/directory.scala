@@ -74,7 +74,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 
 	def openMutableDirectory(name:String): Either[Exception,api.Directory] = {
 		var current:Either[Exception,api.Directory] = Right(this)
-		for (component <- name split "/")
+		for (component <- name split "/" if !component.isEmpty)
 			current = current map { _ get component } flatMap {
 				case Some(entry) => entry.directory
 				case _ => Left(new IllegalArgumentException(

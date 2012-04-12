@@ -79,7 +79,7 @@ public class Block implements FootlightsPrimitive
 			return this;
 		}
 
-		public Builder parse(ByteBuffer bytes) throws FormatException, NoSuchAlgorithmException
+		public Builder parse(ByteBuffer bytes) throws FormatException, GeneralSecurityException
 		{
 			int startPosition = bytes.position();
 
@@ -161,7 +161,7 @@ public class Block implements FootlightsPrimitive
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** Shorthand for {@link Builder#parse(ByteBuffer).build()}. */
-	public static Block parse(ByteBuffer bytes) throws FormatException, NoSuchAlgorithmException
+	public static Block parse(ByteBuffer bytes) throws FormatException, GeneralSecurityException
 	{
 		return newBuilder().parse(bytes).build();
 	}

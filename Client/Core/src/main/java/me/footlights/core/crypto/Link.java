@@ -18,7 +18,6 @@ package me.footlights.core.crypto;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
@@ -59,7 +58,7 @@ public class Link implements FootlightsPrimitive
 		 * {@link ByteBuffer#slice()}, {@link ByteBuffer#duplicate()} or
 		 * {@link ByteBuffer#asReadOnlyBuffer()}.
 		 */
-		public Builder parse(ByteBuffer b) throws FormatException, NoSuchAlgorithmException
+		public Builder parse(ByteBuffer b) throws FormatException, GeneralSecurityException
 		{
 			Util.setByteOrder(b);
 
@@ -127,7 +126,7 @@ public class Link implements FootlightsPrimitive
 	public static Builder newBuilder() { return new Builder(); }
 
 	/** Shorthand for {@link Builder#parse().build()}. */
-	public static Link parse(ByteBuffer buffer) throws FormatException, NoSuchAlgorithmException
+	public static Link parse(ByteBuffer buffer) throws FormatException, GeneralSecurityException
 	{
 		return newBuilder().parse(buffer).build();
 	}

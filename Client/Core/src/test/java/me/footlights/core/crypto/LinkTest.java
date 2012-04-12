@@ -16,6 +16,7 @@
 package me.footlights.core.crypto;
 
 import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 
 import me.footlights.core.crypto.Fingerprint;
@@ -43,7 +44,7 @@ import static org.mockito.Mockito.*;
 @PrepareForTest(Fingerprint.class)
 public class LinkTest
 {
-	@Before public void setUp() throws NoSuchAlgorithmException
+	@Before public void setUp() throws GeneralSecurityException
 	{
 		fingerprint = mock(Fingerprint.class);
 		when(fingerprint.encode()).thenReturn(FAKE_ID);
@@ -171,7 +172,7 @@ public class LinkTest
 		assertArrayEquals(KEY_BYTES, key);
 	}
 
-	@Test public void serializeAndDeserialize() throws FormatException, NoSuchAlgorithmException
+	@Test public void serializeAndDeserialize() throws FormatException, GeneralSecurityException
 	{
 		Link original = Link.newBuilder()
 			.setFingerprint(fingerprint)

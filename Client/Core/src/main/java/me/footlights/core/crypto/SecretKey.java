@@ -18,6 +18,7 @@ package me.footlights.core.crypto;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -54,7 +55,7 @@ public class SecretKey
 
 	/** Parse a hexadecimal URI. */
 	public static SecretKey parse(URI uri)
-		throws NoSuchAlgorithmException, org.apache.commons.codec.DecoderException
+		throws GeneralSecurityException, org.apache.commons.codec.DecoderException
 	{
 		return newGenerator()
 			.setAlgorithm(uri.getScheme())
@@ -91,7 +92,7 @@ public class SecretKey
 		public Generator setKey(SecretKeySpec spec) { keySpec = spec; return this; }
 		public Generator setKeyLength(int l) { keylen = l; return this; }
 
-		public SecretKey generate() throws NoSuchAlgorithmException
+		public SecretKey generate() throws GeneralSecurityException
 		{
 			if (algorithm.contains("/"))
 				throw new NoSuchAlgorithmException(

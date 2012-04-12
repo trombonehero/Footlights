@@ -106,6 +106,9 @@ public class SecretKey
 			}
 
 			if (keySpec == null) keySpec = new SecretKeySpec(secret, algorithm);
+
+			// Can we understand this algorithm?
+			javax.crypto.Cipher.getInstance(keySpec.getAlgorithm());
 			return new SecretKey(keySpec, fingerprint.setContent(secret).build());
 		}
 

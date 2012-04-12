@@ -24,7 +24,7 @@ import scala.actors.Actor._
 import scala.actors.Futures._
 
 import me.footlights.api.WebRequest
-import me.footlights.api.ajax.{AjaxResponse,JavaScript,JSON}
+import me.footlights.api.ajax.{AjaxResponse,JavaScript,JSON,URLEncoded}
 import me.footlights.api.ajax.JSON._
 import me.footlights.api.support.Either._
 import me.footlights.core.Footlights
@@ -43,8 +43,8 @@ abstract class Context(base:Class[_]) extends WebServer {
 	/** Concrete subclasses must handle Ajax. */
 	protected def handleAjax(req:WebRequest): AjaxResponse
 
-	/** Open a {@link data.File}, perhaps using a app-specific keychain. */
-	protected def openFile(name:URI): Either[Exception,data.File]
+	/** Open a {@link data.File}, perhaps using an app-specific keychain. */
+	protected def openFile(name:String): Either[Exception,data.File]
 
 	/** Subclasses <i>may</i> provide a default response for empty requests. */
 	protected def defaultResponse() = Response error new FileNotFoundException
@@ -61,7 +61,7 @@ abstract class Context(base:Class[_]) extends WebServer {
 
 			case File =>
 				val r = Response.newBuilder
-				openFile(URI create remainder.path) foreach {
+				openFile(URLEncoded(remainder.path).decode) foreach {
 					file => r setResponse file.getInputStream
 				}
 				r.build
@@ -99,7 +99,7 @@ abstract class Context(base:Class[_]) extends WebServer {
 class AppContext(wrapper:AppWrapper) extends Context(wrapper.app.getClass) {
 	override val name = "Application context: '%s'" format wrapper.name
 	override def handleAjax(req:WebRequest) = wrapper.app.ajaxHandler service req
-	override def openFile(name:URI) = wrapper.kernel open name map { case f:data.File => f }
+	override def openFile(name:String) = wrapper.kernel open name map { case f:data.File => f }
 }
 
 
@@ -113,7 +113,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 	}
 
 	override val name = "Global context"
-	override def openFile(name:URI) = footlights open name map { case f:data.File => f }
+	override def openFile(name:String) = footlights open name map { case f:data.File => f }
 	override def handleAjax(request:WebRequest):AjaxResponse = {
 		request.path() match {
 			case Init =>

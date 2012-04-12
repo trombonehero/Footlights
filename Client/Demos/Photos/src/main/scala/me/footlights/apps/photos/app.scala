@@ -17,7 +17,9 @@ import java.net.URI
 import java.util.NoSuchElementException
 import java.util.logging.Logger
 
-import me.footlights.api.{Application,File,KernelInterface,ModifiablePreferences}
+import scala.collection.JavaConversions._
+
+import me.footlights.api.{Application,Directory,File,KernelInterface,ModifiablePreferences}
 import me.footlights.api.support.Tee._
 import me.footlights.apps.photos.Ajax;
 import me.footlights.apps.photos.PhotosApp;
@@ -27,6 +29,24 @@ import me.footlights.api.support.Either._
 
 package me.footlights.apps.photos {
 
+class Album private(val name:String, dir:Directory) {
+	override def toString() = "Album { '%s', %s }" format (name, dir.toString)
+
+	def cover = dir open "cover" fold (ex => Album.DefaultCoverImage, _.name.toString)
+	def photos =
+		dir.entries filter { !_.isDir } map { entry => "/%s/%s" format (name, entry.name) }
+
+	def add(file:File) = dir save (file.name.toString, file)
+}
+
+object Album {
+	def apply(name:String, dir:Directory) = new Album(name, dir)
+	def apply(e:Directory.Entry) = e.directory map { new Album(e.name, _) }
+
+	private val DefaultCoverImage = "images/default-cover-image.png"
+}
+
+
 /**
  * An application which uploads user-selected files into the Content-Addressed Store.
  * @author Jonathan Anderson <jon@footlights.me>
@@ -35,30 +55,22 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 {
 	def ajaxHandler = new Ajax(this)
 
-	private[photos] def upload() = kernel.openLocalFile tee store
-	private[photos] def savedPhotos = (prefs getString Photos map split flatten) map { new URI(_) }
+	def albums() = root.entries filter { _.isDir } map Album.apply
+	def album(name:String) = root openDirectory name map { Album(name, _) }
 
-	private[photos] def remove(name:URI) = prefs.synchronized {
-		setFilenames { savedPhotos filter { _ != name } }
-	}
-
-	private def store(file:File) = prefs.synchronized {
-		setFilenames { (savedPhotos toList) :+ file.name }
-	}
-
-	private def setFilenames(files:Iterable[URI]) = prefs.synchronized {
-		val packed = files match {
-			case Nil => ""
-			case i:Iterable[_] => i map { _.toString } reduce join
+	def create_album =
+		kernel promptUser "Directory name" flatMap { name =>
+			root mkdir name map {
+				Album(name, _)
+			}
 		}
 
-		prefs.set(Photos, packed)
+	def uploadInto(album:Album) = {
+		kernel.openLocalFile map album.add
 	}
 
-	private def join(x:String, y:String) = x + ";" + y
-	private def split(x:String) = (x split ";" toList) filter { !_.isEmpty }
-
-	private val Photos = "photos"
+	// If get() fails (a serious error), an exception will be thrown to propagate up the stack.
+	private val root = kernel openDirectory "" get
 }
 
 

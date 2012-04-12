@@ -21,11 +21,14 @@ import me.footlights.api.WebRequest
 package me.footlights.api.ajax {
 
 /** Represents a URL-encoded string. */
-class URLEncoded private (s:String) { override val toString = URLEncoder.encode(s, "utf-8") }
+class URLEncoded private (val raw:String) {
+	val encoded = URLEncoder.encode(raw, "utf-8")
+	override val toString = encoded
+}
 
 /** Helper functions for encoding and decoding. */
 object URLEncoded {
-	def apply(s:String) = new URLEncoded(s)
+	def apply(s:String) = new URLEncoded(URLDecoder.decode(s, "utf-8"))
 	def unapply(s:String) =
 		try { Some(URLDecoder.decode(s, "utf-8")) }
 		catch { case ex:Exception => None }

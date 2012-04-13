@@ -99,12 +99,11 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 					js => js
 				)
 
-			case UploadImage(URLEncoded(album)) =>
-				app album album map app.uploadInto
-
-				setStatus { "what!?" } append {
-					JavaScript ajax { OpenAlbum substitute album }
-				}
+			case UploadImage(URLEncoded(albumName)) =>
+				app album albumName tee app.uploadInto map { OpenAlbum substitute _.name } fold (
+					ex => setStatus { "Error uploading photo: %s" format ex },
+					JavaScript.ajax
+				)
 
 			case RemoveImage(URLEncoded(name)) =>
 				val path = (name split "/" toList) filter { !_.isEmpty }

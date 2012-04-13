@@ -67,7 +67,7 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 		}
 
 	def uploadInto(album:Album) = {
-		kernel.openLocalFile map album.add
+		kernel.openLocalFile flatMap album.add
 	}
 
 	// If get() fails (a serious error), an exception will be thrown to propagate up the stack.

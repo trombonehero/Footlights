@@ -72,6 +72,14 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 		}
 	}
 
+	override def remove(name:String) = {
+		dir(name) map { entry =>
+			dir -= entry
+			notify(dir)
+			Right(this)
+		} getOrElse Left(new NoSuchElementException("No such directory entry '%s'" format name))
+	}
+
 	def openMutableDirectory(name:String): Either[Exception,api.Directory] = {
 		var current:Either[Exception,api.Directory] = Right(this)
 		for (component <- name split "/" if !component.isEmpty)
@@ -129,6 +137,8 @@ class Directory(private val map:Map[String,Entry]) {
 	import Directory._
 
 	def + (mapping:Entry) = Directory { map + (mapping.name -> mapping) }
+	def - (name:String) = Directory { map - name }
+	def - (mapping:Entry):Directory = this - mapping.name
 
 	def ++ (dir:Directory) = Directory { map ++ dir.map }
 

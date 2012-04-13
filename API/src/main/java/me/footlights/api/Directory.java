@@ -69,4 +69,12 @@ public interface Directory
 	 * This will fail if the given name is already used by an existing file or directory.
 	 */
 	public Either<Exception,Directory> mkdir(String name);
+
+	/**
+	 * Remove an entry (file or directory).
+	 *
+	 * @return   this directory on success (minus specified entry)
+	 *           or an Exception if the specified entry does not exist
+	 */
+	public Either<Exception,Directory> remove(String name);
 }

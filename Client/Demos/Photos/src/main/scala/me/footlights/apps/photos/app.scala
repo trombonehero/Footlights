@@ -66,6 +66,8 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 			}
 		}
 
+	def deleteAlbum(name:String) = root remove name map { success => this }
+
 	def uploadInto(album:Album) = {
 		kernel.openLocalFile flatMap album.add
 	}

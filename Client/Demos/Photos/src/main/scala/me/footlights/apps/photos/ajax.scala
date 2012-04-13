@@ -72,11 +72,11 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 					)
 				} append refreshTop
 
-			case DeleteAlbum(name) =>
+			case DeleteAlbum(URLEncoded(name)) =>
 				setStatus {
-					app.create_album fold (
-						ex => ex.getMessage,
-						"Created directory: %s" format _
+					app deleteAlbum name fold (
+						ex => "Error deleting album: %s" format ex,
+						success => "Deleted album '%s'" format name
 					)
 				} append refreshTop
 

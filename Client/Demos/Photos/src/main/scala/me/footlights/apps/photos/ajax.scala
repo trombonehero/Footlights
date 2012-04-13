@@ -66,7 +66,7 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 
 			case CreateAlbum =>
 				setStatus {
-					app.create_album fold (
+					app.createAlbum fold (
 						ex => ex.getMessage,
 						"Created directory: %s" format _
 					)

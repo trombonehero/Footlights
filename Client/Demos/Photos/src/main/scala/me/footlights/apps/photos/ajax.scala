@@ -106,9 +106,17 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 					JavaScript ajax { OpenAlbum substitute album }
 				}
 
-			case RemoveImage(name) =>
-//				app remove new URI(name)
-				refreshTop
+			case RemoveImage(URLEncoded(name)) =>
+				val path = (name split "/" toList) filter { !_.isEmpty }
+				val album = app album { path.init reduce { _ + "/" + _ } }
+
+				album tee {
+					_ remove path.last } map {
+					OpenAlbum substitute _.name
+				} fold (
+					ex => setStatus { "Error: %s" format ex },
+					JavaScript.ajax
+				)
 
 			case other:String =>
 				setStatus { "Unknown command '%s'" format other}
@@ -137,9 +145,9 @@ a.onclick = %s;
 		)
 
 	private def addPhoto(filename:String) =
-		new JavaScript append "context.globals['new_photo']('%s');".format(
-			filename/*,
-			JavaScript ajax { RemoveImage substitute filename } asFunction*/
+		new JavaScript append "context.globals['new_photo']('%s', %s);".format(
+			filename,
+			JavaScript ajax { RemoveImage substitute filename } asFunction
 		)
 
 	private def setStatus(unsafeText:String) =

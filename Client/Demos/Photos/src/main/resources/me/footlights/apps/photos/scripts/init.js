@@ -78,7 +78,7 @@ context.globals['new_album'] = function new_album(name, cover, openCallback, del
 	rowlen += 1;
 }
 
-context.globals['new_photo'] = function new_photo(name)
+context.globals['new_photo'] = function new_photo(name, deleteCallback)
 {
 	if (rowlen > 3) {
 		current_row = table.appendElement('tr');
@@ -108,7 +108,7 @@ context.globals['new_photo'] = function new_photo(name)
 	del.style.position = 'absolute';
 	del.style.right = '0';
 	del.name = name;
-//	del.onclick = deleteCallback;
+	del.onclick = deleteCallback;
 
 	var i = container.appendElement('img');
 	i.src = name;

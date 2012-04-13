@@ -37,6 +37,7 @@ class Album private(val name:String, dir:Directory) {
 		dir.entries filter { !_.isDir } map { entry => "/%s/%s" format (name, entry.name) }
 
 	def add(file:File) = dir save (file.name.toString, file)
+	def remove(name:String) = dir remove name map { dir => this }
 }
 
 object Album {

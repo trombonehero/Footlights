@@ -111,7 +111,7 @@ context.globals['new_photo'] = function new_photo(name, deleteCallback)
 	del.onclick = deleteCallback;
 
 	var i = container.appendElement('img');
-	i.src = name;
+	i.filename = name;
 	i.style['max-height'] = '150px';
 	i.style['max-width'] = '150px';
 	i.style['vertical-align'] = 'middle';

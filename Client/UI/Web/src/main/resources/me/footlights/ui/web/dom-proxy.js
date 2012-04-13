@@ -117,16 +117,13 @@ function proxy(node, context)
 		get style()         { return node.style; },
 		get tag()           { return node.tagName ? node.tagName.toLowerCase() : undefined; },
 
+		set filename(name)  { node.src = '/' + context.name + '/file/' + name; },
 		set src(uri)
 		{
 			if (!uri) return;
-
 			if (uri.indexOf('..') != -1) throw "src may not contain '..'";
 
-			if (uri.indexOf(':') == -1) uri = 'static/' + uri;
-			else uri = 'file/' + uri;
-
-			node.src = '/' + context.name + '/' + uri;
+			node.src = '/' + context.name + '/static/' + uri;
 		},
 
 		set alt(text)       { node.alt = text; },

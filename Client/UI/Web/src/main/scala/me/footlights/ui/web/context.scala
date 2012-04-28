@@ -120,14 +120,18 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 				reset
 
 				val launcher = "context.globals['launcher']"
+				val apps = footlights.applications
 
-				new JavaScript()
+				val js = new JavaScript()
 					.append(createClickableText(launcher, "Reset", "reset"))
-					.append(createClickableText(launcher, "Basic Demo", "load_app/" + GOOD_APP))
-					.append(createClickableText(launcher, "Tic-Tac-Toe", "load_app/" + TICTACTOE))
-					.append(createClickableText(launcher, "Wicked Demo", "load_app/" + WICKED_APP))
-					.append(createClickableText(launcher, "File Uploader", "load_app/" + UPLOADER))
-					.append(createClickableText(launcher, "Photo Manager", "load_app/" + PHOTO_APP))
+					.append("context.log('" + footlights.applications.toString + "');")
+					.append(createClickableText(launcher, "Load App", PromptApplication))
+
+				apps foreach { case Right((name, classpath)) =>
+					js.append(createClickableText(launcher, name, "load_app/" + classpath))
+				}
+
+				js
 					.append(setupAsyncChannel)
 					.append("context.log('UI initialized.');")
 
@@ -146,6 +150,11 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 						.append(setupAsyncChannel)
 						.append(asyncEvents.dequeue)
 				}
+
+			case PromptApplication =>
+				footlights promptUser "Application class path" map {
+					"load_app/%s".format(_) } map
+					JavaScript.ajax fold(ex => JavaScript log ex.toString, js => js)
 
 			case LoadApplication(path) =>
 				val uri = new java.net.URI(request.shift().path())
@@ -206,22 +215,13 @@ sb.ajax('init');
 	private val AsyncChannel    = "async_channel"
 	private val Reset           = "reset"
 	private val FillPlaceholder = """fill_placeholder/(.*)""".r
+	private val PromptApplication = "prompt_for_app"
 	private val LoadApplication = """load_app/(.*)""".r
 
 	private val setupAsyncChannel =
 		new JavaScript().append("context.globals['setupAsyncChannel']();")
 
 	private val log = Logger getLogger classOf[GlobalContext].getCanonicalName
-
-	// Hardcode demo app paths for now, just to demonstrate that they work.
-	private val CORE_PATH = System.getProperty("java.class.path").split(":")(0)
-	private val APP_PATH = "file:" + CORE_PATH.replaceFirst("Bootstrap/.*", "Demos/")
-
-	private val GOOD_APP = APP_PATH + "Basic/target/classes"
-	private val WICKED_APP = "jar:" + APP_PATH + "Wicked/target/wicked-app-HEAD.jar!/"
-	private val PHOTO_APP = APP_PATH + "Photos/target/classes"
-	private val TICTACTOE = APP_PATH + "TicTacToe/target/classes"
-	private val UPLOADER = APP_PATH + "Uploader/target/classes"
 }
 
 

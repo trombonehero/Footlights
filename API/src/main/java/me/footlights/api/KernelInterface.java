@@ -71,4 +71,7 @@ public interface KernelInterface
 
 	/** Share a {@link Directory} with another user. */
 	public Either<Exception,Directory> share(Directory dir);
+
+	/** Open a snapshot of a directory with another app. */
+	public Either<Exception,Directory> openWithApplication(Directory dir);
 }

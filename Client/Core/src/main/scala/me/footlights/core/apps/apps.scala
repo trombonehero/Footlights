@@ -166,9 +166,9 @@ trait ApplicationManagement extends Footlights {
 
 	/** The root directory which holds an application's state (prefs, keychain, filesystem...). */
 	private def applicationRoot(appName:URI): data.MutableDirectory =
-		applications(appName.toString) map {
+		applicationsRoot(appName.toString) map {
 			_.directory } getOrElse {
-			applications mkdir appName.toString } map { case d:data.MutableDirectory => d } get
+			applicationsRoot mkdir appName.toString } map { case d:data.MutableDirectory => d } get
 
 
 
@@ -201,7 +201,7 @@ trait ApplicationManagement extends Footlights {
 		}
 
 	/** The root directory where application data is stored. */
-	private lazy val applications = {
+	private lazy val applicationsRoot = {
 		val key = "applications"
 		def remember(dir:data.Directory) = {
 			save(dir) map { _.link } tee

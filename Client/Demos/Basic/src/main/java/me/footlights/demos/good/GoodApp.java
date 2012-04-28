@@ -35,6 +35,7 @@ public class GoodApp implements me.footlights.api.Application
 	}
 
 	@Override public AjaxHandler ajaxHandler() { return ajax; }
+	@Override public String shortName() { return "Demo app"; }
 
 	private GoodApp(AjaxHandler ajax)
 	{

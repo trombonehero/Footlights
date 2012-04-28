@@ -30,6 +30,7 @@ public class WickedApp implements me.footlights.api.Application
 	}
 
 	@Override public AjaxHandler ajaxHandler() { return ajaxHandler; }
+	@Override public String shortName() { return "Wicked Demo"; }
 
 	private WickedApp(AjaxHandler ajaxHandler) { this.ajaxHandler = ajaxHandler; }
 	private final AjaxHandler ajaxHandler;

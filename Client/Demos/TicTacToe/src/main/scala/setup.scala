@@ -27,6 +27,7 @@ package me.footlights.demos.tictactoe {
 class TicTacToe(val prefs:ModifiablePreferences) extends Application
 {
 	def ajaxHandler = new Ajax(this)
+	val shortName = "Tic-Tac-Toe"
 
 	var game = new Game
 

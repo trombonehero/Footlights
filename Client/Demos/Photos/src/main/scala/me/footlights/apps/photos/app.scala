@@ -55,6 +55,7 @@ object Album {
 class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) extends Application
 {
 	def ajaxHandler = new Ajax(this)
+	val shortName = "Photos"
 
 	def albums() = root.entries filter { _.isDir } map Album.apply
 	def album(name:String) = root openDirectory name map { Album(name, _) }

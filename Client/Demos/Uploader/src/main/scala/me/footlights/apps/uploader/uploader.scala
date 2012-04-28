@@ -31,6 +31,7 @@ package me.footlights.apps.uploader {
 class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) extends Application
 {
 	def ajaxHandler = new Ajax(this)
+	val shortName = "Uploader"
 
 	private[uploader] def listFiles() = cwd.entries
 	private[uploader] def chdir(dir:String) = {

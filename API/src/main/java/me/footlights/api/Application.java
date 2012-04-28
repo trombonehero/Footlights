@@ -38,4 +38,7 @@ public interface Application
 	 * @return null if there is no such handler
 	 */
 	public AjaxHandler ajaxHandler();
+
+	/** A short, user-accessible name. */
+	public String shortName();
 }

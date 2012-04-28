@@ -67,6 +67,7 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 			}
 		}
 
+	def openAlbumWithApp(album:Album) = kernel openWithApplication album.dir
 	def shareAlbum(album:Album) = kernel share album.dir
 	def deleteAlbum(name:String) = root remove name map { success => this }
 

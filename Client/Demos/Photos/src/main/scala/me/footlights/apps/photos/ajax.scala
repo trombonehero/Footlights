@@ -45,6 +45,7 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 								album,
 								JavaScript ajax OpenAlbum(URLEncoded(album.name)),
 								JavaScript ajax ShareAlbum(URLEncoded(album.name)),
+								JavaScript ajax ShareAlbumWithApp(URLEncoded(album.name)),
 								JavaScript ajax DeleteAlbum(URLEncoded(album.name))
 							)
 
@@ -59,6 +60,14 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 						"Created album: %s" format _
 					)
 				} append refreshTop
+
+			case ShareAlbumWithApp(URLEncoded(name)) =>
+				setStatus {
+					app album name map app.openAlbumWithApp fold(
+						ex => ex.getMessage,
+						dir => "Shared album '%s'" format name
+					)
+				}
 
 			case DeleteAlbum(URLEncoded(name)) =>
 				setStatus {
@@ -130,9 +139,11 @@ a.onclick = %s;
 	private def refreshTop() =
 		new JavaScript append { JavaScript ajax RefreshTopView }
 
-	private def addAlbum(album:Album, open:JavaScript, share:JavaScript, delete:JavaScript) =
-		new JavaScript append "context.globals['new_album']('%s', '%s', %s, %s, %s);".format(
-			album.name, album.cover, open.asFunction, share.asFunction, delete.asFunction
+	private def addAlbum(album:Album, open:JavaScript,
+			share:JavaScript, shareWithApp:JavaScript, delete:JavaScript) =
+		new JavaScript append "context.globals['new_album']('%s', '%s', %s, %s, %s, %s);".format(
+			album.name, album.cover, open.asFunction,
+			share.asFunction, shareWithApp.asFunction, delete.asFunction
 		)
 
 	private def addPhoto(filename:String) =
@@ -153,6 +164,7 @@ a.onclick = %s;
 	private val DeleteAlbum = """delete_album/(\S+)""".r
 	private val OpenAlbum = """album/(\S+)""".r
 	private val ShareAlbum = """share_album/(\S+)""".r
+	private val ShareAlbumWithApp = """share_album/(\S+)""".r
 
 	private val UploadImage = """upload_image/(\S+)""".r
 	private val RemoveImage = """delete_image/(\S+)""".r

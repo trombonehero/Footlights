@@ -61,6 +61,14 @@ context.globals['new_album'] = function new_album(name, cover,
 	var buttons = cell.appendElement('div');
 	buttons.style.position = 'relative';
 
+	var open = buttons.appendElement('img');
+	open.src = 'images/oxygen/actions/system-run.png';
+	open.style.position = 'absolute';
+	open.style.height = 24;
+	open.style.right = 24;
+	open.name = name;
+	open.onclick = openCallback;
+
 	var share = buttons.appendElement('img');
 	share.src = 'images/oxygen/actions/user-group-new.png';
 	share.style.position = 'absolute';

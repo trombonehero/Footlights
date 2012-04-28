@@ -66,6 +66,14 @@ public class JavaScript implements AjaxResponse
 			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("')");
 	}
 
+	public static JavaScript log(String message)
+	{
+		return new JavaScript()
+			.append("context.log('")
+			.appendText(message)
+			.append("');");
+	}
+
 	/** Make a string safe to put within single quotes. */
 	public static String sanitizeText(String input)
 	{

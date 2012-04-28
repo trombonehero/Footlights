@@ -44,7 +44,7 @@ object Album {
 	def apply(name:String, dir:Directory) = new Album(name, dir)
 	def apply(e:Directory.Entry) = e.directory map { new Album(e.name, _) }
 
-	private val DefaultCoverImage = "images/default-cover-image.png"
+	private val DefaultCoverImage = "images/oxygen/actions/view-preview.png"
 }
 
 

@@ -61,8 +61,9 @@ context.globals['new_album'] = function new_album(name, cover, openCallback, del
 	buttons.style.position = 'relative';
 
 	var del = buttons.appendElement('img');
-	del.src = 'images/delete.png';
+	del.src = 'images/oxygen/actions/edit-delete.png';
 	del.style.position = 'absolute';
+	del.style.height = 24;
 	del.style.right = '0';
 	del.name = name;
 	del.onclick = deleteCallback;
@@ -104,8 +105,9 @@ context.globals['new_photo'] = function new_photo(name, deleteCallback)
 	buttons.style.position = 'relative';
 
 	var del = buttons.appendElement('img');
-	del.src = 'images/delete.png';
+	del.src = 'images/oxygen/actions/edit-delete.png';
 	del.style.position = 'absolute';
+	del.style.height = 24;
 	del.style.right = '0';
 	del.name = name;
 	del.onclick = deleteCallback;

@@ -147,15 +147,33 @@ trait ApplicationManagement extends Footlights {
 
 	protected def readPrefs(filename:URI):Option[Map[String,String]]
 
+	def applications() = applicationsRoot.entries map { e =>
+		e.directory flatMap {
+			_ get ShortNameFilename map {
+				_.file map { _.getInputStream } map { i =>
+					val len = i.available
+					val bytes = new Array[Byte](len)
+					i read bytes
+
+					new String(bytes)
+				}
+			} getOrElse Right(e.name)
+		} map { (_, e.name) }
+	} toSeq
+
 	def runningApplications() = loadedApps.values toSeq
 
 	override def loadApplication(uri:URI): Either[Exception,AppWrapper] =
 		loadedApps get(uri) map Right.apply getOrElse {
+			val appRoot = applicationRoot(uri)
 			val appClass = loadAppClass(uri.toURL).right map {
-				AppWrapper(_, uri, this, applicationRoot(uri))
+				AppWrapper(_, uri, this, appRoot)
 			}
 
 			appClass.right foreach { loadedApps put (uri, _) }
+			appClass foreach { wrapper =>
+				appRoot save (ShortNameFilename, ByteBuffer wrap wrapper.app.shortName.getBytes)
+			}
 
 			appClass
 		}
@@ -220,6 +238,7 @@ trait ApplicationManagement extends Footlights {
 		}
 	} get
 
+	private val ShortNameFilename = "short-name"
 	private val log = Logger getLogger { classOf[ApplicationManagement] getCanonicalName }
 }
 

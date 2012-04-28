@@ -79,6 +79,7 @@ trait Footlights extends api.KernelInterface {
 	 */
 	def listFiles: Iterable[Stat]
 
+	def applications(): Seq[Either[Exception, (String,Any)]]
 	def runningApplications(): Seq[AppWrapper]
 	def loadApplication(uri:URI): Either[Exception,AppWrapper]
 	def unloadApplication(app:AppWrapper)

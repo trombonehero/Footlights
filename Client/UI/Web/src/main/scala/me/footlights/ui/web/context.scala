@@ -120,15 +120,16 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 				reset
 
 				val launcher = "context.globals['launcher']"
-				val apps = footlights.applications
 
 				val js = new JavaScript()
 					.append(createClickableText(launcher, "Reset", "reset"))
 					.append(createClickableText(launcher, "Load App", PromptApplication))
 
-				apps foreach { case Right((name, classpath)) =>
-					js.append(createClickableText(launcher, name, "load_app/" + classpath))
-				}
+				footlights.applications map {
+					case Left(ex) => JavaScript log ex.toString
+					case Right((name, classpath)) =>
+						createClickableText(launcher, name, "load_app/" + classpath)
+				} foreach js.append
 
 				js
 					.append(setupAsyncChannel)

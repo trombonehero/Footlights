@@ -145,8 +145,6 @@ trait ApplicationManagement extends Footlights {
 	protected def appLoader:ClassLoader
 	protected def prefs:ModifiablePreferences
 
-	protected def readPrefs(filename:URI):Option[Map[String,String]]
-
 	def applications() = applicationsRoot.entries map { e =>
 		e.directory flatMap {
 			_ get ShortNameFilename map {

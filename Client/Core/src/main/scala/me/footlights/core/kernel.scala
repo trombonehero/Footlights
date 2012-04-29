@@ -92,15 +92,6 @@ abstract class Kernel(
 		} map { new java.util.jar.JarFile(_) }
 	}
 
-	/** Read {@link Preferences} from a file. */
-	protected def readPrefs(filename:URI) = {
-		log info ("Reading preferences: %s" format filename)
-		open(filename) fold (
-			ex => None,
-			_ match { case file:data.File => Some(Map() ++ Preferences.parse(file.getContents)) }
-		)
-	}
-
 	private val log = Logger getLogger classOf[Kernel].getCanonicalName
 
 	/** The largest JAR file which we are happy to open. */

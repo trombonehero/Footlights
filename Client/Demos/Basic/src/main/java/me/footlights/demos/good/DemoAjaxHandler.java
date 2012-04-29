@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import scala.Either;
-import scala.Option;
 
 import me.footlights.api.File;
 import me.footlights.api.KernelInterface;

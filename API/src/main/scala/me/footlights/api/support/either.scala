@@ -32,6 +32,8 @@ class MappableEither[A <: Throwable, B](e: Either[A,B]) {
 
 	def map[C](f:B => C): Either[A,C] = e.right map f
 	def flatMap[C](f:B => Either[A,C]): Either[A,C] = e.right flatMap f
+	def leftMap[C](f:A => C): Either[C,B] = e.left map f
+	def leftFlatMap[C](f:A => Either[C,B]): Either[C,B] = e.left flatMap f
 
 	/** Do a tee: like a foreach, but can propagate errors. */
 	def tee(f:B => Any): Either[A,B] = (e.right map f).right flatMap { anythingValid => e }

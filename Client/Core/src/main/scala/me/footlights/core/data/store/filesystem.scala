@@ -39,6 +39,7 @@ package me.footlights.core.data.store {
 trait Filesystem extends Footlights {
 	protected def io:IO
 	protected def keychain:MutableKeychain
+	protected def prefs:api.ModifiablePreferences
 	protected def store:Store
 
 	override def open(link:Link):Either[Exception,File] = store fetch link match {
@@ -153,6 +154,29 @@ trait Filesystem extends Footlights {
 
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks
+
+	/** The root of our filesystem. */
+	protected lazy val rootDirectory = prefs.synchronized {
+		prefs getString RootPrefKey map
+			URI.create map
+			openDirectory getOrElse {
+			Right(data.Directory()) } tee {
+			log info "Applications root: %s".format(_) } map {
+			new data.MutableDirectory(_, this, setNewRoot)
+		}
+	}
+
+	/** Set a new root directory. */
+	private def setNewRoot(dir:data.Directory) = prefs.synchronized {
+		save(dir) map { _.link } tee
+			keychain.store map {
+			_.fingerprint.encode } foreach {
+			prefs set (RootPrefKey, _)
+		}
+	}
+
+	/** The key used to identify the global preference with the root name. */
+	private val RootPrefKey = "root"
 
 	private val log = java.util.logging.Logger getLogger classOf[Filesystem].getCanonicalName
 }

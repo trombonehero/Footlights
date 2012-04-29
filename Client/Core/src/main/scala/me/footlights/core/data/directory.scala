@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.IOException
+import java.io.{FileNotFoundException,IOException}
+
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 
@@ -85,7 +86,7 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 		for (component <- name split "/" if !component.isEmpty)
 			current = current map { _ get component } flatMap {
 				case Some(entry) => entry.directory
-				case _ => Left(new IllegalArgumentException(
+				case _ => Left(new FileNotFoundException(
 						"No such component '%s' in path '%s'" format (component, name)))
 			}
 

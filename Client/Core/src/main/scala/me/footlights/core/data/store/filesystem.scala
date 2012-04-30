@@ -20,13 +20,12 @@ import java.nio.channels.Channels
 
 import scala.collection.JavaConversions._
 
+import me.footlights.api
 import me.footlights.api.support.Either._
 import me.footlights.core.{Footlights,HasBytes,IO}
 import me.footlights.core.crypto.{Fingerprint,Link,MutableKeychain}
 import me.footlights.core.data
 import me.footlights.core.data.{Directory,File}
-
-import me.footlights.api
 
 
 package me.footlights.core.data.store {

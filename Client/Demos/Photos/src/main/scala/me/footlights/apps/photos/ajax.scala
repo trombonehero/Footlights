@@ -81,22 +81,15 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 				} append refreshTop
 
 			case OpenAlbum(URLEncoded(name)) =>
-				val album = app album name
-				album map { album =>
-					val js = clear
-					js append addTool("Back to albums", JavaScript ajax RefreshTopView)
-					js append addTool("Add photo", JavaScript ajax { UploadImage substitute name })
-
-					album.photos foreach { p =>
-						js append """context.log('Photo: "%s"');""".format(p)
-						js append addPhoto(p)
-					}
-
-					js append setStatus { "Opened album '%s'" format name }
-					js
+				app album name map { album =>
+					clear ::
+					addTool("Back to albums", JavaScript ajax RefreshTopView) ::
+					addTool("Add photo", JavaScript ajax { UploadImage substitute name }) ::
+					setStatus { "Opened album '%s'" format name } ::
+					(album.photos map addPhoto toList)
 				} fold (
 					ex => setStatus("Error: " + ex),
-					js => js
+					actions => actions reduce { _ append _ }
 				)
 
 			case UploadImage(URLEncoded(albumName)) =>

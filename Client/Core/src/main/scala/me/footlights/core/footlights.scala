@@ -83,4 +83,12 @@ trait Footlights extends api.KernelInterface {
 	def runningApplications(): Seq[AppWrapper]
 	def loadApplication(uri:URI): Either[Exception,AppWrapper]
 	def unloadApplication(app:AppWrapper)
+
+	/**
+	 * A root directory for a particular subsystem.
+	 *
+	 * A failure to produce a subsystem root directory is not explicitly reported: this is a
+	 * very serious problem, so we log it and throw an {@link Error}.
+	 */
+	protected def subsystemRoot(name:String): data.MutableDirectory
 }

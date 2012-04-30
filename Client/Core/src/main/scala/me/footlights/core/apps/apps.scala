@@ -143,7 +143,6 @@ trait ApplicationManagement extends Footlights {
 	protected def keychain:MutableKeychain
 	protected def loadedApps:mutable.Map[URI,AppWrapper]
 	protected def appLoader:ClassLoader
-	protected def rootDirectory:Either[Exception,data.MutableDirectory]
 
 	def applications() = applicationsRoot.entries map { e =>
 		e.directory flatMap {
@@ -217,15 +216,7 @@ trait ApplicationManagement extends Footlights {
 		}
 
 	/** The root directory where application data is stored. */
-	private lazy val applicationsRoot = {
-		val DirName = "apps"
-
-		rootDirectory flatMap {
-			_ openDirectory DirName } leftFlatMap { ex =>
-			rootDirectory flatMap { _ mkdir DirName } }
-		} map {
-			case d:data.MutableDirectory => d
-		} get
+	private lazy val applicationsRoot = subsystemRoot("apps")
 
 	private val ShortNameFilename = "short-name"
 	private val log = Logger getLogger { classOf[ApplicationManagement] getCanonicalName }

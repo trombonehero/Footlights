@@ -154,8 +154,19 @@ trait Filesystem extends Footlights {
 	/** List some of the files in the filesystem (not exhaustive!). */
 	override def listFiles = store.listBlocks
 
+	override protected def subsystemRoot(name:String) = {
+		rootDirectory flatMap {
+			_ openDirectory name } leftFlatMap { ex =>
+			rootDirectory flatMap { _ mkdir name }
+		} map {
+			case d:data.MutableDirectory => d
+		} getOrElse { ex =>
+			new Error("Failed to open subsystem root '%s'" format name, ex)
+		}
+	}
+
 	/** The root of our filesystem. */
-	protected lazy val rootDirectory = prefs.synchronized {
+	private lazy val rootDirectory = prefs.synchronized {
 		prefs getString RootPrefKey map
 			URI.create map
 			openDirectory getOrElse {

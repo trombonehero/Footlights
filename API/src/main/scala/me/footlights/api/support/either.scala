@@ -27,6 +27,7 @@ package me.footlights.api.support
  */
 class MappableEither[A <: Throwable, B](e: Either[A,B]) {
 	def get(): B = e.right getOrElse { throw e.left.get }
+	def getOrElse[C <: Throwable](f:A => C): B = e.right getOrElse { throw f(e.left.get) }
 
 	def foreach(f:B => Any): Unit = e.right foreach f
 

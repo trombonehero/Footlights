@@ -137,8 +137,8 @@ class SigningIdentity extends Identity
 		super(cert);
 		this.privateKey = key;
 	}
-	
-	
+
+
 	@Override public boolean equals(Object other)
 	{
 		if (!super.equals(other)) return false;

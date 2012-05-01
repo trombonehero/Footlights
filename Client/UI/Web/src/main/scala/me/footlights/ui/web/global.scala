@@ -47,7 +47,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				val launcher = "context.globals['launcher']"
 
 				val js = new JavaScript()
-					.append(createClickableText(launcher, "Reset", "reset"))
+					.append(createClickableText(launcher, "Reset", Reset))
 					.append(createClickableText(launcher, "Load App", PromptApplication))
 					.append(launcher + ".appendElement('hr');")
 

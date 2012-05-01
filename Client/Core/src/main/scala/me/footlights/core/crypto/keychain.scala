@@ -43,41 +43,25 @@ package me.footlights.core.crypto {
  * 2. asymmetric keys, exposed as {@link SingingIdentity} objects have authority to can sign things.
  */
 trait Keychain extends core.HasBytes {
-	private[crypto] def identities:Map[Fingerprint,SigningIdentity]
 	private[crypto] def links:Map[Fingerprint,Link]
 	private[crypto] def serialized:ByteBuffer
 
 	/** Concatenate with a link to an {@link EncryptedBlock}. */
-	def + (link:Link): Keychain =
-		new ImmutableKeychain(identities, links + (link.fingerprint -> link))
+	def + (link:Link): Keychain = new ImmutableKeychain(links + (link.fingerprint -> link))
 
-	/** Concatenate with a {@link SigningIdentity}. */
-	def + (name:Fingerprint, id:SigningIdentity): Keychain =
-		new ImmutableKeychain(identities + (name -> id), links)
-
-	def ++ (k:Keychain): Keychain =
-		new ImmutableKeychain(identities ++ k.identities, links ++ k.links)
+	def ++ (k:Keychain): Keychain = new ImmutableKeychain(links ++ k.links)
 
 
 	/** Get the {@link Link} which is capable of decrypting the named ciphertext. */
 	def getLink(name:Fingerprint) = links get name
 
-	/**
-	 * Get a private key.
-	 *
-	 * TODO: figure out an API that is less stupid (i.e. doesn't involve passing keys around).
-	 */
-	def getPrivateKey(name:Fingerprint) = identities get name 
-
 	/** Get a serialized representation which can be saved in the CAS. */
 	override def getBytes = serialized.asReadOnlyBuffer 
 
-	// Object override
-	override def toString = {
-		"Keychain { identities: %s, links: %s }" format (identities, links)
-	}
+	// Object overrides
+	override def toString = "Keychain { %s }" format links
 	override def equals(other:Any) = other match {
-		case o:Keychain => (identities equals o.identities) && (links equals o.links)
+		case o:Keychain => links equals o.links
 		case _ => false
 	}
 
@@ -91,25 +75,14 @@ trait Keychain extends core.HasBytes {
 		val store = KeyStore.getInstance(keystoreType)
 		store.load(null, password.toCharArray)    // completes KeyStore initialization (bad API!)
 
-		var privateEntries = for ((fingerprint, identity) <- identities) yield {
-			val certChain = List(identity.getCertificate) toArray
-			val entry = new KeyStore.PrivateKeyEntry(identity.getPrivateKey, certChain)
-			(Keychain.PrivateKeyEntry, fingerprint, entry)
-		}
-
-		var symmetricEntries = for ((fingerprint, link) <- links) yield {
-			val name = "%s:%s".format(Keychain.SymmetricKeyEntry, fingerprint.encode)
-			val key = link.key.keySpec
-			(Keychain.SymmetricKeyEntry, fingerprint, new KeyStore.SecretKeyEntry(key))
-		}
-
 		// Protect keys with the same password as the keystore itself (common practice).
 		val protection = new KeyStore.PasswordProtection(password.toCharArray)
-		for ((entryType, fingerprint, entry) <- (privateEntries ++ symmetricEntries))
-			store.setEntry("%s:%s".format(entryType, fingerprint.encode), entry, protection)
 
-		log fine "Saved %d private keys and %d secret keys to Java KeyStore".format(
-				identities.size, links.size)
+		for ((fingerprint, link) <- links)
+			store.setEntry(fingerprint.encode, new KeyStore.SecretKeyEntry(link.key.keySpec),
+					protection)
+
+		log fine { "Saved %d symmetric keys to Java KeyStore" format links.size }
 
 		store.store(Channels newOutputStream channel, password toCharArray)
 		store
@@ -131,13 +104,6 @@ class MutableKeychain (private var keychain:Keychain, notify:Keychain => Unit = 
 		this
 	}
 
-	def store(name:Fingerprint, id:SigningIdentity) = synchronized {
-		keychain += (name, id)
-		notify(keychain)
-		this
-	}
-
-	private[crypto] def identities() = keychain.identities
 	private[crypto] def links() = keychain.links
 	private[crypto] def serialized() = keychain.serialized
 }
@@ -145,7 +111,6 @@ class MutableKeychain (private var keychain:Keychain, notify:Keychain => Unit = 
 
 /** An immutable {@link Keychain} which can be concatenated with other things. */
 class ImmutableKeychain private[crypto](
-		private[crypto] val identities:Map[Fingerprint,SigningIdentity],
 		private[crypto] val links:Map[Fingerprint,Link]) extends Keychain {
 
 	private[crypto] lazy override val serialized =  {
@@ -159,41 +124,21 @@ class ImmutableKeychain private[crypto](
 
 
 object Keychain {
-	type idMap = Map[Fingerprint,SigningIdentity]
-
-	def apply(identities:idMap = Map(), links:Map[Fingerprint,Link] = Map()): Keychain =
-		new ImmutableKeychain(identities, links)
+	def apply(links:Iterable[(Fingerprint, Link)]): Keychain = apply(Map() ++ links)
+	def apply(links:Map[Fingerprint,Link] = Map()): Keychain = new ImmutableKeychain(links)
 
 
 	// TODO: return Either[Exception, Keychain]
 	def parse(bytes:ByteBuffer): Either[Exception, Keychain] = {
-		var identities = Map[Fingerprint,SigningIdentity]()
-		var links = Map[Fingerprint,Link]()
-
 		val magic = new Array[Byte](Magic.length)
 		bytes get magic
 		if (magic.deep != Magic.deep)
 			Left(new FormatException("Invalid keychain magic: " + magic.array.toList))
 
 		else try {
-			val (privateSize, symmetricSize) = (bytes getInt, bytes getInt)
-			for (i <- 0 until privateSize) {
-				val (namelen, keylen) = (bytes getInt, bytes getInt)
-				val (name, key) = (new Array[Byte](namelen), new Array[Byte](keylen))
+			val count = bytes getInt
 
-				bytes get name
-				bytes get key
-
-				val fingerprint = Fingerprint decode new String(name)
-				// TODO: SigningIdentity import/export
-				/*
-				val id = SigningIdentity parse key
-
-				privateKeys += (fingerprint -> id)
-				*/
-			}
-
-			for (i <- 0 until symmetricSize) {
+			val links = for (i <- 0 until count) yield {
 				val (namelen, keylen) = (bytes getInt, bytes getInt)
 				val fingerprint = new Array[Byte](namelen)
 				bytes get fingerprint
@@ -204,10 +149,10 @@ object Keychain {
 				val name = Fingerprint decode { new String(fingerprint) }
 				val secret = SecretKey parse { new URI(new String(key)) }
 
-				links += name -> (secret.createLinkBuilder setFingerprint name setKey secret build)
+				name -> (secret.createLinkBuilder setFingerprint name setKey secret build)
 			}
 
-			Right(apply(identities, links))
+			Right(apply(links))
 		} catch {
 			case ex:Exception => Left(ex)
 		}
@@ -215,15 +160,7 @@ object Keychain {
 
 
 	private[crypto] def serialize(keychain:Keychain, out:WritableByteChannel) = {
-		out << Magic << keychain.identities.size << keychain.links.size
-
-		for ((fingerprint,id) <- keychain.identities) {
-			val name = fingerprint.encode
-			val key = id.getPrivateKey.getEncoded
-
-			out << name.length << key.length
-			out << name.getBytes << key
-		}
+		out << Magic << keychain.links.size
 
 		for ((fingerprint,link) <- keychain.links) {
 			val name = fingerprint.encode
@@ -240,43 +177,32 @@ object Keychain {
 			password:String = getPassword()) = {
 
 		val rawPassword = password.toCharArray
-		var identities = Map[Fingerprint,SigningIdentity]()
-		var links = Map[Fingerprint,Link]()
 
 		val store = KeyStore getInstance storeType
 		store.load(if (channel.isOpen) Channels newInputStream channel else null, rawPassword)
 		log fine "Loaded %d KeyStore entries".format(store.size)
 
-		for (alias <- store.aliases) alias match {
-			case KeyStoreEntry(entryType, Fingerprint(fingerprint)) =>
-				val keyEntry = store.getKey(alias, rawPassword)
+		val links = for (alias <- store.aliases) yield alias match {
+			case Fingerprint(fingerprint) =>
+				val secret = store.getKey(alias, rawPassword).asInstanceOf[javax.crypto.SecretKey]
 
-				entryType match {
-					case PrivateKeyEntry =>
-						val key = keyEntry.asInstanceOf[java.security.PrivateKey]
-						val cert = store getCertificate alias
+				val key = SecretKey.newGenerator
+					.setAlgorithm(secret.getAlgorithm)
+					.setFingerprintAlgorithm(fingerprint.getAlgorithm.getAlgorithm)
+					.setBytes(secret.getEncoded)
+					.generate
+				val link = key.createLinkBuilder
+					.setFingerprint(fingerprint)
+					.build
 
-						identities += (fingerprint -> SigningIdentity.wrap(key, cert))
-
-					case SymmetricKeyEntry =>
-						val secret = keyEntry.asInstanceOf[javax.crypto.SecretKey]
-						val key = SecretKey.newGenerator
-							.setAlgorithm(secret.getAlgorithm)
-							.setFingerprintAlgorithm(fingerprint.getAlgorithm.getAlgorithm)
-							.setBytes(secret.getEncoded)
-							.generate
-						val link = key.createLinkBuilder
-							.setFingerprint(fingerprint)
-							.build
-
-						links += (fingerprint -> link)
-				}
+				Some(fingerprint -> link)
 
 			case _ =>
 				log warning "Invalid KeyStore entry '%s'".format(alias)
+				None
 		}
 
-		apply(identities, links)
+		apply(links.flatten toIterable)
 	}
 
 
@@ -290,10 +216,6 @@ object Keychain {
 
 	/** Magic hexword: "Foot keys". */
 	private val Magic = List(0xF0, 0x07, 0x6E, 0x75) map { _.toByte } toArray
-
-	private val KeyStoreEntry = """(\S+?):(\S+)""".r
-	private val PrivateKeyEntry = "private"
-	private val SymmetricKeyEntry = "secret"
 
 	private val log = Logger getLogger Keychain.getClass.getCanonicalName
 }

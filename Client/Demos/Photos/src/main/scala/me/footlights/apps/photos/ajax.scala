@@ -19,25 +19,12 @@ import me.footlights.api.{Preferences,WebRequest}
 import me.footlights.api.ajax.{AjaxHandler,JavaScript,URLEncoded}
 import me.footlights.api.ajax.JavaScript.sanitizeText
 import me.footlights.api.support.Either._
+import me.footlights.api.support.Regex._
 
 import me.footlights.apps.photos.PhotosApp;
 
 
 package me.footlights.apps.photos {
-
-class RegexFoo(r:scala.util.matching.Regex) {
-	def substitute(values:String*) = {
-		var s = r.pattern.pattern
-		values foreach { value => s = s.replace("""(\S+)""", value) }
-		s
-	}
-}
-
-object RegexFoo {
-	implicit def regex2regexFoo(r:scala.util.matching.Regex) = new RegexFoo(r)
-}
-
-import RegexFoo._
 
 /** Translates Ajax events to/from model events. */
 class Ajax(app:PhotosApp) extends AjaxHandler

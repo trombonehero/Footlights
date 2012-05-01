@@ -90,6 +90,14 @@ object IO {
 
 	implicit def readable2rich(ch:ReadableByteChannel) = new RichReadableByteChannel(ch)
 	implicit def writable2rich(ch:WritableByteChannel) = new RichWritableByteChannel(ch)
+
+	def int2bytes(x:Int) = i2bytes(x)
+	def i2bytes(x:Int, byteCount:Int = 4) = {
+		for (i <- 0 until byteCount)
+			yield (x >> 8 * (byteCount - i - 1)) & 0xff
+	} map {
+		_ toByte
+	}
 }
 
 class RichReadableByteChannel(channel:ReadableByteChannel) {
@@ -112,14 +120,7 @@ class RichWritableByteChannel(channel:WritableByteChannel) {
 	def << (x:Short):RichWritableByteChannel = writeInteger(x, 2)
 	def << (x:Int):RichWritableByteChannel   = writeInteger(x, 4)
 
-	def writeInteger(x:Int, byteCount:Int = 4) = {
-		val bytes = {
-			for (i <- 0 until byteCount)
-				yield (x >> 8 * (byteCount - i - 1)) & 0xff
-		} map { _.toByte }
-
-		this << bytes.toArray
-	}
+	def writeInteger(x:Int, byteCount:Int = 4) = this << IO.i2bytes(x:Int, byteCount).toArray
 }
 
 }

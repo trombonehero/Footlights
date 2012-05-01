@@ -39,7 +39,6 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 	}
 
 	override lazy val getBytes = {
-		val encoded = publicKey.getEncoded
 
 		val parts =
 			Identity.Magic.toArray ::
@@ -52,6 +51,14 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 		val buffer = ByteBuffer allocate len
 		parts foreach buffer.put
 		buffer
+
+	override val toString = "Identity { %s }" format { Fingerprint of encoded }
+	override def equals(x:Any) = {
+		if (!x.isInstanceOf[Identity]) false
+		else {
+			val other = x.asInstanceOf[Identity]
+			other.encoded.toList == encoded.toList
+		}
 	}
 
 	protected[crypto] def signatureAlgorithm(hashAlgorithm:MessageDigest, key:Key) =
@@ -65,6 +72,8 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 		verifier update f.copyBytes
 		verifier verify signature
 	}
+
+	private lazy val encoded = publicKey.getEncoded
 }
 
 object Identity {

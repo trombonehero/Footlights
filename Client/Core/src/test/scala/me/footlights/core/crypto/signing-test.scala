@@ -26,6 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import me.footlights.api.support.Either._
 
 
 package me.footlights.core.crypto {
@@ -34,8 +35,6 @@ package me.footlights.core.crypto {
 class SigningTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
 	"A SigningIdentity " - {
 		"can sign a Fingerprint and verify the signature." in {
-			val f = Fingerprint of { List(1,2,3,4) map { _ toByte } toArray }
-
 			val signature = id sign f
 			id verify (f -> signature) should equal (true)
 		}
@@ -45,9 +44,15 @@ class SigningTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Sh
 			val parsed = Identity parse bytes
 
 			parsed should equal (Right(id))
+			parsed match {
+				case Right(p:SigningIdentity) =>
+					id.verify(f, p sign f) should equal (true)
+					p.verify(f, id sign f) should equal (true)
+			}
 		}
 	}
 
+	private val f = Fingerprint of { List(1,2,3,4) map { _ toByte } toArray }
 	private val id = SigningIdentity.generate()
 }
 

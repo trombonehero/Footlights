@@ -38,7 +38,7 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 		verify(f, s)
 	}
 
-	override lazy val getBytes = {
+	override def getBytes = {
 
 		val parts =
 			Identity.Magic.toArray ::
@@ -50,7 +50,9 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 		val len = (0 /: parts) { _ + _.remaining }
 		val buffer = ByteBuffer allocate len
 		parts foreach buffer.put
-		buffer
+		buffer.flip
+		buffer.asReadOnlyBuffer
+	}
 
 	override val toString = "Identity { %s }" format { Fingerprint of encoded }
 	override def equals(x:Any) = {

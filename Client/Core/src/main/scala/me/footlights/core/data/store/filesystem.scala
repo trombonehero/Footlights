@@ -172,14 +172,15 @@ trait Filesystem extends Footlights {
 		prefs getString RootPrefKey map
 			URI.create map
 			openDirectory getOrElse {
-			Right(data.Directory()) } tee {
-			log info "Applications root: %s".format(_) } map {
+			Right(data.Directory()) } map {
 			new data.MutableDirectory(_, this, setNewRoot)
 		}
 	}
 
 	/** Set a new root directory. */
 	private def setNewRoot(dir:data.Directory) = prefs.synchronized {
+		log info "Updated root: %s".format(dir)
+
 		save(dir) map { _.link } tee
 			keychain.store map {
 			_.fingerprint.encode } foreach {

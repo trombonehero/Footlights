@@ -33,30 +33,17 @@ class SigningIdentity(keyPair:KeyPair)
 		ByteBuffer wrap s.sign asReadOnlyBuffer()
 	}
 
-	override lazy val getBytes = {
-		val encoded = List(privateKey, publicKey) map { _ getEncoded } map ByteBuffer.wrap
-		val lengths =
-			(encoded map { _.remaining } map core.IO.int2bytes map { ByteBuffer wrap _.toArray })
-
-		val parts =
-			(ByteBuffer wrap SigningIdentity.Magic) ::
-			lengths ++
-			encoded
-
-		val len = (0 /: parts) { _ + _.remaining }
-		val buffer = ByteBuffer allocate len
-		parts foreach buffer.put
-		buffer
-	}
-
 	override def equals(a:Any) = a match {
-		case s:SigningIdentity =>
-			java.util.Arrays.equals(privateKey.getEncoded, s.privateKey.getEncoded)
-
+		case s:SigningIdentity => super.equals(a) && java.util.Arrays.equals(s.encoded, encoded)
 		case _ => false
 	}
 
+	protected[crypto] override lazy val fieldsToStore = List(publicKey.getEncoded, encoded)
+
 	private[crypto] val privateKey = keyPair.getPrivate
+	private lazy val encoded = privateKey.getEncoded
+
+	override protected def magic = SigningIdentity.Magic
 }
 
 
@@ -84,6 +71,6 @@ object SigningIdentity {
 	private lazy val prefs = core.Preferences getDefaultPreferences
 
 	/** Magic: FOOTSI(gning)ID. */
-	private val Magic = List(0xF0, 0x07, 0x51, 0x1D) map { _ toByte } toArray
+	private[crypto] val Magic = List(0xF0, 0x07, 0x51, 0x1D) map { _ toByte }
 }
 

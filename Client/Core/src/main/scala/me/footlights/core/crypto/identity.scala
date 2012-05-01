@@ -16,10 +16,12 @@
 package me.footlights.core.crypto
 
 import java.nio.ByteBuffer
-import java.security.{Key,MessageDigest,PublicKey}
+import java.security.{Key,KeyFactory,MessageDigest,PublicKey}
+import java.security.spec
 
 import me.footlights.api
 import me.footlights.api.support.Either._
+import me.footlights.api.support.Pipeline._
 import me.footlights.core
 import me.footlights.core.crypto
 import me.footlights.core.data
@@ -40,10 +42,13 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 
 	override def getBytes = {
 		val algorithm = publicKey.getAlgorithm.getBytes
-		val lengths = List(algorithm.length, encoded.length) map core.IO.int2bytes map { _.toArray }
+		val lengths = algorithm.length :: (fieldsToStore map { _.length }) map
+			core.IO.int2bytes map {
+			_.toArray
+		}
 
-		val header = Identity.Magic.toArray :: lengths
-		val body = algorithm :: encoded :: Nil
+		val header = magic.toArray :: lengths
+		val body = algorithm :: fieldsToStore
 		val complete = (header ++ body) map ByteBuffer.wrap
 
 		val len = (0 /: complete) { _ + _.remaining }
@@ -62,6 +67,8 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 		}
 	}
 
+	protected[crypto] lazy val fieldsToStore = List(encoded)
+
 	protected[crypto] def signatureAlgorithm(hashAlgorithm:MessageDigest, key:Key) =
 		java.security.Signature getInstance
 			hashAlgorithm.getAlgorithm.replaceAll("-", "") + "with" + key.getAlgorithm
@@ -75,6 +82,7 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 	}
 
 	private lazy val encoded = publicKey.getEncoded
+	protected def magic = Identity.Magic
 }
 
 object Identity {
@@ -83,26 +91,63 @@ object Identity {
 	def parse(bytes:ByteBuffer): Either[Exception,Identity] = {
 		val magic = new Array[Byte](Magic.length)
 		bytes get magic
-		if (magic.toList != Magic)
-			Left(new data.FormatException("Magic '%s' != '%s'" format (magic.toList, Magic)))
 
-		else {
-			val algorithmLength = bytes.getInt
-			val keyLength = bytes.getInt
+		parsers find { magic.toList == _._1 } map { case (magic, (fieldCount, decode)) =>
+			val lengths = for (i <- 0 until fieldCount) yield bytes.getInt
+			val algorithm :: fields = (
+				for (len <- lengths) yield {
+					val buffer = new Array[Byte](len)
+					bytes get buffer
+					buffer
+				}).toList
 
-			val (alg, encoded) = (new Array[Byte](algorithmLength), new Array[Byte](keyLength))
-
-			bytes get alg
-			bytes get encoded
-
-			val algorithm = new String(alg)
-			val factory = java.security.KeyFactory.getInstance(algorithm)
-			val keySpec = new java.security.spec.X509EncodedKeySpec(encoded)
-
-			Right(apply(factory generatePublic keySpec))
+			(new String(algorithm) | keyFactory | decode)(fields)
+		} getOrElse {
+			Left(new data.FormatException("Unknown magic '%s'" format magic.toList))
 		}
 	}
 
+	private def keyFactory(name:String) = KeyFactory getInstance name
+
+	private def decodeIdentity(keyFactory:KeyFactory)(fields:List[Array[Byte]]) = {
+		fields.toList match {
+			case publicKey :: Nil =>
+				decodePublic(keyFactory)(publicKey) | Identity.apply | Right.apply
+
+			case l =>
+				Left(new data.FormatException(
+						"Expected one encoded field (public key); got %d" format l.length))
+		}
+	}
+
+	private def decodeSigningIdentity(keyFactory:KeyFactory)(fields:List[Array[Byte]]) = {
+		fields.toList match {
+			case publicKey :: privateKey :: Nil =>
+				val pub = decodePublic(keyFactory)(publicKey)
+				val priv = decodePrivate(keyFactory)(privateKey)
+				SigningIdentity(priv, pub) |
+				Right.apply
+
+			case l =>
+				Left(new data.FormatException(
+						"Expected two fields (public, private keys); got %d" format l.length))
+		}
+	}
+
+	private def decodePublic(keyFactory:KeyFactory)(encoded:Array[Byte]) =
+		encoded | (new spec.X509EncodedKeySpec(_)) | keyFactory.generatePublic
+
+	private def decodePrivate(keyFactory:KeyFactory)(encoded:Array[Byte]) =
+		encoded | (new spec.PKCS8EncodedKeySpec(_)) | keyFactory.generatePrivate
+
 	/** Magic for {@link Identity}: FOOTID. */
 	private val Magic = List(0xF0, 0x07, 0x1D, 0x00) map { _.toByte }
+
+	private val parsers = Map(
+		/** An {@link Identity} has two fields: an algorithm and a public key. */
+		Identity.Magic -> (2, decodeIdentity _),
+
+		/** A {@link SigningIdentity} has three fields: the two above plus a private key. */
+		SigningIdentity.Magic -> (3, decodeSigningIdentity _)
+	)
 }

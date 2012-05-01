@@ -33,12 +33,19 @@ package me.footlights.core.crypto {
 
 @RunWith(classOf[JUnitRunner])
 class SigningTest extends FreeSpec with BeforeAndAfter with MockitoSugar with ShouldMatchers {
-	"A SigningIdentity should be able to " - {
-		"sign a Fingerprint and verify the signature." in {
+	"A SigningIdentity " - {
+		"can sign a Fingerprint and verify the signature." in {
 			val f = Fingerprint of { List(1,2,3,4) map { _ toByte } toArray }
 
 			val signature = id sign f
 			id verify (f -> signature) should equal (true)
+		}
+
+		"can be exported and parsed." in {
+			val bytes = id.getBytes
+			val parsed = Identity parse bytes
+
+			parsed should equal (Right(id))
 		}
 	}
 

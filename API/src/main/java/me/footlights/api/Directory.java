@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 
 import scala.Either;
 import scala.Option;
+import scala.Tuple2;
 
 
 /**
@@ -44,6 +45,12 @@ public interface Directory
 
 	/** All current directory entries. */
 	public Iterable<Entry> entries();
+
+	/** Files (not directories) in this directory. */
+	public Iterable<Tuple2<String,File>> files();
+
+	/** Direct sub-directories in this directory. */
+	public Iterable<Tuple2<String,Directory>> subdirs();
 
 	/** Open a {@link File} by relative name. */
 	public Either<Exception,File> open(String name);

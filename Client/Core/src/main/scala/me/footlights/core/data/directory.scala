@@ -44,6 +44,20 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 	override def snapshotName = dir.name
 	override def entries = asJavaIterable { dir.entries map entry2entry }
 
+	override def files() = asJavaIterable {
+		dir.entries filter {
+			_.isFile } map
+			entry2entry map { e =>
+			e.file fold (ex => None, f => Some((e.name, f))) } flatten
+	}
+
+	override def subdirs() = asJavaIterable {
+		dir.entries filter {
+			_.isDir } map
+			entry2entry map { e =>
+			e.directory fold (ex => None, f => Some((e.name, f))) } flatten
+	}
+
 	override def open(name:String) = footlights openat (name split "/", dir)
 	override def openDirectory(name:String) = openMutableDirectory(name)
 

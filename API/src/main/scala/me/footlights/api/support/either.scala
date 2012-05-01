@@ -29,6 +29,8 @@ class MappableEither[A <: Throwable, B](e: Either[A,B]) {
 	def get(): B = e.right getOrElse { throw e.left.get }
 	def getOrElse[C <: Throwable](f:A => C): B = e.right getOrElse { throw f(e.left.get) }
 
+	def orElse(alternative:Either[A,B]) = if (e.isRight) e else alternative
+
 	def foreach(f:B => Any): Unit = e.right foreach f
 
 	def map[C](f:B => C): Either[A,C] = e.right map f

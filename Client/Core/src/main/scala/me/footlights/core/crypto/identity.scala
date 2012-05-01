@@ -39,17 +39,16 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 	}
 
 	override def getBytes = {
+		val algorithm = publicKey.getAlgorithm.getBytes
+		val lengths = List(algorithm.length, encoded.length) map core.IO.int2bytes map { _.toArray }
 
-		val parts =
-			Identity.Magic.toArray ::
-			(core.IO int2bytes encoded.length toArray) ::
-			publicKey.getEncoded ::
-			Nil map
-			ByteBuffer.wrap
+		val header = Identity.Magic.toArray :: lengths
+		val body = algorithm :: encoded :: Nil
+		val complete = (header ++ body) map ByteBuffer.wrap
 
-		val len = (0 /: parts) { _ + _.remaining }
+		val len = (0 /: complete) { _ + _.remaining }
 		val buffer = ByteBuffer allocate len
-		parts foreach buffer.put
+		complete foreach buffer.put
 		buffer.flip
 		buffer.asReadOnlyBuffer
 	}

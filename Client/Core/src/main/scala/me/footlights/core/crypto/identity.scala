@@ -26,7 +26,7 @@ import me.footlights.core.data
 
 
 /** An identity which may have signed things. */
-class Identity(val publicKey:PublicKey) {
+class Identity(val publicKey:PublicKey) extends core.HasBytes {
 	def verify(x:(Fingerprint, ByteBuffer)): Boolean = x match { case (fingerprint, signature) =>
 		verify(fingerprint, signature)
 	}
@@ -36,6 +36,22 @@ class Identity(val publicKey:PublicKey) {
 		signature get s
 
 		verify(f, s)
+	}
+
+	override lazy val getBytes = {
+		val encoded = publicKey.getEncoded
+
+		val parts =
+			Identity.Magic.toArray ::
+			(core.IO int2bytes encoded.length toArray) ::
+			publicKey.getEncoded ::
+			Nil map
+			ByteBuffer.wrap
+
+		val len = (0 /: parts) { _ + _.remaining }
+		val buffer = ByteBuffer allocate len
+		parts foreach buffer.put
+		buffer
 	}
 
 	protected[crypto] def signatureAlgorithm(hashAlgorithm:MessageDigest, key:Key) =

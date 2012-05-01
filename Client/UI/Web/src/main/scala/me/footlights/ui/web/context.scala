@@ -27,6 +27,7 @@ import me.footlights.api.WebRequest
 import me.footlights.api.ajax.{AjaxResponse,JavaScript,JSON,URLEncoded}
 import me.footlights.api.ajax.JSON._
 import me.footlights.api.support.Either._
+import me.footlights.api.support.Regex._
 import me.footlights.core.Footlights
 import me.footlights.core.apps.AppWrapper
 import me.footlights.core.data
@@ -129,7 +130,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 				footlights.applications map {
 					case Left(ex) => JavaScript log ex.toString
 					case Right((name, classpath)) =>
-						createClickableText(launcher, name, "load_app/" + classpath)
+						createClickableText(launcher, name, LoadApplication substitute classpath)
 				} foreach js.append
 
 				js
@@ -215,9 +216,9 @@ sb.ajax('init');
 	private val Init            = "init"
 	private val AsyncChannel    = "async_channel"
 	private val Reset           = "reset"
-	private val FillPlaceholder = """fill_placeholder/(.*)""".r
+	private val FillPlaceholder = """fill_placeholder/(\S+)""".r
 	private val PromptApplication = "prompt_for_app"
-	private val LoadApplication = """load_app/(.*)""".r
+	private val LoadApplication = """load_app/(\S+)""".r
 
 	private val setupAsyncChannel =
 		new JavaScript().append("context.globals['setupAsyncChannel']();")

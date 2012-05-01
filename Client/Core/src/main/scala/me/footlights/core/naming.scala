@@ -77,7 +77,7 @@ class Resolver private(io:IO, keychain: Keychain)
 	}
 
 	def fetchJSON(url: URL):Either[Exception,Map[String,_]] =
-		io fetch url map { _.getContents } map { buffer =>
+		io fetch url map { _.copyContents } map { buffer =>
 			val bytes = new Array[Byte](buffer.remaining)
 			buffer.get(bytes)
 

@@ -122,7 +122,7 @@ public class File implements me.footlights.api.File
 	 * Note that, depending on how big the {@link File} is, it might be very silly to actually
 	 * call this method.
 	 */
-	public ByteBuffer getContents() throws IOException
+	@Override public ByteBuffer copyContents() throws IOException
 	{
 		int len = 0;
 		for (Block b : plaintext) len += b.content().remaining();

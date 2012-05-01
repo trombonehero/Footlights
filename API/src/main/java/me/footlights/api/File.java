@@ -54,4 +54,7 @@ public interface File
 	 * The content of the file, transformed into an {@link InputStream}.
 	 */
 	public InputStream getInputStream();
+
+	/** The content of the file. Calling this may be unwise for large files! */
+	public ByteBuffer copyContents() throws java.io.IOException;
 }

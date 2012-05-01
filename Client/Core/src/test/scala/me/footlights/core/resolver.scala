@@ -82,7 +82,7 @@ class ResolverTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 		val json:JSON = Map("fingerprint" -> fingerprint.encode) ++ (key map { "key" -> _ } toMap)
 
 		val f = mock[File]
-		when { f getContents } thenReturn { ByteBuffer wrap json.getBytes }
+		when { f copyContents } thenReturn { ByteBuffer wrap json.getBytes }
 		Right(f)
 	}
 }

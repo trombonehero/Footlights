@@ -45,7 +45,7 @@ trait Placeholders extends Footlights {
 
 		prefs getString prefKey map URI.create flatMap {
 			open(_) match {
-				case Right(file:data.File) => Some(Preferences parse file.getContents)
+				case Right(file:data.File) => Some(Preferences parse file.copyContents)
 				case _ => None
 			}
 		} map {

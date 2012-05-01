@@ -62,6 +62,8 @@ class SigningIdentity(keyPair:KeyPair)
 
 object SigningIdentity {
 	def apply(keyPair:KeyPair) = new SigningIdentity(keyPair)
+	def apply(privateKey:PrivateKey, publicKey:PublicKey): SigningIdentity =
+		apply(new KeyPair(publicKey, privateKey))
 
 	def wrap(privateKey:PrivateKey, cert:java.security.cert.Certificate) =
 		new SigningIdentity(new KeyPair(cert.getPublicKey, privateKey))

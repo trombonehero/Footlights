@@ -80,6 +80,29 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 object Identity {
 	def apply(publicKey: PublicKey) = new Identity(publicKey)
 
+	def parse(bytes:ByteBuffer): Either[Exception,Identity] = {
+		val magic = new Array[Byte](Magic.length)
+		bytes get magic
+		if (magic.toList != Magic)
+			Left(new data.FormatException("Magic '%s' != '%s'" format (magic.toList, Magic)))
+
+		else {
+			val algorithmLength = bytes.getInt
+			val keyLength = bytes.getInt
+
+			val (alg, encoded) = (new Array[Byte](algorithmLength), new Array[Byte](keyLength))
+
+			bytes get alg
+			bytes get encoded
+
+			val algorithm = new String(alg)
+			val factory = java.security.KeyFactory.getInstance(algorithm)
+			val keySpec = new java.security.spec.X509EncodedKeySpec(encoded)
+
+			Right(apply(factory generatePublic keySpec))
+		}
+	}
+
 	/** Magic for {@link Identity}: FOOTID. */
 	private val Magic = List(0xF0, 0x07, 0x1D, 0x00) map { _.toByte }
 }

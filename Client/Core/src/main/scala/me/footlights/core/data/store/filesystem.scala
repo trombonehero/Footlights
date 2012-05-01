@@ -61,7 +61,9 @@ trait Filesystem extends Footlights {
 		Some(name) map
 			Fingerprint.decode flatMap
 			keychain.getLink map
-			openDirectory get
+			openDirectory getOrElse {
+				Left(new NoSuchElementException("Key for '%s' not known" format name))
+			}
 
 	override def openDirectory(link:Link):Either[Exception,Directory] =
 		store fetchDirectory link

@@ -127,8 +127,6 @@ object Keychain {
 	def apply(links:Iterable[(Fingerprint, Link)]): Keychain = apply(Map() ++ links)
 	def apply(links:Map[Fingerprint,Link] = Map()): Keychain = new ImmutableKeychain(links)
 
-
-	// TODO: return Either[Exception, Keychain]
 	def parse(bytes:ByteBuffer): Either[Exception, Keychain] = {
 		val magic = new Array[Byte](Magic.length)
 		bytes get magic

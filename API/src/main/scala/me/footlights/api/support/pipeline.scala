@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.footlights.api.support;
+package me.footlights.api.support
 
 
 object Pipeline {

@@ -136,6 +136,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 				js
 					.append(setupAsyncChannel)
 					.append("context.log('UI initialized.');")
+					.append(JavaScript log "identities: " + footlights.identities)
 
 			case Reset =>
 				while (!footlights.runningApplications.isEmpty)

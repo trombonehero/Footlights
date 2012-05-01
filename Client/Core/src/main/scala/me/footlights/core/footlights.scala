@@ -84,6 +84,8 @@ trait Footlights extends api.KernelInterface {
 	def loadApplication(uri:URI): Either[Exception,AppWrapper]
 	def unloadApplication(app:AppWrapper)
 
+	def identities: Iterable[crypto.Identity]
+
 	/**
 	 * A root directory for a particular subsystem.
 	 *

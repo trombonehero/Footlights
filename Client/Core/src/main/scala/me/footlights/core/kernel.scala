@@ -60,6 +60,7 @@ abstract class Kernel(
 	extends Footlights
 		with data.store.Filesystem
 		with apps.ApplicationManagement
+		with users.IdentityManagement
 		with Placeholders
 		with UIManager
 {

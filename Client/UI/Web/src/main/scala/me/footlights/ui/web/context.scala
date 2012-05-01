@@ -124,6 +124,7 @@ class GlobalContext(footlights:Footlights, reset:() => Unit, newContext:AppWrapp
 				val js = new JavaScript()
 					.append(createClickableText(launcher, "Reset", "reset"))
 					.append(createClickableText(launcher, "Load App", PromptApplication))
+					.append(launcher + ".appendElement('hr');")
 
 				footlights.applications map {
 					case Left(ex) => JavaScript log ex.toString

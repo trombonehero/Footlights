@@ -103,33 +103,4 @@ class AppContext(wrapper:AppWrapper) extends Context(wrapper.app.getClass) {
 	override def openFile(name:String) = wrapper.kernel open name map { case f:data.File => f }
 }
 
-
-
-object MimeType {
-	def apply(path:String):String = {
-		path match {
-			case CSS(_)      => "text/css"
-			case HTML(_)     => "text/html"
-			case JS(_)       => "text/javascript"
-
-			case GIF(_)      => "image/gif"
-			case JPEG(_)     => "image/jpeg"
-			case PNG(_)      => "image/png"
-
-			case TrueType(_) => "font/ttf"
-
-			case _           => "application/octet-stream"
-		}
-		
-	}
-
-	private val CSS      = """(.*)\.css""".r
-	private val GIF      = """(.*)\.gif""".r
-	private val HTML     = """(.*)\.html?""".r
-	private val JPEG     = """(.*)\.jpe?g""".r
-	private val JS       = """(.*)\.js""".r
-	private val PNG      = """(.*)\.png""".r
-	private val TrueType = """(.*)\.ttf""".r
-}
-
 }

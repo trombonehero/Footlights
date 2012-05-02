@@ -40,6 +40,8 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 		verify(f, s)
 	}
 
+	final lazy val fingerprint = Fingerprint of encoded
+
 	override def getBytes = {
 		val algorithm = publicKey.getAlgorithm.getBytes
 		val lengths = algorithm.length :: (fieldsToStore map { _.length }) map

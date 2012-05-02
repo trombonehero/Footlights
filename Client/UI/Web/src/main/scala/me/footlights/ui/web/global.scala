@@ -107,6 +107,11 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 					"value" -> ((footlights evaluate name getOrElse "(unknown)"):String)
 				)
 			}
+
+			case unhandled =>
+				val message = "Unknown Ajax command: '%s'" format unhandled
+				log log (logging.Level.WARNING, message)
+				JavaScript log message
 		}
 	}
 

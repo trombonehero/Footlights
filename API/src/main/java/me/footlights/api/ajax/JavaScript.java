@@ -82,7 +82,19 @@ public class JavaScript implements AjaxResponse
 
 	@Override public String toString() { return asFunction(); }
 	public String asScript() { return code(); }
-	public String asFunction() { return "(function(){" + code() + "})"; }
+
+	/**
+	 * Encapsulate code in a function.
+	 *
+	 * @param functionName    A name for the, er, anonymous function. Useful when debugging.
+	 */
+	public String asFunction(String functionName)
+	{
+		return "(function " + sanitizeText(functionName) + "(){" + code() + "})";
+	}
+
+	/** Encapsulate code in an anonymous function. */
+	public String asFunction() { return asFunction(""); }
 	public String exec() { return asFunction() + "();"; }
 
 	private String code()

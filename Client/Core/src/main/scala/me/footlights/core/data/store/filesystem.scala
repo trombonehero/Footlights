@@ -112,7 +112,7 @@ trait Filesystem extends Footlights {
 			store.fetch map
 			Right.apply getOrElse {
 				val path = names reduce { _ + "/" + _ }
-				Left(new java.io.IOException("No such file '%s'" format path))
+				Left(new java.io.FileNotFoundException("No such file '%s'" format path))
 			}
 		}
 	}

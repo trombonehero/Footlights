@@ -47,14 +47,14 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				val launcher = "context.globals['launcher']"
 
 				val js = new JavaScript()
-					.append(createClickableText(launcher, "Reset", Reset))
-					.append(createClickableText(launcher, "Load App", PromptApplication))
+					.append(clickableAjax(launcher, "Reset", Reset))
+					.append(clickableAjax(launcher, "Load App", PromptApplication))
 					.append(launcher + ".appendElement('hr');")
 
 				footlights.applications map {
 					case Left(ex) => JavaScript log ex.toString
 					case Right((name, classpath)) =>
-						createClickableText(launcher, name, LoadApplication substitute classpath)
+						clickableAjax(launcher, name, LoadApplication substitute classpath)
 				} foreach js.append
 
 				js
@@ -124,13 +124,16 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 
 
 
-	private def createClickableText(parent:String, name:String, ajax:String) = {
+	private def clickableAjax(parent:String, label:String, ajaxText:String) =
+		clickableText(parent, label, JavaScript ajax ajaxText)
+
+	private def clickableText(parent:String, label:String, action:JavaScript) = {
 		new JavaScript()
 			.append("""
 var a = %s.appendElement('div').appendElement('a');
 a.appendText('%s');
-a.onclick = function onClickHandler() { context.ajax('%s'); };
-""" format (parent, JavaScript.sanitizeText(name), ajax))
+a.onclick = %s;
+""" format (parent, JavaScript sanitizeText label, action asFunction "clickHandler"))
 	}
 
 	private def createUISandbox(name:URI) =

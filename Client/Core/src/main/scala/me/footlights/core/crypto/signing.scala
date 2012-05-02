@@ -52,9 +52,6 @@ object SigningIdentity {
 	def apply(privateKey:PrivateKey, publicKey:PublicKey): SigningIdentity =
 		apply(new KeyPair(publicKey, privateKey))
 
-	def wrap(privateKey:PrivateKey, cert:java.security.cert.Certificate) =
-		new SigningIdentity(new KeyPair(cert.getPublicKey, privateKey))
-
 	/** Magic: FOOTSI(gning)ID. */
 	private[crypto] val Magic = List(0xF0, 0x07, 0x51, 0x1D) map { _ toByte }
 }

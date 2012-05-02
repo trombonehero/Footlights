@@ -81,6 +81,8 @@ public class JavaScript implements AjaxResponse
 	}
 
 	@Override public String toString() { return asFunction(); }
+
+	/** The user-specified code, without any encapsulation. */
 	public String asScript() { return code(); }
 
 	/**
@@ -95,6 +97,8 @@ public class JavaScript implements AjaxResponse
 
 	/** Encapsulate code in an anonymous function. */
 	public String asFunction() { return asFunction(""); }
+
+	/** JavaScript to execute the code inside an anonymous function scope. */
 	public String exec() { return asFunction() + "();"; }
 
 	private String code()

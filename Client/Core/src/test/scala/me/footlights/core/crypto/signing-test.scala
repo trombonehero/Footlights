@@ -53,7 +53,7 @@ class SigningTest extends FreeSpec with BeforeAndAfter with MockitoSugar with Sh
 	}
 
 	private val f = Fingerprint of { List(1,2,3,4) map { _ toByte } toArray }
-	private val id = SigningIdentity.generate()
+	private val id = Identity.generate()
 }
 
 }

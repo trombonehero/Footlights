@@ -55,21 +55,6 @@ object SigningIdentity {
 	def wrap(privateKey:PrivateKey, cert:java.security.cert.Certificate) =
 		new SigningIdentity(new KeyPair(cert.getPublicKey, privateKey))
 
-	def generate(
-			publicKeyType:String = prefs getString "crypto.asym.algorithm" get,
-			hashAlgorithm:String = prefs getString "crypto.hash.algorithm" get,
-			keyLength:Int = prefs getInt "crypto.asym.keylen" get
-			) = {
-
-		val random = new java.security.SecureRandom    // TODO: specify random
-		val generator = java.security.KeyPairGenerator getInstance publicKeyType
-		generator.initialize(keyLength, random)
-
-		SigningIdentity(generator generateKeyPair)
-	}
-
-	private lazy val prefs = core.Preferences getDefaultPreferences
-
 	/** Magic: FOOTSI(gning)ID. */
 	private[crypto] val Magic = List(0xF0, 0x07, 0x51, 0x1D) map { _ toByte }
 }

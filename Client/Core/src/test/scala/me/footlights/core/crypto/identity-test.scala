@@ -48,7 +48,7 @@ class IdentityTest extends FreeSpec with BeforeAndAfter with MockitoSugar with S
 	}
 
 	private val fingerprint = Fingerprint of { List(1,2,3,4) map { _ toByte } toArray }
-	private val signer = SigningIdentity.generate()
+	private val signer = Identity.generate()
 	private val signature = signer sign fingerprint
 
 	private val id = Identity(signer.publicKey)

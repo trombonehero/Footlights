@@ -107,6 +107,19 @@ object Identity {
 		}
 	}
 
+	def generate(
+			publicKeyType:String = prefs getString "crypto.asym.algorithm" get,
+			hashAlgorithm:String = prefs getString "crypto.hash.algorithm" get,
+			keyLength:Int = prefs getInt "crypto.asym.keylen" get
+			) = {
+
+		val random = new java.security.SecureRandom    // TODO: specify random
+		val generator = java.security.KeyPairGenerator getInstance publicKeyType
+		generator.initialize(keyLength, random)
+
+		SigningIdentity(generator generateKeyPair)
+	}
+
 	private def keyFactory(name:String) = KeyFactory getInstance name
 
 	private def decodeIdentity(keyFactory:KeyFactory)(fields:List[Array[Byte]]) = {
@@ -139,6 +152,8 @@ object Identity {
 
 	private def decodePrivate(keyFactory:KeyFactory)(encoded:Array[Byte]) =
 		encoded | (new spec.PKCS8EncodedKeySpec(_)) | keyFactory.generatePrivate
+
+	private lazy val prefs = core.Preferences getDefaultPreferences
 
 	/** Magic for {@link Identity}: FOOTID. */
 	private val Magic = List(0xF0, 0x07, 0x1D, 0x00) map { _.toByte }

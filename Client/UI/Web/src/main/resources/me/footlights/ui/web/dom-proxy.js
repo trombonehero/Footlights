@@ -88,6 +88,8 @@ function proxy(node, context)
 			return proxy(element, new_context);
 		},
 
+		die: function() { node.parentNode.removeChild(node); },
+
 		/**
 		 * Find the element's first (proxied) child which satisfies the given predicate.
 		 *

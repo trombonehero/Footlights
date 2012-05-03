@@ -103,6 +103,9 @@ trait IdentityManagement extends core.Footlights {
 			)
 		} flatten
 
+	override def identity(uri:java.net.URI) =
+		root openDirectory uri.toString map { (uri.toString, _) } flatMap UserIdentity.apply
+
 	/** The root directory where application data is stored. */
 	private lazy val root = subsystemRoot("identities")
 

@@ -36,6 +36,9 @@ class UserIdentity(key:crypto.Identity, attributes:api.ModifiablePreferences) {
 			key.fingerprint.encode.split(":").last.slice(0, 6)
 		)
 	}
+	def name() = attributes getString "name" getOrElse "<unknown name>"
+	val fingerprint = key.fingerprint
+
 }
 
 object UserIdentity {

@@ -29,6 +29,35 @@ h1, h2 { color: rgb(230, 221, 35); }
 	z-index: 2;
 }
 
+.popup
+{
+	border: 1px solid;
+
+	position: absolute;
+	left: 200;
+	top: 80;
+	height: 200;
+	width: 400;
+
+	margin: 0;
+	padding: .25em;
+
+	overflow: auto;
+
+	z-index: 5;
+
+	background: rgba(80, 8, 8, 0.9);
+	color: rgba(230, 221, 35, 0.9);
+}
+
+.popup a { color: rgba(230, 221, 35, 1); }
+.popup a:hover { color: rgba(230, 221, 35, .75); }
+
+.header
+{
+	font-weight: bold;
+}
+
 #launcher
 {
 	position: fixed;

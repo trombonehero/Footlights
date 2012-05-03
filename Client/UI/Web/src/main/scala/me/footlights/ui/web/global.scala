@@ -123,6 +123,17 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 	}
 
 
+	private def popup(title:String) = {
+		new JavaScript()
+			.append("var popup = context.root.appendElement('div');")
+			.append("popup.class = 'popup';")
+			.append("var head = popup.appendElement('div');")
+			.append("head.class = 'header';")
+			.append("head.style['border-bottom'] = '1px solid';")
+			.append("head.style['margin-bottom'] = '.25em';")
+			.append("head.appendText('%s');" format { JavaScript sanitizeText title })
+			.append("return popup;")
+	}
 
 	private def clickableAjax(parent:String, label:String, ajaxText:String) =
 		clickableText(parent, label, JavaScript ajax ajaxText)

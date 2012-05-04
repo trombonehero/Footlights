@@ -12,4 +12,12 @@
 	<name>Swing UI</name>
 
 	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>me.footlights</groupId>
+			<artifactId>footlights-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>

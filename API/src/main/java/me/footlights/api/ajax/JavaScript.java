@@ -25,9 +25,10 @@ public class JavaScript implements AjaxResponse
 	@Override public String mimeType() { return "text/javascript"; }
 	@Override public InputStream data() { return new ByteArrayInputStream(code().getBytes()); }
 
-	public JavaScript()
+	public JavaScript() { this(""); }
+	public JavaScript(String code)
 	{
-		builder = new StringBuilder();
+		builder = new StringBuilder(code);
 		frozen = null;
 	}
 

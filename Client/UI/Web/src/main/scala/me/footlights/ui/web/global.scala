@@ -22,6 +22,7 @@ import me.footlights.api.WebRequest
 import me.footlights.api.ajax._
 import me.footlights.api.ajax.JSON._
 import me.footlights.api.support.Either._
+import me.footlights.api.support.Pipeline._
 import me.footlights.api.support.Regex._
 
 import me.footlights.core
@@ -111,6 +112,15 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 								)
 				}
 
+			case ChooseUserPopup(URLEncoded(question)) => chooseUser("Choose user", question)
+			case ChooseUser(uri) =>
+				uri |> URI.create |> footlights.identity map { user =>
+					JavaScript log { "You chose %s" format user }
+				} fold (
+					ex => JavaScript log { "Error: %s" format ex.getMessage },
+					js => js
+				)
+
 			case FillPlaceholder(name) => {
 				JSON(
 					"key" -> name,
@@ -143,6 +153,25 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 	private val userResponded = new Object()
 	private var popupResponse:Either[core.UIException,String] = _
 
+
+	private def chooseUser(title:String = "Choose user", question:String = "Which user?") = chooser(
+		title,
+		question,
+		footlights.identities map { id =>
+			id.name -> (JavaScript ajax { ChooseUser substitute id.fingerprint })
+		}
+	)
+
+	private def chooser(title:String, question:String, options:Iterable[(String,JavaScript)]) = {
+		val optionHandlers = options map { case (label, handler) =>
+			val completeHandler = new JavaScript("this.goaway();").append(handler)
+
+			clickableText("popup", label, completeHandler,
+				new JavaScript("this.goaway = function goaway() { popup.die(); };"))
+		}
+
+		popup(title, question, optionHandlers.toArray : _*)
+	}
 
 	/**
 	 * @param  initActions       Initialization actions for the HTML form.
@@ -246,6 +275,9 @@ sb.ajax('init');
 	private val EmptyPopupResponse = "user_prompt_response/"
 	private val PopupResponse   = ("""%s(\S+)""" format EmptyPopupResponse).r
 	private val PopupCancelled  = "cancel_popup"
+
+	private val ChooseUserPopup = """choose_user_popup/(\S+)""".r
+	private val ChooseUser      = """chose_user/(\S+)""".r
 
 	private val setupAsyncChannel =
 		new JavaScript().append("context.globals['setupAsyncChannel']();")

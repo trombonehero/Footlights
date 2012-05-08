@@ -123,7 +123,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 	}
 
 
-	private def popup(title:String) = {
+	private def popup(title:String, text:String) = {
 		new JavaScript()
 			.append("var popup = context.root.appendElement('div');")
 			.append("popup.class = 'popup';")
@@ -132,6 +132,8 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 			.append("head.style['border-bottom'] = '1px solid';")
 			.append("head.style['margin-bottom'] = '.25em';")
 			.append("head.appendText('%s');" format { JavaScript sanitizeText title })
+
+			.append("popup.appendText('%s');" format { JavaScript sanitizeText text })
 			.append("return popup;")
 	}
 

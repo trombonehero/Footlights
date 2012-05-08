@@ -61,7 +61,7 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 	def album(name:String) = root openDirectory name map { Album(name, _) }
 
 	def createAlbum =
-		kernel promptUser "Directory name" flatMap { name =>
+		kernel promptUser "Album name?" flatMap { name =>
 			root mkdir name map {
 				Album(name, _)
 			}

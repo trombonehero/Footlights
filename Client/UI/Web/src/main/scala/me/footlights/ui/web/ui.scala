@@ -74,7 +74,7 @@ class WebUI(
 	override def promptUser(title:String, prompt:String, default:Option[String])
 			(callback: Either[core.UIException,String] => Any) = {
 
-		future { globalContext.promptUser(title, prompt, callback, default) }
+		future { callback { globalContext.promptUser(title, prompt, callback, default) } }
 		true
 	}
 }

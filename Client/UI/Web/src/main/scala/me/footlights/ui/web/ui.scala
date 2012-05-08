@@ -18,7 +18,7 @@ import java.util.logging.Logger
 
 import scala.actors.Futures.future
 import scala.collection.JavaConversions._
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map => MutableMap}
 
 import me.footlights.core
 import me.footlights.core.{Footlights,Preconditions,UI}
@@ -31,7 +31,7 @@ package me.footlights.ui.web {
 
 class WebUI(
 		footlights:Footlights, server:MasterServer, globalContext:GlobalContext,
-		apps:Map[URI,AppWrapper])
+		apps:MutableMap[URI,AppWrapper])
 	extends UI("Web UI", footlights) {
 
 	override def run = new Thread(null, server, "Web Server").run
@@ -85,7 +85,7 @@ object WebUI {
 		val port = WebPort
 		log info { "Using TCP port " + port }
 
-		val apps:Map[URI,AppWrapper] = Map()
+		val apps = MutableMap[URI,AppWrapper]()
 		val master = new MasterServer(port, footlights)
 
 		def reset(): Unit = master.synchronized {

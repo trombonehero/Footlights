@@ -27,8 +27,6 @@ import me.footlights.core.apps.AppWrapper
 
 import me.footlights.api.ajax.JavaScript
 
-import me.footlights.ui.web.Constants.WEB_PORT
-
 package me.footlights.ui.web {
 
 class WebUI(
@@ -84,7 +82,7 @@ class WebUI(
 object WebUI {
 	def init(footlights:Footlights) = {
 		Preconditions.notNull(footlights)
-		val port = WEB_PORT
+		val port = WebPort
 		log info { "Using TCP port " + port }
 
 		val apps:Map[URI,AppWrapper] = Map()
@@ -105,6 +103,9 @@ object WebUI {
 
 	/** Log. */
 	private val log = Logger.getLogger(classOf[WebUI].getCanonicalName())
+
+	/** TODO: do something more clever than a hard-coded constant */
+	private val WebPort = 4567;
 }
 
 }

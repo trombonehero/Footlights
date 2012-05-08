@@ -54,7 +54,7 @@ public class JavaScript implements AjaxResponse
 	public static JavaScript ajax(String code)
 	{
 		return new JavaScript()
-			.append("context.ajax('").append(JavaScript.sanitizeText(code)).append("')");
+			.append("context.ajax('").append(JavaScript.sanitizeText(code)).append("');");
 	}
 
 	public static JavaScript ajax(String code, String context)
@@ -64,7 +64,7 @@ public class JavaScript implements AjaxResponse
 			.append("'").append(context).append("', ")
 			.append("sandboxes['global']")
 			.append(")")
-			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("')");
+			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("');");
 	}
 
 	public static JavaScript log(String message)

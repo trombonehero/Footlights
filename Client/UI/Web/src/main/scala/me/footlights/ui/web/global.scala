@@ -140,19 +140,46 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 	private var popupResponse:Either[core.UIException,String] = _
 
 
+	/**
+	 * @param  initActions       Initialization actions for the HTML form.
+	 *                           Forms in popup dialogs come pre-populated with Submit and Cancel
+	 *                           options, but require init actions like
+	 *                           "this.appendElement('input')" to do anything useful.
+	 */
+	private def popup(title:String, text:String, initActions:JavaScript*) = {
+		val setup = new JavaScript("""
+var popup = context.root.appendElement('div');
+popup.class = 'popup';
+var head = popup.appendElement('div');
+head.class = 'header';
+head.style['border-bottom'] = '1px solid';
+head.style['margin-bottom'] = '.25em';
+head.appendText('""").appendText(title).append("""');
 
-	private def popup(title:String, text:String) = {
-		new JavaScript()
-			.append("var popup = context.root.appendElement('div');")
-			.append("popup.class = 'popup';")
-			.append("var head = popup.appendElement('div');")
-			.append("head.class = 'header';")
-			.append("head.style['border-bottom'] = '1px solid';")
-			.append("head.style['margin-bottom'] = '.25em';")
-			.append("head.appendText('%s');" format { JavaScript sanitizeText title })
+popup.appendText('""").appendText(text).append("""');
 
-			.append("popup.appendText('%s');" format { JavaScript sanitizeText text })
-			.append("return popup;")
+var form = popup.appendElement('form');
+form.alldone = function() { popup.die(); };
+form.onsubmit = function(value) {
+	context.log('submitted: ' + value);
+	this.alldone();
+	context.ajax('""").append(PopupResponse substitute "' + value + '").append("""');
+};""")
+
+		val input = initActions map { code =>
+			new JavaScript("form['init'] = %s; form['init']()" format code.asFunction)
+		} toList
+
+		val submit = new JavaScript("form.appendElement('input').type = 'submit'")
+		val cancel = clickableText("popup", "Cancel",
+			new JavaScript("this.cancel()"),
+			new JavaScript("this.cancel = " +
+					(JavaScript ajax PopupCancelled).append("popup.die()").asFunction)
+		)
+
+		val epilogue = new JavaScript("return popup")
+
+		(setup :: input) :+ submit :+ cancel :+ epilogue reduce { _ append _ }
 	}
 
 	private def clickableAjax(parent:String, label:String, ajaxText:String) =

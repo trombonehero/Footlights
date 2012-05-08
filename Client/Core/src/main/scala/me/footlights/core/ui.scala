@@ -49,9 +49,8 @@ abstract class UI(val name:String, footlights:Footlights)
 	 * @return   whether or not the UI will commit to asking the user (if not, we will
 	 *           carry on asking other UIs)
 	 */
-	def promptUser(title:String, prompt:String,
-			callback: Either[UIException,String] => Any,
-			default:Option[String] = None): Boolean =
+	def promptUser(title:String, prompt:String, default:Option[String] = None)
+			(callback: Either[UIException,String] => Any): Boolean =
 		false
 
 	footlights registerUI this
@@ -117,22 +116,22 @@ trait UIManager extends Footlights {
 	override def promptUser(prompt:String, default:Option[String]) =
 		promptUser(prompt, "Footlights", default)
 
-	private[core] override def promptUser(prompt:String, title:String, default:Option[String]) = {
+	private[core] override def promptUser(promptText:String, title:String, default:Option[String]) =
+		prompt { uis.view map { ui => ui.promptUser(title, promptText, default) _ } }
+
+	private def prompt[A](f:Iterable[(Either[UIException,A] => Any) => Boolean]) = {
 		val done = new Object()
-		var result:Either[UIException,String] =
+		var result:Either[UIException,A] =
 			Left(new UIException("No UI capable of prompting user"))
 
 		future {
-			val callback = (response:Either[UIException,String]) => {
+			val callback = (response:Either[UIException,A]) => {
 				result = response
 				done.synchronized { done.notifyAll }
 			}
 
-			val mission_accepted =
-				uis.view map { _ promptUser (title, prompt, callback, default) } reduce { _ || _ }
-
-			if (!mission_accepted)
-				done.synchronized { done.notifyAll }
+			val mission_accepted = f map { _(callback) } reduce { _ || _ }
+			if (!mission_accepted) done.synchronized { done.notifyAll }
 		}
 
 		done.synchronized { done.wait }

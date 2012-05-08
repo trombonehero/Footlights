@@ -61,9 +61,11 @@ class SwingUI(footlights:core.Footlights) extends core.UI("Swing UI", footlights
 	frame.setBounds(0, 0, 800, 600)
 	frame setVisible true
 
+	private val stdout = System.out
 	private val textAreaPrintStream = new java.io.PrintStream(
 		new java.io.OutputStream {
 			override def write(b:Int) = {
+				stdout write b
 				textArea append new String(List(b) map { _.toChar } toArray)
 				textArea setCaretPosition textArea.getDocument.getLength
 			}

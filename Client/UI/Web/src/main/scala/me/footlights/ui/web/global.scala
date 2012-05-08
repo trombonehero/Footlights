@@ -128,17 +128,19 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 
 
 	def promptUser(title:String, question:String, callback: Either[core.UIException,String] => Any,
-			default:Option[String] = None) = userResponded.synchronized {
-
-		fireEvent { popup(title, question, new JavaScript("this.appendElement('input');")) }
-		userResponded.wait
-		callback(popupResponse)
-	}
+			default:Option[String] = None) =
+		prompt { popup(title, question, new JavaScript("this.appendElement('input');")) }
 
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()
 	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
 		asyncEvents enqueue event
 		asyncEvents notify
+	}
+
+	private def prompt(code:JavaScript) = userResponded.synchronized {
+		fireEvent { code }
+		userResponded.wait
+		popupResponse
 	}
 
 	private val userResponded = new Object()

@@ -116,6 +116,12 @@ trait UIManager extends Footlights {
 	override def promptUser(prompt:String, default:Option[String]) =
 		promptUser(prompt, "Footlights", default)
 
+	override def promptUser[A](promptText:String, title:String, options:Map[String,A],
+			default:Option[A]) = prompt {
+
+		uis.view map { ui => ui.choose(title, promptText, options, default) _}
+	}
+
 	private[core] override def promptUser(promptText:String, title:String, default:Option[String]) =
 		prompt { uis.view map { ui => ui.promptUser(title, promptText, default) _ } }
 

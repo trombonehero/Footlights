@@ -122,6 +122,10 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 		asyncEvents notify
 	}
 
+	private val userResponded = new Object()
+	private var popupResponse:Either[core.UIException,String] = _
+
+
 
 	private def popup(title:String, text:String) = {
 		new JavaScript()

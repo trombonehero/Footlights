@@ -58,6 +58,7 @@ function proxy(node, context)
 				default:
 					element = document.createElement(type);
 					if (type == 'a') element.href = '#';
+					if (type == 'form') element.action = '#';
 					subproxy = proxy(element, context);
 			}
 
@@ -149,6 +150,11 @@ function proxy(node, context)
 		set onload(js)      { node.onload       = theProxy.proxy_code(js); },
 		set onmouseout(js)  { node.onmouseout   = theProxy.proxy_code(js); },
 		set onmouseover(js) { node.onmouseover  = theProxy.proxy_code(js); },
+		set onsubmit(js)    {
+			// Just pass through the submitted value.
+			theProxy[js] = context.compile(js)(context.globals);
+			node.onsubmit = function onsubmitwrapper(e) { theProxy[js](e.target.children[0].value); }
+		},
 	};
 
 	return theProxy;

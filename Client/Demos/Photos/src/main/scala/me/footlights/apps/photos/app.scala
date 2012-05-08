@@ -29,7 +29,7 @@ import me.footlights.api.support.Either._
 
 package me.footlights.apps.photos {
 
-class Album private(val name:String, dir:Directory) {
+class Album private(val name:String, val dir:Directory) {
 	override def toString() = "Album { '%s', %s }" format (name, dir.toString)
 
 	def cover = dir open "cover" fold (ex => Album.DefaultCoverImage, _.name.toString)
@@ -67,6 +67,7 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 			}
 		}
 
+	def shareAlbum(album:Album) = kernel share album.dir
 	def deleteAlbum(name:String) = root remove name map { success => this }
 
 	def uploadInto(album:Album) = {

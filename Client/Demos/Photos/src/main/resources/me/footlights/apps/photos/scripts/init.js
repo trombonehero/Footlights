@@ -29,7 +29,8 @@ context.globals['clear'] = function clear()
 	rowlen = 0;
 };
 
-context.globals['new_album'] = function new_album(name, cover, openCallback, deleteCallback)
+context.globals['new_album'] = function new_album(name, cover,
+		openCallback, shareCallback, deleteCallback)
 {
 	if (rowlen > 3) {
 		current_row = table.appendElement('tr');
@@ -59,6 +60,14 @@ context.globals['new_album'] = function new_album(name, cover, openCallback, del
 
 	var buttons = cell.appendElement('div');
 	buttons.style.position = 'relative';
+
+	var share = buttons.appendElement('img');
+	share.src = 'images/oxygen/actions/user-group-new.png';
+	share.style.position = 'absolute';
+	share.style.height = 24;
+	share.style.right = 26;
+	share.name = name;
+	share.onclick = shareCallback;
 
 	var del = buttons.appendElement('img');
 	del.src = 'images/oxygen/actions/edit-delete.png';

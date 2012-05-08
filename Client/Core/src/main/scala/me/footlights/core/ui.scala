@@ -133,11 +133,11 @@ trait UIManager extends Footlights {
 		future {
 			val callback = (response:Either[UIException,A]) => {
 				result = response
-				done.synchronized { done.notifyAll }
+				done.synchronized { done.notify }
 			}
 
 			val mission_accepted = f map { _(callback) } reduce { _ || _ }
-			if (!mission_accepted) done.synchronized { done.notifyAll }
+			if (!mission_accepted) done.synchronized { done.notify }
 		}
 
 		done.synchronized { done.wait }

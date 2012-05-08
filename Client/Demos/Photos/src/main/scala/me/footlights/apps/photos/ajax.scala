@@ -56,7 +56,7 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 				setStatus {
 					app.createAlbum fold (
 						ex => ex.getMessage,
-						"Created directory: %s" format _
+						"Created album: %s" format _
 					)
 				} append refreshTop
 

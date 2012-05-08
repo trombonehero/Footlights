@@ -61,7 +61,6 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				js
 					.append(setupAsyncChannel)
 					.append("context.log('UI initialized.');")
-					.append(JavaScript log "identities: " + footlights.identities)
 
 			case PopupResponse(URLEncoded(response)) =>
 				userResponded.synchronized {

@@ -43,9 +43,9 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 					case Right(album) =>
 						js append addAlbum(
 								album,
-								JavaScript ajax OpenAlbum(album.name),
-								JavaScript ajax ShareAlbum(album.name),
-								JavaScript ajax DeleteAlbum(album.name)
+								JavaScript ajax OpenAlbum(URLEncoded(album.name)),
+								JavaScript ajax ShareAlbum(URLEncoded(album.name)),
+								JavaScript ajax DeleteAlbum(URLEncoded(album.name))
 							)
 
 					case Left(ex) => setStatus { "Error opening album: %s" format ex }

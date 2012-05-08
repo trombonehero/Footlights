@@ -132,6 +132,8 @@ object AppWrapper {
 			override def promptUser(prompt:String) = promptUser(prompt, None)
 			override def promptUser(prompt:String, default:Option[String]) =
 				footlights.promptUser(prompt, name.toString, default)
+
+			override def share(dir:api.Directory) = footlights share dir
 		}
 
 		new AppWrapper(init, name, kernelWrapper, prefs, log)

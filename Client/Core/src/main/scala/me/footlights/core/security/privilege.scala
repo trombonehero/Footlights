@@ -17,7 +17,7 @@ import java.security.{AccessController, PrivilegedActionException, PrivilegedExc
 import java.net.URI
 import java.nio.ByteBuffer
 
-import me.footlights.api.{File,KernelInterface}
+import me.footlights.api.{Directory,File,KernelInterface}
 import me.footlights.core.Footlights
 import me.footlights.core.crypto.Link
 
@@ -41,6 +41,7 @@ trait KernelPrivilege extends Footlights {
 	abstract override def saveLocalFile(f:File)    = Privilege.sudo { () => super.saveLocalFile(f) }
 	abstract override def promptUser(prompt:String, title:String, default:Option[String]) =
 		Privilege.sudo { () => super.promptUser(prompt, title, default) }
+	abstract override def share(dir:Directory)     = Privilege.sudo { () => super.share(dir) }
 }
 
 /** Represents JVM privilege. */

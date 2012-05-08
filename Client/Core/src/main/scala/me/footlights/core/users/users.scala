@@ -106,6 +106,17 @@ trait IdentityManagement extends core.Footlights {
 	override def identity(uri:java.net.URI) =
 		root openDirectory uri.toString map { (uri.toString, _) } flatMap UserIdentity.apply
 
+	override def share(dir:api.Directory): Either[Exception,api.Directory] = {
+		val userMap = identities map { id => (id.name -> id) } toMap
+
+		promptUser("Who would you like to share with?", "Choose user", userMap, None) map {
+			user =>
+				// TODO: actually do some sharing!
+				log info { "Sharing %s with %s" format (dir, user) }
+				dir
+		}
+	}
+
 	/** The root directory where application data is stored. */
 	private lazy val root = subsystemRoot("identities")
 

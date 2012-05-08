@@ -68,4 +68,7 @@ public interface KernelInterface
 
 	/** Convenience method with no default value. */
 	public Either<Exception,String> promptUser(String prompt);
+
+	/** Share a {@link Directory} with another user. */
+	public Either<Exception,Directory> share(Directory dir);
 }

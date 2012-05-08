@@ -55,7 +55,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				footlights.applications map {
 					case Left(ex) => JavaScript log ex.toString
 					case Right((name, classpath)) =>
-						clickableAjax(launcher, name, LoadApplication substitute classpath)
+						clickableAjax(launcher, name, LoadApplication(classpath))
 				} foreach js.append
 
 				js
@@ -158,7 +158,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 		title,
 		question,
 		footlights.identities map { id =>
-			id.name -> (JavaScript ajax { ChooseUser substitute id.fingerprint })
+			id.name -> (JavaScript ajax ChooseUser(id.fingerprint))
 		}
 	)
 
@@ -195,7 +195,7 @@ var form = popup.appendElement('form');
 form.alldone = function() { popup.die(); };
 form.onsubmit = function(value) {
 	this.alldone();
-	context.ajax('""").append(PopupResponse substitute "' + value + '").append("""');
+	context.ajax('""").append(PopupResponse("' + value + '")).append("""');
 };""")
 
 		val input = initActions map { code =>

@@ -43,8 +43,9 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 					case Right(album) =>
 						js append addAlbum(
 								album,
-								JavaScript ajax { OpenAlbum substitute album.name },
-								JavaScript ajax { DeleteAlbum substitute album.name }
+								JavaScript ajax OpenAlbum(album.name),
+								JavaScript ajax ShareAlbum(album.name),
+								JavaScript ajax DeleteAlbum(album.name)
 							)
 
 					case Left(ex) => setStatus { "Error opening album: %s" format ex }
@@ -71,7 +72,7 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 				app album name map { album =>
 					clear ::
 					addTool("Back to albums", JavaScript ajax RefreshTopView) ::
-					addTool("Add photo", JavaScript ajax { UploadImage substitute name }) ::
+					addTool("Add photo", JavaScript ajax UploadImage(name)) ::
 					setStatus { "Opened album '%s'" format name } ::
 					(album.photos map addPhoto toList)
 				} fold (
@@ -80,7 +81,7 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 				)
 
 			case UploadImage(URLEncoded(albumName)) =>
-				app album albumName tee app.uploadInto map { OpenAlbum substitute _.name } fold (
+				app album albumName tee app.uploadInto map { _.name } map { OpenAlbum(_) } fold (
 					ex => setStatus { "Error uploading photo: %s" format ex },
 					JavaScript.ajax
 				)
@@ -91,7 +92,8 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 
 				album tee {
 					_ remove path.last } map {
-					OpenAlbum substitute _.name
+					_.name } map {
+					OpenAlbum(_)
 				} fold (
 					ex => setStatus { "Error: %s" format ex },
 					JavaScript.ajax
@@ -126,7 +128,7 @@ a.onclick = %s;
 	private def addPhoto(filename:String) =
 		new JavaScript append "context.globals['new_photo']('%s', %s);".format(
 			filename,
-			JavaScript ajax { RemoveImage substitute filename } asFunction
+			JavaScript ajax RemoveImage(filename) asFunction
 		)
 
 	private def setStatus(unsafeText:String) =

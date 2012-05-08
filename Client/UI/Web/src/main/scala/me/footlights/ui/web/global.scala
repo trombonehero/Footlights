@@ -69,12 +69,8 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				}
 				JavaScript log { "user chose '%s'" format response }
 
-			case PopupCancelled =>
-				userResponded.synchronized {
-					popupResponse = Left(new core.CanceledException)
-					userResponded.notify
-				}
-				JavaScript log "user cancelled popup"
+			case EmptyPopupResponse => popupCancelled
+			case PopupCancelled => popupCancelled
 
 			case Reset =>
 				while (!footlights.runningApplications.isEmpty)
@@ -189,6 +185,14 @@ form.onsubmit = function(value) {
 		(setup :: input) :+ submit :+ cancel :+ epilogue reduce { _ append _ }
 	}
 
+	private def popupCancelled = {
+		userResponded.synchronized {
+			popupResponse = Left(new core.CanceledException)
+			userResponded.notify
+		}
+		JavaScript log "user cancelled popup"
+	}
+
 	private def clickableAjax(parent:String, label:String, ajaxText:String) =
 		clickableText(parent, label, JavaScript ajax ajaxText)
 
@@ -239,7 +243,8 @@ sb.ajax('init');
 	private val PromptApplication = "prompt_for_app"
 	private val LoadApplication = """load_app/(\S+)""".r
 
-	private val PopupResponse  = """user_prompt_response/(\S+)""".r
+	private val EmptyPopupResponse = "user_prompt_response/"
+	private val PopupResponse   = ("""%s(\S+)""" format EmptyPopupResponse).r
 	private val PopupCancelled  = "cancel_popup"
 
 	private val setupAsyncChannel =

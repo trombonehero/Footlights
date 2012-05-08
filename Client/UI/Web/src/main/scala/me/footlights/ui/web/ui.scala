@@ -26,6 +26,8 @@ import me.footlights.core.UI._
 import me.footlights.core.apps.AppWrapper
 
 import me.footlights.api.ajax.JavaScript
+import me.footlights.api.support.Either._
+
 
 package me.footlights.ui.web {
 
@@ -75,6 +77,19 @@ class WebUI(
 			(callback: Either[core.UIException,String] => Any) = {
 
 		future { callback { globalContext.promptUser(title, prompt, callback, default) } }
+		true
+	}
+
+	override def choose[A](title:String, prompt:String, options:Map[String,A],
+			default:Option[(String,A)] = None)(callback: Either[core.UIException,A] => Any) = {
+
+		future {
+			callback {
+				globalContext.choose(title, prompt, options.keys, default map { _._1 }) flatMap {
+					options get _ toRight(new core.CanceledException)
+				}
+			}
+		}
 		true
 	}
 }

@@ -131,6 +131,15 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 			default:Option[String] = None) =
 		prompt { popup(title, question, new JavaScript("this.appendElement('input');")) }
 
+	def choose(title:String, promptText:String,
+			options: Iterable[String],
+			default:Option[String] = None) =
+		prompt {
+			chooser(title, promptText,
+				options map { label => label -> (JavaScript ajax PopupResponse(label)) }
+			)
+		}
+
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()
 	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
 		asyncEvents enqueue event

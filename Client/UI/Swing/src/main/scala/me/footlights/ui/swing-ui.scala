@@ -42,6 +42,8 @@ class SwingUI(footlights:core.Footlights) extends core.UI("Swing UI", footlights
 		true
 	}
 
+	// TODO: override promptUser[A](promptText, title, Map[String,A], default)
+
 	private val frame = new swing.JFrame("Footlights")
 	frame setDefaultCloseOperation swing.JFrame.EXIT_ON_CLOSE
 

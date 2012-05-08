@@ -53,6 +53,11 @@ abstract class UI(val name:String, footlights:Footlights)
 			(callback: Either[UIException,String] => Any): Boolean =
 		false
 
+	def choose[A](title:String, prompt:String,
+			options:Map[String,A], default:Option[(String,A)] = None)
+			(callback: Either[UIException,A] => Any) =
+		false
+
 	footlights registerUI this
 }
 
@@ -117,10 +122,8 @@ trait UIManager extends Footlights {
 		promptUser(prompt, "Footlights", default)
 
 	override def promptUser[A](promptText:String, title:String, options:Map[String,A],
-			default:Option[A]) = prompt {
-
-		uis.view map { ui => ui.choose(title, promptText, options, default) _}
-	}
+			default:Option[(String,A)]) =
+		prompt { uis.view map { ui => ui.choose(title, promptText, options, default) _} }
 
 	private[core] override def promptUser(promptText:String, title:String, default:Option[String]) =
 		prompt { uis.view map { ui => ui.promptUser(title, promptText, default) _ } }

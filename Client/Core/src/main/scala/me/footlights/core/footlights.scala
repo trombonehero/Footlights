@@ -67,6 +67,11 @@ trait Footlights extends api.KernelInterface {
 	private[core] def promptUser(prompt:String, title:String, default:Option[String]):
 		Either[UIException,String]
 
+	/** Ask the user to choose among some possibilities. */
+	private[core] def promptUser[A](prompt:String, title:String, options:Map[String,A],
+			default:Option[(String,A)]):
+		Either[UIException,A]
+
 	def registerUI(ui:UI)
 	def deregisterUI(ui:UI)
 

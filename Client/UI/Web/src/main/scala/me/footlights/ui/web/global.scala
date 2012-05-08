@@ -62,6 +62,20 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 					.append("context.log('UI initialized.');")
 					.append(JavaScript log "identities: " + footlights.identities)
 
+			case PopupResponse(response) =>
+				userResponded.synchronized {
+					popupResponse = Right(response)
+					userResponded.notify
+				}
+				JavaScript log { "user chose '%s'" format response }
+
+			case PopupCancelled =>
+				userResponded.synchronized {
+					popupResponse = Left(new core.CanceledException)
+					userResponded.notify
+				}
+				JavaScript log "user cancelled popup"
+
 			case Reset =>
 				while (!footlights.runningApplications.isEmpty)
 					footlights unloadApplication footlights.runningApplications.head
@@ -190,6 +204,9 @@ sb.ajax('init');
 	private val FillPlaceholder = """fill_placeholder/(\S+)""".r
 	private val PromptApplication = "prompt_for_app"
 	private val LoadApplication = """load_app/(\S+)""".r
+
+	private val PopupResponse  = """user_prompt_response/(\S+)""".r
+	private val PopupCancelled  = "cancel_popup"
 
 	private val setupAsyncChannel =
 		new JavaScript().append("context.globals['setupAsyncChannel']();")

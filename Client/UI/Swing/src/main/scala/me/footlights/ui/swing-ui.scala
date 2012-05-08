@@ -78,8 +78,3 @@ class SwingUI(footlights:core.Footlights) extends core.UI("Swing UI", footlights
 object SwingUI {
 	def init(footlights:core.Footlights) = new SwingUI(footlights)
 }
-
-/*
-import java.io.*;
-import javax.swing.*;
-*/

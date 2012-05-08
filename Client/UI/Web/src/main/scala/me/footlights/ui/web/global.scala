@@ -169,7 +169,6 @@ popup.appendText('""").appendText(text).append("""');
 var form = popup.appendElement('form');
 form.alldone = function() { popup.die(); };
 form.onsubmit = function(value) {
-	context.log('submitted: ' + value);
 	this.alldone();
 	context.ajax('""").append(PopupResponse substitute "' + value + '").append("""');
 };""")

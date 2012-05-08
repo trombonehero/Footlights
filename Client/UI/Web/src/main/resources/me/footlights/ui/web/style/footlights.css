@@ -23,6 +23,8 @@ h1, h2 { color: rgb(230, 221, 35); }
 	margin: 0;
 	padding: .25em;
 
+	overflow: auto;
+
 	background: rgba(230, 221, 35, 0.15);
 	color: rgba(230, 221, 35, 0.6);
 

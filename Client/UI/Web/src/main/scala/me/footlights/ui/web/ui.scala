@@ -16,9 +16,11 @@
 import java.net.URI
 import java.util.logging.Logger
 
+import scala.actors.Futures.future
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
+import me.footlights.core
 import me.footlights.core.{Footlights,Preconditions,UI}
 import me.footlights.core.UI._
 import me.footlights.core.apps.AppWrapper
@@ -69,6 +71,13 @@ class WebUI(
 				new JavaScript()
 					.append("context.log('Unknown event: %s');" format e)
 			}
+	}
+
+	override def promptUser(title:String, prompt:String,
+			callback: Either[core.UIException,String] => Any, default:Option[String]) = {
+
+		future { globalContext.promptUser(title, prompt, callback, default) }
+		true
 	}
 }
 

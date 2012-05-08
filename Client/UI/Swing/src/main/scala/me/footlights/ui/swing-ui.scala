@@ -16,6 +16,9 @@
 package me.footlights.ui
 
 import javax.swing
+import scala.actors.Futures.future
+
+import me.footlights.api.support.Pipeline._
 import me.footlights.core
 
 
@@ -23,6 +26,22 @@ class SwingUI(footlights:core.Footlights) extends core.UI("Swing UI", footlights
 
 	override def run = textAreaPrintStream println "Swing UI started"
 	override def handleEvent(event:core.UI.Event) = {}
+
+	override def promptUser(title:String, prompt:String,
+			callback: Either[core.UIException,String] => Any,
+			default:Option[String]) = {
+
+		future {
+			swing.JOptionPane.showInputDialog(null, prompt, title,
+					swing.JOptionPane.PLAIN_MESSAGE, null, null,
+					default getOrElse null) match {
+				case s:String => s | Right.apply | callback
+				case _ => new core.CanceledException | Left.apply | callback
+			}
+		}
+
+		true
+	}
 
 	private val frame = new swing.JFrame("Footlights")
 	frame setDefaultCloseOperation swing.JFrame.EXIT_ON_CLOSE

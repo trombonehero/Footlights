@@ -21,6 +21,7 @@ import java.util.logging.Logger
 import javax.swing
 import javax.swing.JFileChooser
 
+import scala.actors.Futures.future
 import scala.collection.mutable.Set
 
 import me.footlights.api
@@ -41,6 +42,17 @@ abstract class UI(val name:String, footlights:Footlights)
 		extends Thread("Footlights UI: '" + name + "'") {
 
 	def handleEvent(event:UI.Event): Unit
+
+	/**
+	 * Asks the UI to prompt the user for information.
+	 *
+	 * @return   whether or not the UI will commit to asking the user (if not, we will
+	 *           carry on asking other UIs)
+	 */
+	def promptUser(title:String, prompt:String,
+			callback: Either[UIException,String] => Any,
+			default:Option[String] = None): Boolean =
+		false
 
 	footlights registerUI this
 }
@@ -101,6 +113,32 @@ trait UIManager extends Footlights {
 		super.unloadApplication(app)
 	}
 
+	override def promptUser(prompt:String) = promptUser(prompt, None)
+	override def promptUser(prompt:String, default:Option[String]) =
+		promptUser(prompt, "Footlights", default)
+
+	private[core] override def promptUser(prompt:String, title:String, default:Option[String]) = {
+		val done = new Object()
+		var result:Either[UIException,String] =
+			Left(new UIException("No UI capable of prompting user"))
+
+		future {
+			val callback = (response:Either[UIException,String]) => {
+				result = response
+				done.synchronized { done.notifyAll }
+			}
+
+			val mission_accepted =
+				uis.view map { _ promptUser (title, prompt, callback, default) } reduce { _ || _ }
+
+			if (!mission_accepted)
+				done.synchronized { done.notifyAll }
+		}
+
+		done.synchronized { done.wait }
+		result
+	}
+
 	private def fire(event: UI.Event) = uis foreach { _ handleEvent event }
 }
 
@@ -128,18 +166,6 @@ trait SwingPowerboxes extends Footlights {
 		}
 
 		filename flatMap { localFileName => saveLocal(f, localFileName) }
-	}
-
-	override def promptUser(prompt:String) = promptUser(prompt, None)
-	override def promptUser(prompt:String, default:Option[String]) =
-		promptUser(prompt, "Footlights", default)
-
-	private[core] override def promptUser(prompt:String, title:String, default:Option[String]) = {
-		swing.JOptionPane.showInputDialog(null, prompt, title, swing.JOptionPane.PLAIN_MESSAGE,
-				null, null, default getOrElse null) match {
-			case s:String => Right(s)
-			case _ => Left(new CanceledException())
-		}
 	}
 
 	private val log = Logger getLogger { classOf[SwingPowerboxes] getCanonicalName }

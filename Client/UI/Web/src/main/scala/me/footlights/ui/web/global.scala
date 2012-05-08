@@ -138,13 +138,34 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 	private def clickableAjax(parent:String, label:String, ajaxText:String) =
 		clickableText(parent, label, JavaScript ajax ajaxText)
 
-	private def clickableText(parent:String, label:String, action:JavaScript) = {
-		new JavaScript()
+	/**
+	 * @param  parent        the JavaScript object to add the clickable text to
+	 * @param  label         the clickable text to display
+	 * @param  action        the action to take on click
+	 * @param  initActions   Additional initialization actions, like setting up methods that
+	 *                       refer to the surrounding scope.
+	 *
+	 *                       Event handlers don't have access to any scope but themselves, so
+	 *                       in order to e.g. delete a popup dialog, the "dialog.die()" call should
+	 *                       be a function set up with an init action (e.g.
+	 *                       "this.cancel = function(){...}") and the click handler can then call
+	 *                       "this.cancel()".
+	 */
+	private def clickableText(parent:String, label:String, action:JavaScript,
+			initActions:JavaScript*) = {
+
+		val js = new JavaScript()
 			.append("""
 var a = %s.appendElement('div').appendElement('a');
 a.appendText('%s');
 a.onclick = %s;
 """ format (parent, JavaScript sanitizeText label, action asFunction "clickHandler"))
+
+		initActions map { code =>
+			"a['init'] = %s; a['init']();" format code.asFunction
+		} foreach js.append
+
+		js
 	}
 
 	private def createUISandbox(name:URI) =

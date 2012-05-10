@@ -164,7 +164,7 @@ a.onclick = %s;
 	private val DeleteAlbum = """delete_album/(\S+)""".r
 	private val OpenAlbum = """album/(\S+)""".r
 	private val ShareAlbum = """share_album/(\S+)""".r
-	private val ShareAlbumWithApp = """share_album/(\S+)""".r
+	private val ShareAlbumWithApp = """open_album_with_app/(\S+)""".r
 
 	private val UploadImage = """upload_image/(\S+)""".r
 	private val RemoveImage = """delete_image/(\S+)""".r

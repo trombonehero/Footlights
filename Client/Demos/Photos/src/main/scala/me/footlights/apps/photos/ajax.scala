@@ -99,27 +99,30 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 						)
 				}
 
-			case UploadImage(URLEncoded(albumName)) =>
-				app album albumName tee app.uploadInto map { _.name } map { OpenAlbum(_) } fold (
-					ex => setStatus { "Error uploading photo: %s" format ex },
-					JavaScript.ajax
-				)
+			// TODO: horrible workaround, see https://issues.scala-lang.org/browse/SI-1133
+			case other => other match {
+				case UploadImage(URLEncoded(albumName)) =>
+					app album albumName tee app.uploadInto map { _.name } map { OpenAlbum(_) } fold (
+						ex => setStatus { "Error uploading photo: %s" format ex },
+						JavaScript.ajax
+					)
 
-			case RemoveImage(URLEncoded(name)) =>
-				val path = (name split "/" toList) filter { !_.isEmpty }
-				val album = app album { path.init reduce { _ + "/" + _ } }
+				case RemoveImage(URLEncoded(name)) =>
+					val path = (name split "/" toList) filter { !_.isEmpty }
+					val album = app album { path.init reduce { _ + "/" + _ } }
 
-				album tee {
-					_ remove path.last } map {
-					_.name } map {
-					OpenAlbum(_)
-				} fold (
-					ex => setStatus { "Error: %s" format ex },
-					JavaScript.ajax
-				)
+					album tee {
+						_ remove path.last } map {
+						_.name } map {
+						OpenAlbum(_)
+					} fold (
+						ex => setStatus { "Error: %s" format ex },
+						JavaScript.ajax
+					)
 
-			case other:String =>
-				setStatus { "Unknown command '%s'" format other}
+				case other:String =>
+					setStatus { "Unknown command '%s'" format other}
+			}
 		}
 	}
 

@@ -61,14 +61,6 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 					)
 				} append refreshTop
 
-			case ShareAlbumWithApp(URLEncoded(name)) =>
-				setStatus {
-					app album name map app.openAlbumWithApp fold(
-						ex => ex.getMessage,
-						dir => "Shared album '%s'" format name
-					)
-				}
-
 			case DeleteAlbum(URLEncoded(name)) =>
 				setStatus {
 					app deleteAlbum name fold (
@@ -97,6 +89,14 @@ class Ajax(app:PhotosApp) extends AjaxHandler
 							ex => "Error: " + ex,
 							status => status
 						)
+				}
+
+			case ShareAlbumWithApp(URLEncoded(name)) =>
+				setStatus {
+					app album name map app.openAlbumWithApp fold(
+						ex => ex.getMessage,
+						dir => "Shared album '%s'" format name
+					)
 				}
 
 			// TODO: horrible workaround, see https://issues.scala-lang.org/browse/SI-1133

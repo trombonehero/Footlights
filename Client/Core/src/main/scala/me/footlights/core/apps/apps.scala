@@ -187,6 +187,7 @@ trait ApplicationManagement extends Footlights {
 		val options = runningApplications map { app => (app.app.shortName.toString, app) } toMap
 
 		promptUser("Open with which app?", "Choose app", options, None) map { app =>
+			app.app open d
 			d
 		}
 	}

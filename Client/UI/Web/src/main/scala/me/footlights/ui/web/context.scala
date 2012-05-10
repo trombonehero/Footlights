@@ -99,8 +99,11 @@ abstract class Context(base:Class[_]) extends WebServer {
 /** The Ajax, etc. context for an unprivileged application. */
 class AppContext(wrapper:AppWrapper) extends Context(wrapper.app.getClass) {
 	override val name = "Application context: '%s'" format wrapper.name
-	override def handleAjax(req:WebRequest) = wrapper.app.ajaxHandler service req
 	override def openFile(name:String) = wrapper.kernel open name map { case f:data.File => f }
+	override def handleAjax(req:WebRequest) =
+		wrapper.app.ajaxHandler map { _ service req } getOrElse {
+			JavaScript log { "%s app has no Ajax handler" format wrapper.app.shortName }
+		}
 }
 
 }

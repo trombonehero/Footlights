@@ -24,10 +24,9 @@ package me.footlights.demos.tictactoe {
  * A demo application for playing Tic-Tac-Toe against human or computer opponents.
  * @author Jonathan Anderson <jon@footlights.me>
  */
-class TicTacToe(val prefs:ModifiablePreferences) extends Application
+class TicTacToe(val prefs:ModifiablePreferences) extends Application("Tic-Tac-Toe")
 {
-	def ajaxHandler = new Ajax(this)
-	val shortName = "Tic-Tac-Toe"
+	override val ajaxHandler = Some(new Ajax(this))
 
 	var game = new Game
 

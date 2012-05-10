@@ -15,6 +15,7 @@
  */
 package me.footlights.api;
 
+import scala.Option;
 import me.footlights.api.ajax.AjaxHandler;
 
 
@@ -30,15 +31,21 @@ import me.footlights.api.ajax.AjaxHandler;
  * ready to respond to user input via its {@link AjaxHandler} (or other mechanisms, if we build
  * them in the future).
  */
-public interface Application
+public abstract class Application
 {
+	public Application(String shortName)
+	{
+		this.name = shortName;
+	}
+
 	/**
 	 * A handler for Ajax requests from the Web UI.
 	 *
 	 * @return null if there is no such handler
 	 */
-	public AjaxHandler ajaxHandler();
+	public Option<AjaxHandler> ajaxHandler() { return Option.apply(null); }
 
 	/** A short, user-accessible name. */
-	public String shortName();
+	public final String shortName() { return name; }
+	private final String name;
 }

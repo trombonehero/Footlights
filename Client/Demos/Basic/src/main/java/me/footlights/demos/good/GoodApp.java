@@ -15,6 +15,7 @@
  */
 package me.footlights.demos.good;
 
+import scala.Option;
 import java.util.logging.Logger;
 
 import me.footlights.api.KernelInterface;
@@ -26,7 +27,7 @@ import me.footlights.api.ajax.AjaxHandler;
  * A well-behaved application that legitimately exercises Footlights services.
  * @author jon@footlights.me
  */
-public class GoodApp implements me.footlights.api.Application
+public class GoodApp extends me.footlights.api.Application
 {
 	public static GoodApp init(KernelInterface kernel, ModifiablePreferences prefs, Logger log)
 	{
@@ -34,13 +35,13 @@ public class GoodApp implements me.footlights.api.Application
 		return new GoodApp(new DemoAjaxHandler(kernel, log));
 	}
 
-	@Override public AjaxHandler ajaxHandler() { return ajax; }
-	@Override public String shortName() { return "Demo app"; }
+	@Override public Option<AjaxHandler> ajaxHandler() { return ajax; }
 
 	private GoodApp(AjaxHandler ajax)
 	{
-		this.ajax = ajax;
+		super("Basic demo");
+		this.ajax = Option.apply(ajax);
 	}
 
-	private final AjaxHandler ajax;
+	private final Option<AjaxHandler> ajax;
 }

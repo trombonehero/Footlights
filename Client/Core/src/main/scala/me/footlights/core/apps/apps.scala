@@ -184,7 +184,7 @@ trait ApplicationManagement extends Footlights {
 		loadedApps find { kv => kv._2 == app } foreach { kv => loadedApps remove kv._1 }
 
 	override def openWithApplication(d:api.Directory): Either[Exception,api.Directory] = {
-		val options = runningApplications map { app => (app.name.toString, app) } toMap
+		val options = runningApplications map { app => (app.app.shortName.toString, app) } toMap
 
 		promptUser("Open with which app?", "Choose app", options, None) map { app =>
 			d

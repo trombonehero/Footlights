@@ -16,22 +16,27 @@
 package me.footlights.demos.wicked;
 
 import java.util.logging.Logger;
+import scala.Option;
 
 import me.footlights.api.KernelInterface;
 import me.footlights.api.ModifiablePreferences;
 import me.footlights.api.ajax.AjaxHandler;
 
 
-public class WickedApp implements me.footlights.api.Application
+public class WickedApp extends me.footlights.api.Application
 {
 	public static WickedApp init(KernelInterface kernel, ModifiablePreferences prefs, Logger log)
 	{
 		return new WickedApp(new EvilAjaxHandler(kernel, log));
 	}
 
-	@Override public AjaxHandler ajaxHandler() { return ajaxHandler; }
-	@Override public String shortName() { return "Wicked Demo"; }
+	@Override public Option<AjaxHandler> ajaxHandler() { return ajaxHandler; }
 
-	private WickedApp(AjaxHandler ajaxHandler) { this.ajaxHandler = ajaxHandler; }
-	private final AjaxHandler ajaxHandler;
+	private WickedApp(AjaxHandler ajaxHandler)
+	{
+		super("Wicked Demo");
+		this.ajaxHandler = Option.apply(ajaxHandler);
+	}
+
+	private final Option<AjaxHandler> ajaxHandler;
 }

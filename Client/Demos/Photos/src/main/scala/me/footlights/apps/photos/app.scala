@@ -52,10 +52,10 @@ object Album {
  * An application which uploads user-selected files into the Content-Addressed Store.
  * @author Jonathan Anderson <jon@footlights.me>
  */
-class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) extends Application
+class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
+	extends Application("Photo Manager")
 {
-	def ajaxHandler = new Ajax(this)
-	val shortName = "Photos"
+	override val ajaxHandler = Some(new Ajax(this))
 
 	def albums() = root.entries filter { _.isDir } map Album.apply
 	def album(name:String) = root openDirectory name map { Album(name, _) }

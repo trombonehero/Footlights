@@ -28,10 +28,10 @@ package me.footlights.apps.uploader {
  * An application which uploads user-selected files into the Content-Addressed Store.
  * @author Jonathan Anderson <jon@footlights.me>
  */
-class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) extends Application
+class Uploader(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
+	extends Application("Uploader")
 {
-	def ajaxHandler = new Ajax(this)
-	val shortName = "Uploader"
+	override val ajaxHandler = Some(new Ajax(this))
 
 	private[uploader] def listFiles() = cwd.entries
 	private[uploader] def chdir(dir:String) = {

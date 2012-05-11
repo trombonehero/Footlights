@@ -81,8 +81,7 @@ class PhotosApp(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
 
 
 /** Builder used by Footlights to find and initialize the app. */
-object PhotosApp
-{
+object PhotosApp {
 	def init(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger) =
 		new PhotosApp(kernel, prefs, log)
 }

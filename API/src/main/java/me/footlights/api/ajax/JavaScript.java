@@ -78,7 +78,11 @@ public class JavaScript implements AjaxResponse
 	/** Make a string safe to put within single quotes. */
 	public static String sanitizeText(String input)
 	{
-		return input.replace("'", "\\'").replace("\n", "\\n");
+		return input
+			.replaceAll("\\\\", "\\\\\\\\")
+			.replaceAll("'", "\\\\'")
+			.replaceAll("\n", "\\\\n")
+			;
 	}
 
 	@Override public String toString() { return asFunction(); }

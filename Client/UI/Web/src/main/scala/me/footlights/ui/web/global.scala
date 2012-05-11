@@ -101,12 +101,8 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 
 						wrapper.app.ajaxHandler map {
 							_ setAsyncQueue new JavaScript.Sink {
-								override def accept(js:JavaScript) = fireEvent {
-									new JavaScript("context.log('context: ' + context);")
-									.append(
-									uiSandbox(wrapper.name).exec(js)
-									)
-								}
+								override def accept(js:JavaScript) =
+									fireEvent { uiSandbox(wrapper.name).exec(js) }
 							}
 						}
 

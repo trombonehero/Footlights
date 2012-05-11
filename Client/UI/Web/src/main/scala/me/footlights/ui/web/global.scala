@@ -104,7 +104,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 								override def accept(js:JavaScript) = fireEvent {
 									new JavaScript("context.log('context: ' + context);")
 									.append(
-									JavaScript.exec(js, URLEncoded(wrapper.name.toString).encoded)
+									uiSandbox(wrapper.name).exec(js)
 									)
 								}
 							}
@@ -259,14 +259,13 @@ a.onclick = %s;
 		js
 	}
 
-	private def createUISandbox(name:URI) =
+	private def createUISandbox(name:URI) = uiSandbox(name).append(".ajax('init');")
+	private def uiSandbox(name:URI) =
 		new JavaScript()
 			.append("""
-var sb = context.globals['sandboxes'].create(
-	'%s', context.globals['content'], context.log, { x: 0, y: 0 });
-sb.ajax('init');
-""" format (JavaScript sanitizeText java.net.URLEncoder.encode(name.toString, "utf-8"), "100%"))
-
+var sb = context.globals['sandboxes'].getOrCreate(
+	'%s', context.globals['content'], context.log, {})
+""" format (URLEncoded(name.toString).encoded, "utf-8"))
 
 
 	private val Init            = "init"

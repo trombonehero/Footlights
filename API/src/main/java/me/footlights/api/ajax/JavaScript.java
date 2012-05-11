@@ -52,6 +52,11 @@ public class JavaScript implements AjaxResponse
 
 	public JavaScript appendText(String text) { return append(sanitizeText(text)); }
 
+	public JavaScript exec(JavaScript code)
+	{
+		return append(".exec('").appendText(code.asScript()).append("')");
+	}
+
 	/** JavaScript for an Ajax call. */
 	public static JavaScript ajax(String code)
 	{
@@ -67,17 +72,6 @@ public class JavaScript implements AjaxResponse
 			.append("sandboxes['global']")
 			.append(")")
 			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("');");
-	}
-
-	public static JavaScript exec(JavaScript code, String context)
-	{
-		return new JavaScript()
-			.append("context.globals['sandboxes']['")
-			.appendText(context)
-			.append("'].exec('")
-			.appendText(code.asScript())
-			.append("');")
-			;
 	}
 
 	public static JavaScript log(String message)

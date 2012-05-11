@@ -20,7 +20,7 @@ import me.footlights.api.WebRequest;
 
 
 /** An object which can process Ajax requests. */
-public interface AjaxHandler
+public abstract class AjaxHandler
 {
 	/**
 	 * Handle an Ajax {@link WebRequest}.
@@ -32,5 +32,7 @@ public interface AjaxHandler
 	 * @throws Throwable as a last resort; this method may throw anything it likes
 	 */
 	public AjaxResponse service(WebRequest request)
-		throws java.io.FileNotFoundException, SecurityException, Throwable;
+			throws java.io.FileNotFoundException, SecurityException, Throwable {
+		return new JavaScript();
+	}
 }

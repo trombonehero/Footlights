@@ -26,7 +26,7 @@ package me.footlights.apps.uploader {
 /** Translates Ajax events to/from model events. */
 class Ajax(app:Uploader) extends AjaxHandler
 {
-	def service(request:WebRequest) =
+	override def service(request:WebRequest) =
 	{
 		request.path() match
 		{

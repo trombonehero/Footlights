@@ -21,7 +21,7 @@ package me.footlights.demos.tictactoe {
 /** Translates Ajax events to/from model events. */
 class Ajax(app:TicTacToe) extends AjaxHandler
 {
-	def service(request:WebRequest) =
+	override def service(request:WebRequest) =
 	{
 		request.path() match
 		{

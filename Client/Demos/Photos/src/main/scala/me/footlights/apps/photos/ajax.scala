@@ -29,7 +29,7 @@ package me.footlights.apps.photos {
 /** Translates Ajax events to/from model events. */
 class Ajax(app:PhotosApp) extends AjaxHandler
 {
-	def service(request:WebRequest) =
+	override def service(request:WebRequest) =
 	{
 		request.path() match
 		{

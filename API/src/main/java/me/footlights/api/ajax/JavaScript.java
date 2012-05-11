@@ -67,6 +67,17 @@ public class JavaScript implements AjaxResponse
 			.append(".ajax('").append(JavaScript.sanitizeText(code)).append("');");
 	}
 
+	public static JavaScript exec(JavaScript code, String context)
+	{
+		return new JavaScript()
+			.append("context.globals['sandboxes']['")
+			.appendText(context)
+			.append("'].exec('")
+			.appendText(code.asScript())
+			.append("');")
+			;
+	}
+
 	public static JavaScript log(String message)
 	{
 		return new JavaScript()

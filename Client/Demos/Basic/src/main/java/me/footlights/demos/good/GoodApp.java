@@ -18,9 +18,11 @@ package me.footlights.demos.good;
 import scala.Option;
 import java.util.logging.Logger;
 
+import me.footlights.api.Directory;
 import me.footlights.api.KernelInterface;
 import me.footlights.api.ModifiablePreferences;
 import me.footlights.api.ajax.AjaxHandler;
+import me.footlights.api.ajax.JavaScript;
 
 
 /**
@@ -36,6 +38,14 @@ public class GoodApp extends me.footlights.api.Application
 	}
 
 	@Override public Option<AjaxHandler> ajaxHandler() { return Option.apply(ajax); }
+	@Override public void open(Directory directory)
+	{
+		ajax.fireAsynchronousEvent(
+			new JavaScript("context.root.appendElement('div').appendText('open(")
+				.appendText(directory.toString())
+				.append(")');")
+		);
+	}
 
 	private GoodApp(AjaxHandler ajax)
 	{

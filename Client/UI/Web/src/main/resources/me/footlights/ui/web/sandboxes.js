@@ -19,9 +19,9 @@
 // Illegal sandbox names: 'create' and 'global'.
 var sandboxes = {};
 
-sandboxes.getOrCreate = function(name, parent, log, x, y, width, height)
+sandboxes.getOrCreate = function(name, parent, log)
 {
-	var style = { 'top': x, 'left': y, 'width': width, 'height': height };
+	var style = {};
 
 	if (name in sandboxes) return sandboxes[name]
 	else return sandboxes.create(name, parent, log, style)

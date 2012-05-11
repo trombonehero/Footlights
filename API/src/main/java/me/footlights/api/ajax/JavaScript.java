@@ -22,6 +22,8 @@ import java.io.InputStream;
 /** Some JavaScript code (guarantee closure?). */
 public class JavaScript implements AjaxResponse
 {
+	public static interface Sink { public void accept(JavaScript code); }
+
 	@Override public String mimeType() { return "text/javascript"; }
 	@Override public InputStream data() { return new ByteArrayInputStream(code().getBytes()); }
 

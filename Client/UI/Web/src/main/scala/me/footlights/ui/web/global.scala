@@ -98,6 +98,18 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				footlights.loadApplication(uri) match {
 					case Right(wrapper) =>
 						newContext(wrapper)
+
+						wrapper.app.ajaxHandler map {
+							_ setAsyncQueue new JavaScript.Sink {
+								override def accept(js:JavaScript) = fireEvent {
+									new JavaScript("context.log('context: ' + context);")
+									.append(
+									JavaScript.exec(js, URLEncoded(wrapper.name.toString).encoded)
+									)
+								}
+							}
+						}
+
 						createUISandbox(wrapper.name)
 
 					case Left(error) =>

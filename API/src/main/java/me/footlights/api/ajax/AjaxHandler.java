@@ -36,14 +36,9 @@ public abstract class AjaxHandler
 		return new JavaScript();
 	}
 
-	/**
-	 * Special Ajax response for asynchronous messages.
-	 *
-	 * The global Ajax context will attempt to set up an asynchronous channel for each AjaxHandler
-	 * repeatedly, until null is returned.
-	 */
-	public AjaxResponse nextAsyncEvent()
-			throws java.io.FileNotFoundException, SecurityException, Throwable {
-		return new JavaScript();
-	}
+	public void fireAsynchronousEvent(JavaScript code) { asyncEventSink.accept(code); }
+
+	public final void setAsyncQueue(JavaScript.Sink sink) { this.asyncEventSink = sink; }
+
+	private JavaScript.Sink asyncEventSink;
 }

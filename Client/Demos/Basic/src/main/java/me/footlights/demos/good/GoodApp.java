@@ -35,13 +35,13 @@ public class GoodApp extends me.footlights.api.Application
 		return new GoodApp(new DemoAjaxHandler(kernel, log));
 	}
 
-	@Override public Option<AjaxHandler> ajaxHandler() { return ajax; }
+	@Override public Option<AjaxHandler> ajaxHandler() { return Option.apply(ajax); }
 
 	private GoodApp(AjaxHandler ajax)
 	{
 		super("Basic demo");
-		this.ajax = Option.apply(ajax);
+		this.ajax = ajax;
 	}
 
-	private final Option<AjaxHandler> ajax;
+	private final AjaxHandler ajax;
 }

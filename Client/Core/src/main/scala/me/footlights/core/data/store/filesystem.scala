@@ -69,8 +69,7 @@ trait Filesystem extends Footlights {
 		store fetchDirectory link
 
 	/** We cannot meaningfully create a {@link MutableDirectory} without a persistent name. */
-	override def openDirectory(name:String) =
-		Left(new java.io.IOException("Need a directory to open relative to"))
+	override def openDirectory(name:String) = rootDirectory flatMap { _.openDirectory(name) }
 
 	/** Open a directory relative to a specified base. */
 	override def openDirectory(names:Iterable[String], base:data.Directory) = {

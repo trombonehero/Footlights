@@ -291,6 +291,10 @@ object Directory {
 
 /** A directory entry (a file or a subdirectory). */
 class Entry(val name:String, val isDir:Boolean, val link:Link) {
+	if (name contains '/')
+		throw new IllegalArgumentException(
+			"Directory entry name '%s' should not contain '/'" format name)
+
 	val isFile = !isDir
 
 	def dir = if (isDir) Some(link) else None

@@ -25,6 +25,7 @@ import scala.collection.mutable
 
 import me.footlights.api
 import me.footlights.api.{Application, KernelInterface, ModifiablePreferences}
+import me.footlights.api.ajax.URLEncoded
 import me.footlights.api.support.Either._
 import me.footlights.api.support.Pipeline._
 import me.footlights.api.support.Tee._
@@ -159,8 +160,8 @@ trait ApplicationManagement extends Footlights {
 
 					new String(bytes)
 				}
-			} getOrElse Right(e.name)
-		} map { (_, e.name) }
+			} getOrElse Right(URLEncoded(e.name).raw)
+		} map { (_, URLEncoded(e.name).raw) }
 	} toSeq
 
 	def runningApplications() = loadedApps.values toSeq
@@ -193,10 +194,12 @@ trait ApplicationManagement extends Footlights {
 	}
 
 	/** The root directory which holds an application's state (prefs, keychain, filesystem...). */
-	private def applicationRoot(appName:URI): data.MutableDirectory =
-		applicationsRoot(appName.toString) map {
+	private def applicationRoot(appName:URI): data.MutableDirectory = {
+		val name = URLEncoded(appName.toString).encoded
+		applicationsRoot(name) map {
 			_.directory } getOrElse {
-			applicationsRoot mkdir appName.toString } map { case d:data.MutableDirectory => d } get
+			applicationsRoot mkdir name } map { case d:data.MutableDirectory => d } get
+	}
 
 
 

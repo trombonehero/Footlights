@@ -53,6 +53,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 
 				val js = new JavaScript()
 					.append(clickableAjax(launcher, "Reset", Reset))
+					.append(clickableAjax(launcher, "Open Root", OpenRoot))
 					.append(clickableAjax(launcher, "Load App", PromptApplication))
 					.append(launcher + ".appendElement('hr');")
 
@@ -93,6 +94,14 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 					new JavaScript()
 						.append(setupAsyncChannel)
 						.append(asyncEvents.dequeue)
+				}
+
+			case OpenRoot =>
+				JavaScript log {
+					footlights openDirectory "/" map footlights.openWithApplication fold (
+						ex => ex.getMessage,
+						dir => "shared '%s'" format dir
+					)
 				}
 
 			case PromptApplication =>
@@ -276,6 +285,7 @@ var sb = context.globals['sandboxes'].getOrCreate(
 	private val AsyncChannel    = "async_channel"
 	private val Reset           = "reset"
 	private val FillPlaceholder = """fill_placeholder/(\S+)""".r
+	private val OpenRoot        = "open_root"
 	private val PromptApplication = "prompt_for_app"
 	private val LoadApplication = """load_app/(\S+)""".r
 

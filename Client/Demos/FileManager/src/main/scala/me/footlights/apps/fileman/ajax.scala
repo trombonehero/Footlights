@@ -33,31 +33,9 @@ class Ajax(app:FileManager) extends AjaxHandler
 			case Init =>
 				new JavaScript append "context.load('scripts/init.js');"
 
-			case PopulateView =>
-				val js = new JavaScript
+			case PopulateView => refresh()
 
-				js append "var crumbs = context.globals['breadcrumbs'];"
-				js append "crumbs.clear();"
-				js append {
-					app.breadcrumbs map { path =>
-						addLink("crumbs", path, "chdir/%s" format URLEncoded(path))
-					} reduce {
-						_ + "crumbs.appendText(' >> ');" + _
-					}
-				}
-
-				js append "var list = context.globals['list'];"
-				js append "list.clear();"
-				app.listFiles map { entry =>
-					if (entry.isDir) ("%s/" format entry.name, "chdir/%s" format entry.name)
-					else (entry.name, "download/%s" format entry.name)
-				} map { case (name, ajax) =>
-					addLink("list.appendElement('div')", name, ajax)
-				} foreach js.append
-
-				js
-
-			case ChangeDirectory(URLEncoded(path)) =>
+			case ChangeDirectory(path) =>
 				setStatus {
 					app chdir path fold ("error changing directory: " + _, "new path: " + _)
 				} append {
@@ -90,6 +68,33 @@ class Ajax(app:FileManager) extends AjaxHandler
 					)
 				}
 		}
+	}
+
+	private[fileman] def refreshView = fireAsynchronousEvent { refresh }
+
+	private def refresh() = {
+		val js = new JavaScript
+
+		js append "var crumbs = context.globals['breadcrumbs'];"
+		js append "crumbs.clear();"
+		js append {
+			app.breadcrumbs map { path =>
+				addLink("crumbs", path, "chdir/%s" format path)
+			} reduce {
+				_ + "crumbs.appendText(' >> ');" + _
+			}
+		}
+
+		js append "var list = context.globals['list'];"
+		js append "list.clear();"
+		app.listFiles map { entry =>
+			if (entry.isDir) ("%s/" format entry.name, "chdir/%s" format entry.name)
+			else (entry.name, "download/%s" format entry.name)
+		} map { case (name, ajax) =>
+			addLink("list.appendElement('div')", name, ajax)
+		} foreach js.append
+
+		js
 	}
 
 	private def addLink(parent:String, text:String, ajax:String) = """

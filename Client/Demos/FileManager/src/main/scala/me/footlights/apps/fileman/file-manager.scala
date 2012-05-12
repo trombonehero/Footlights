@@ -17,7 +17,7 @@ import java.net.URI
 import java.util.NoSuchElementException
 import java.util.logging.Logger
 
-import me.footlights.api.{Application,File,KernelInterface,ModifiablePreferences}
+import me.footlights.api.{Application,Directory,File,KernelInterface,ModifiablePreferences}
 import me.footlights.api.support.Either._
 import me.footlights.api.support.Tee._
 
@@ -29,24 +29,31 @@ package me.footlights.apps.fileman {
  * @author Jonathan Anderson <jon@footlights.me>
  */
 class FileManager(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logger)
-	extends Application("Uploader")
+	extends Application("File Manager")
 {
-	override val ajaxHandler = Some(new Ajax(this))
+	private val ajax = new Ajax(this)
+	override val ajaxHandler = Some(ajax)
+
+	override def open(dir:Directory) = {
+		root = dir
+		chdir(dir)
+		ajax.refreshView
+	}
 
 	private[fileman] def listFiles() = cwd.entries
-	private[fileman] def chdir(dir:String) = {
+	private[fileman] def chdir(dir:String): Either[Exception,Directory] = {
 		val newdir =
-			if (dir startsWith "/") kernel openDirectory dir
+			if (dir startsWith "/") root openDirectory dir
 			else cwd openDirectory dir
 
-		newdir flatMap { newcwd =>
-			cwd = newcwd
-			currentPath = dir split "/" toList match {
+		newdir map { newcwd =>
+			val newPath = dir split "/" toList match {
 				case "" :: absolutePath => absolutePath
 				case Nil => Nil
 				case relativePath => currentPath ++ relativePath
 			}
-			Right(dir)
+
+			chdir(newcwd, newPath)
 		}
 	}
 
@@ -57,14 +64,21 @@ class FileManager(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logge
 	private[fileman] def upload() = kernel.openLocalFile tee store
 	private[fileman] def download(filename:String) = cwd open filename tee kernel.saveLocalFile
 
+	private def chdir(dir:Directory, path:Iterable[String] = Nil) = synchronized {
+		cwd = dir
+		currentPath = path
+		dir
+	}
+
 	private def store(file:File) =
 		kernel promptUser ("File name", None) map { cwd.save(_, file) }
 
 	private def join(x:String, y:String) = x + ";" + y
 	private def split(x:String) = x split ";" toList
 
-	private var cwd = kernel openDirectory "/" get
-	private var currentPath = List[String]()
+	private var root = kernel openDirectory "/" get
+	private var cwd = root
+	private var currentPath = Iterable[String]()
 }
 
 

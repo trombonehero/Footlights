@@ -28,6 +28,9 @@ import me.footlights.core.Footlights
 
 package me.footlights.ui.web {
 
+class AbortedSessionException extends Exception("Current UI session aborted")
+
+
 /** Acts as a master server for Basic UI, JavaScript and Ajax */
 class MasterServer(port:Int, footlights:Footlights)
 	extends Runnable {
@@ -71,6 +74,7 @@ class MasterServer(port:Int, footlights:Footlights)
 										"No such context '%s'" format request.prefix)
 							}
 						} catch {
+							case e:AbortedSessionException => None
 							case e:FileNotFoundException => Some(Response error e)
 							case e:SecurityException =>
 								log.log(WARNING, "Security error handling " + request, e)
@@ -85,9 +89,6 @@ class MasterServer(port:Int, footlights:Footlights)
 					log fine "Response: " + response
 					try { response write client }
 					catch {
-						case e:java.io.IOException =>
-							log fine "Can't write response: " + e
-
 						case t:Throwable =>
 							log.log(WARNING,
 								"Error responding to " + request + " with " + response, t)

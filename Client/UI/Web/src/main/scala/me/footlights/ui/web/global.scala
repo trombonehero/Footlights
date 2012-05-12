@@ -45,6 +45,10 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 			case Init =>
 				reset
 
+				// Kill off any async channels waiting for events from previous generation.
+				asyncQueueGeneration += 1
+				asyncEvents.synchronized { asyncEvents.notifyAll }
+
 				val launcher = "context.globals['launcher']"
 
 				val js = new JavaScript()
@@ -80,9 +84,12 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				new JavaScript().append("context.globals['window'].location.reload()")
 
 			case AsyncChannel =>
+				val generation = asyncQueueGeneration
 				asyncEvents.synchronized {
-					while (asyncEvents.isEmpty) { asyncEvents.wait }
+					while (asyncEvents.isEmpty) asyncEvents.wait
 					asyncEvents.notify
+					if (asyncQueueGeneration != generation) throw new AbortedSessionException
+
 					new JavaScript()
 						.append(setupAsyncChannel)
 						.append(asyncEvents.dequeue)
@@ -148,6 +155,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 		}
 
 	private val asyncEvents = collection.mutable.Queue[JavaScript]()
+	private var asyncQueueGeneration = 0
 	private[web] def fireEvent(event:JavaScript) = asyncEvents.synchronized {
 		asyncEvents enqueue event
 		asyncEvents notify

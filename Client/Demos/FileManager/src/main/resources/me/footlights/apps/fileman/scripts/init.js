@@ -20,7 +20,6 @@ var breadcrumbs = context.root.appendElement('div');
 breadcrumbs.style['background-color'] = 'rgba(153, 153, 153, 0.3)';
 context.globals['breadcrumbs'] = breadcrumbs;
 
-context.root.appendElement('div').appendText('Contents:');
 var list = context.root.appendElement('div');
 list.class = 'console';
 context.globals['list'] = list;

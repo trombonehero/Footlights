@@ -18,6 +18,7 @@ import java.net.URI
 import java.nio.ByteBuffer
 
 import me.footlights.api.{Directory,File,KernelInterface}
+import me.footlights.core
 import me.footlights.core.Footlights
 import me.footlights.core.crypto.Link
 
@@ -37,6 +38,8 @@ trait KernelPrivilege extends Footlights {
 	abstract override def openLocalFile()          = Privilege.sudo { () => super.openLocalFile() }
 	abstract override def open(link:Link)          = Privilege.sudo { () => super.open(link) }
 	abstract override def openDirectory(l:Link)    = Privilege.sudo { () => super.openDirectory(l) }
+	abstract override def openat(path:Iterable[String], base:core.data.Directory) =
+		Privilege.sudo { () => super.openat(path, base) }
 	abstract override def save(data:ByteBuffer)    = Privilege.sudo { () => super.save(data) }
 	abstract override def saveLocalFile(f:File)    = Privilege.sudo { () => super.saveLocalFile(f) }
 	abstract override def promptUser(prompt:String, title:String, default:Option[String]) =

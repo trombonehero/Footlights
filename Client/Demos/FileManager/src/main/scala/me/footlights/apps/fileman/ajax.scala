@@ -19,6 +19,7 @@ import me.footlights.api.{Preferences,WebRequest}
 import me.footlights.api.ajax.{AjaxHandler,JavaScript,URLEncoded}
 import me.footlights.api.ajax.JavaScript.sanitizeText
 import me.footlights.api.support.Either._
+import me.footlights.api.support.Regex._
 
 
 package me.footlights.apps.fileman {
@@ -60,6 +61,12 @@ class Ajax(app:FileManager) extends AjaxHandler
 					)
 				}
 
+			case Delete(URLEncoded(name)) =>
+				app remove name fold (
+					ex => setStatus { "error: %s" format ex.getMessage },
+					success => JavaScript ajax PopulateView
+				)
+
 			case DownloadRequest(URLEncoded(name)) =>
 				setStatus {
 					app download name fold(
@@ -93,10 +100,18 @@ class Ajax(app:FileManager) extends AjaxHandler
 		js append "list.clear();"
 		app.listFiles map { entry =>
 			val name = URLEncoded(entry.name)
-			if (entry.isDir) ("%s/" format name.raw, "chdir/%s" format name.encoded)
-			else (name.raw, "download/%s" format name.encoded)
+			(name, (if (entry.isDir) "chdir/%s" else "download/%s") format name.encoded)
 		} map { case (name, ajax) =>
-			addLink("list.appendElement('div')", name, ajax)
+			new JavaScript()
+				.append("var line = list.appendElement('div');")
+				.append("""
+var del = line.appendElement('img');
+del.src = 'images/oxygen/actions/edit-delete.png';
+del.style.height = '1em';
+del.onclick = %s;
+line.appendElement('span').appendText(' ');
+""" format (JavaScript ajax Delete(name.encoded)))
+				.append(addLink("line", name.raw, ajax))
 		} foreach js.append
 
 		js
@@ -120,6 +135,7 @@ class Ajax(app:FileManager) extends AjaxHandler
 	private val ChangeDirectory = """chdir/(\S+)""".r
 	private val MakeDirectory = "mkdir"
 	private val UploadFile = "do_upload"
+	private val Delete = """delete/(\S+)""".r
 	private val DownloadRequest = """download/(\S+)""".r
 }
 

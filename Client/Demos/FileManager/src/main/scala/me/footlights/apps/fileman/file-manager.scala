@@ -58,6 +58,7 @@ class FileManager(kernel:KernelInterface, prefs:ModifiablePreferences, log:Logge
 	}
 
 	private[fileman] def mkdir() = kernel promptUser ("Directory name", None) tee cwd.mkdir
+	private[fileman] def remove(name:String) = cwd remove name
 
 	private[fileman] def breadcrumbs = currentPath.scan("/")(_ + _ + "/")
 

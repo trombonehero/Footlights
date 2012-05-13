@@ -62,9 +62,8 @@ abstract class Context(base:Class[_]) extends WebServer {
 
 			case File =>
 				val r = Response.newBuilder
-				openFile(URLEncoded(remainder.path).raw) foreach {
-					file => r setResponse file.getInputStream
-				}
+				val path = remainder.path match { case URLEncoded(path) => path }
+				openFile(path) foreach { file => r setResponse file.getInputStream }
 				r.build
 
 			case StaticContent =>

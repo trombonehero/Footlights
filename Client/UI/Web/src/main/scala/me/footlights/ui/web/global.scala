@@ -109,9 +109,8 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 					"load_app/%s".format(_) } map
 					JavaScript.ajax fold(ex => JavaScript log ex.toString, js => js)
 
-			case LoadApplication(path) =>
-				val uri = new java.net.URI(request.shift().path())
-				footlights.loadApplication(uri) match {
+			case LoadApplication(URLEncoded(path)) =>
+				footlights.loadApplication(URI create path) match {
 					case Right(wrapper) =>
 						newContext(wrapper)
 

@@ -152,7 +152,7 @@ a.onclick = %s;
 	private def addPhoto(filename:String) =
 		new JavaScript append "context.globals['new_photo']('%s', %s);".format(
 			filename,
-			JavaScript ajax RemoveImage(filename) asFunction
+			JavaScript ajax RemoveImage(URLEncoded(filename).encoded) asFunction
 		)
 
 	private def setStatus(unsafeText:String) =

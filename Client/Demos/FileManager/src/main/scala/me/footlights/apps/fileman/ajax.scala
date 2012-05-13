@@ -67,6 +67,14 @@ class Ajax(app:FileManager) extends AjaxHandler
 					success => JavaScript ajax PopulateView
 				)
 
+			case OpenFile(URLEncoded(name)) =>
+				setStatus {
+					app openFile name fold (
+						ex => "error: %s" format ex.getMessage,
+						f => "shared %s with another app" format f.toString
+					)
+				}
+
 			case DownloadRequest(URLEncoded(name)) =>
 				setStatus {
 					app download name fold(
@@ -112,8 +120,14 @@ var del = line.appendElement('img');
 del.src = 'images/oxygen/actions/edit-delete.png';
 del.style.height = '1em';
 del.onclick = %s;
+
+var open = line.appendElement('img');
+open.src = 'images/oxygen/actions/system-run.png';
+open.style.height = '1em';
+open.onclick = %s;
+
 line.appendElement('span').appendText(' ');
-""" format (JavaScript ajax Delete(name.encoded)))
+""" format (JavaScript ajax Delete(name.encoded), JavaScript ajax OpenFile(name.encoded)))
 				.append(addLink("line", name.raw, ajax))
 		} foreach js.append
 
@@ -139,6 +153,7 @@ line.appendElement('span').appendText(' ');
 	private val MakeDirectory = "mkdir"
 	private val UploadFile = "do_upload"
 	private val Delete = """delete/(\S+)""".r
+	private val OpenFile = """open/(\S+)""".r
 	private val DownloadRequest = """download/(\S+)""".r
 }
 

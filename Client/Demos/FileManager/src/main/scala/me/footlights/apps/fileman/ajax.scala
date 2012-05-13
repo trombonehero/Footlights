@@ -90,7 +90,7 @@ class Ajax(app:FileManager) extends AjaxHandler
 		js append {
 			app.breadcrumbs map { path =>
 				val name = URLEncoded(path)
-				addLink("crumbs", name.raw, "chdir/%s" format name.encoded)
+				addLink("crumbs", name.raw, JavaScript ajax { "chdir/%s" format name.encoded })
 			} reduce {
 				_ + "crumbs.appendText(' >> ');" + _
 			}
@@ -100,7 +100,10 @@ class Ajax(app:FileManager) extends AjaxHandler
 		js append "list.clear();"
 		app.listFiles map { entry =>
 			val name = URLEncoded(entry.name)
-			(name, (if (entry.isDir) "chdir/%s" else "download/%s") format name.encoded)
+			val ajax = JavaScript ajax {
+				(if (entry.isDir) "chdir/%s" else "download/%s") format name.encoded
+			}
+			(name, ajax)
 		} map { case (name, ajax) =>
 			new JavaScript()
 				.append("var line = list.appendElement('div');")
@@ -117,13 +120,13 @@ line.appendElement('span').appendText(' ');
 		js
 	}
 
-	private def addLink(parent:String, text:String, ajax:String) = """
+	private def addLink(parent:String, text:String, ajax:JavaScript) = """
 (function() {
 	var a = %s.appendElement('a');
 	a.appendText('%s');
 	a.onclick = %s;
 })();
-""" format (parent, JavaScript sanitizeText text, JavaScript ajax ajax)
+""" format (parent, JavaScript sanitizeText text, ajax)
 
 	private def setStatus(unsafeText:String) =
 		new JavaScript()

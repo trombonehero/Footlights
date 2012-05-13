@@ -67,6 +67,9 @@ class Ajax(app:FileManager) extends AjaxHandler
 						"Downloaded '%s'" format _.name.toString
 					)
 				}
+
+			case other =>
+				setStatus { "Unknown Ajax command '%s'" format other }
 		}
 	}
 

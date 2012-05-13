@@ -25,14 +25,12 @@ var list = context.root.appendElement('div');
 list.class = 'console';
 context.globals['list'] = list;
 
-var a = context.root.appendElement('a');
-a.onclick = function() { context.ajax('mkdir'); }
-a.appendText('Create Directory');
+var action = context.root.appendElement('img');
+action.onclick = function() { context.ajax('mkdir'); }
+action.src = 'images/oxygen/actions/folder-new.png';
 
-context.root.appendText(' | ');
-
-a = context.root.appendElement('a');
-a.onclick = function() { context.ajax('do_upload'); }
-a.appendText('Upload File');
+action = context.root.appendElement('img');
+action.onclick = function() { context.ajax('do_upload'); }
+action.src = 'images/oxygen/actions/archive-extract.png';
 
 context.ajax('populate');

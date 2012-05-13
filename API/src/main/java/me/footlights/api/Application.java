@@ -38,6 +38,9 @@ public abstract class Application
 		this.name = shortName;
 	}
 
+	/** Handle an "open this file" request from some other application. */
+	public void open(File file) {}
+
 	/** Handle an "open this directory" request from some other application. */
 	public void open(Directory directory) {}
 

@@ -45,6 +45,8 @@ trait KernelPrivilege extends Footlights {
 	abstract override def promptUser(prompt:String, title:String, default:Option[String]) =
 		Privilege.sudo { () => super.promptUser(prompt, title, default) }
 	abstract override def share(dir:Directory)     = Privilege.sudo { () => super.share(dir) }
+	abstract override def openWithApplication(f:File) =
+		Privilege.sudo { () => super.openWithApplication(f) }
 	abstract override def openWithApplication(d:Directory) =
 		Privilege.sudo { () => super.openWithApplication(d) }
 }

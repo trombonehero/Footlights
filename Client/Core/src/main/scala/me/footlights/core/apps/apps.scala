@@ -136,8 +136,8 @@ object AppWrapper {
 
 			override def share(dir:api.Directory) = footlights share dir
 
-			override def openWithApplication(d:api.Directory) =
-				footlights openWithApplication d
+			override def openWithApplication(f:api.File) = footlights openWithApplication f
+			override def openWithApplication(d:api.Directory) = footlights openWithApplication d
 		}
 
 		new AppWrapper(init, name, kernelWrapper, prefs, log)
@@ -184,14 +184,24 @@ trait ApplicationManagement extends Footlights {
 	override def unloadApplication(app:AppWrapper) =
 		loadedApps find { kv => kv._2 == app } foreach { kv => loadedApps remove kv._1 }
 
-	override def openWithApplication(d:api.Directory): Either[Exception,api.Directory] = {
-		val options = runningApplications map { app => (app.app.shortName.toString, app) } toMap
+	override def openWithApplication(f:api.File): Either[Exception,api.File] = {
+		promptForApplication("Open file with which app?") map { app =>
+			app.app open f
+			f
+		}
+	}
 
-		promptUser("Open with which app?", "Choose app", options, None) map { app =>
+	override def openWithApplication(d:api.Directory): Either[Exception,api.Directory] = {
+		promptForApplication("Open directory with which app?") map { app =>
 			app.app open d
 			d
 		}
 	}
+
+	private def promptForApplication(prompt:String) =
+		promptUser(prompt, "Choose application",
+				runningApplications map { app => (app.app.shortName.toString, app) } toMap,
+				None)
 
 	/** The root directory which holds an application's state (prefs, keychain, filesystem...). */
 	private def applicationRoot(appName:URI): data.MutableDirectory = {

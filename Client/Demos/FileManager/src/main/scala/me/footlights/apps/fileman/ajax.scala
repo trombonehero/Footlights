@@ -37,7 +37,7 @@ class Ajax(app:FileManager) extends AjaxHandler
 
 			case ChangeDirectory(URLEncoded(path)) =>
 				setStatus {
-					app chdir path fold ("error changing directory: " + _, "new path: " + _)
+					app chdir path fold ("error changing directory: " + _, path => "")
 				} append {
 					JavaScript ajax PopulateView
 				}

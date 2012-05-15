@@ -151,8 +151,6 @@ trait IdentityManagement extends core.Footlights {
 	private def defaultSigningIdentity: Either[Exception,UserIdentity] =
 		identities find { _.canSign } map Right.apply getOrElse { UserIdentity generate root }
 
-	}
-
 	/** The root directory where application data is stored. */
 	private lazy val root = subsystemRoot("identities")
 

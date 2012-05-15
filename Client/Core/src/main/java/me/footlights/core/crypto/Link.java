@@ -133,7 +133,7 @@ public class Link implements FootlightsPrimitive
 
 
 	public Fingerprint fingerprint() { return fingerprint; }
-	SecretKey key() { return key; }
+	public SecretKey key() { return key; }
 
 
 	public Block decrypt(ByteBuffer ciphertext) throws GeneralSecurityException

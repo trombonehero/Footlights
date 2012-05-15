@@ -34,6 +34,12 @@ class UserIdentity(key:crypto.Identity, attributes:api.ModifiablePreferences) {
 	val fingerprint = key.fingerprint
 	val canSign = key.canSign
 
+	def sign(fingerprint:crypto.Fingerprint) =
+		key match {
+			case signer:crypto.SigningIdentity => Right(signer sign fingerprint)
+			case _ => Left(new UnsupportedOperationException("%s cannot sign content" format this))
+		}
+
 	override def toString =
 		"'%s' (%s)" format (name(), key.fingerprint.encode.split(":").last.slice(0, 6))
 }

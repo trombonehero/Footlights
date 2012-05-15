@@ -16,23 +16,64 @@
 package me.footlights.core.crypto
 
 import java.nio.ByteBuffer
-import java.security.{KeyPair,NoSuchAlgorithmException,PrivateKey,PublicKey,Signature}
+import java.security.{Key,KeyPair,MessageDigest,PrivateKey,PublicKey}
 
 import me.footlights.core
+
+
+class Signature(val publicKey:PublicKey, val signingAlgorithm:String, rawBytes:ByteBuffer) {
+	lazy val uri =
+		new java.net.URI("urn",
+			"%s:%s" format (
+				signingAlgorithm,
+				new String(new org.apache.commons.codec.binary.Base32().encode(rawBytes.array))
+			), null)
+
+	def verify(f:Fingerprint) = {
+		val verifier = java.security.Signature getInstance signingAlgorithm
+
+		verifier initVerify publicKey
+		verifier update f.copyBytes
+		verifier verify rawBytes.array
+	}
+
+	def copyBytes() = {
+		val arr = new Array[Byte](rawBytes.remaining)
+		rawBytes.asReadOnlyBuffer get arr
+		arr
+	}
+}
+
+object Signature {
+	/** Wrap some data which purports to be a signature. */
+	def apply(publicKey:PublicKey, hashAlgorithm:MessageDigest, rawSignature:ByteBuffer) =
+		new Signature(publicKey, algorithmName(hashAlgorithm, publicKey), rawSignature)
+
+	/** Create a signature by signing a Fingerprint. */
+	def apply(fingerprint:Fingerprint, keys:KeyPair) = {
+		val s = signatureAlgorithm(fingerprint.getAlgorithm, keys.getPrivate)
+
+		s initSign keys.getPrivate
+		s update fingerprint.copyBytes
+
+		new Signature(keys.getPublic, s.getAlgorithm, ByteBuffer wrap s.sign)
+	}
+
+	protected[crypto] def algorithmName(hashAlgorithm:MessageDigest, key:Key) =
+		hashAlgorithm.getAlgorithm.replaceAll("-", "") + "with" + key.getAlgorithm
+
+	protected[crypto] def signatureAlgorithm(hashAlgorithm:MessageDigest, key:Key) =
+		java.security.Signature getInstance algorithmName(hashAlgorithm, key)
+}
 
 
 /** An identity under our control, which can be used to sign things. */
 class SigningIdentity(keyPair:KeyPair)
 	extends Identity(keyPair.getPublic) with core.HasBytes {
 
-	private[core] def sign(fingerprint:Fingerprint): ByteBuffer = {
-		val s = signatureAlgorithm(fingerprint.getAlgorithm, privateKey)
 	override val canSign = true
 
-		s initSign privateKey
-		s update fingerprint.copyBytes
-		ByteBuffer wrap s.sign asReadOnlyBuffer()
-	}
+	private[core] def sign(fingerprint:Fingerprint) = Signature(fingerprint, keyPair)
 
 	override def equals(a:Any) = a match {
 		case s:SigningIdentity => super.equals(a) && java.util.Arrays.equals(s.encoded, encoded)

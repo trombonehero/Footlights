@@ -29,17 +29,20 @@ import me.footlights.core.data
 
 /** An identity which may have signed things. */
 class Identity(val publicKey:PublicKey) extends core.HasBytes {
-	def verify(x:(Fingerprint, ByteBuffer)): Boolean = x match { case (fingerprint, signature) =>
 	val canSign = false
+
+	/** Verify that this identity produced a fingerprint -> signature mapping. */
+	def verify(x:(Fingerprint, Signature)): Boolean = x match { case (fingerprint, signature) =>
 		verify(fingerprint, signature)
 	}
 
-	def verify(f:Fingerprint, signature:ByteBuffer): Boolean = {
-		val s = new Array[Byte](signature.remaining)
-		signature get s
+	/** Verify that this identity produced the given signature for a {@link Fingerprint}. */
+	def verify(f:Fingerprint, signingAlgorithm:MessageDigest, signature:ByteBuffer): Boolean =
+		verify(f, Signature(publicKey, signingAlgorithm, signature))
 
-		verify(f, s)
-	}
+	/** Verify that this identity produced the given signature for a {@link Fingerprint}. */
+	def verify(f:Fingerprint, signature:Signature) =
+		(signature.publicKey == this.publicKey) && (signature verify f)
 
 	final lazy val fingerprint = Fingerprint of encoded
 
@@ -71,19 +74,6 @@ class Identity(val publicKey:PublicKey) extends core.HasBytes {
 	}
 
 	protected[crypto] lazy val fieldsToStore = List(encoded)
-
-	protected[crypto] def signatureAlgorithm(hashAlgorithm:MessageDigest, key:Key) =
-		java.security.Signature getInstance
-			hashAlgorithm.getAlgorithm.replaceAll("-", "") + "with" + key.getAlgorithm
-
-	private def verify(f:Fingerprint, signature:Array[Byte]) = {
-		val verifier = signatureAlgorithm(f.getAlgorithm, publicKey)
-
-		verifier initVerify publicKey
-		verifier update f.copyBytes
-		verifier verify signature
-	}
-
 	private lazy val encoded = publicKey.getEncoded
 	protected def magic = Identity.Magic
 }

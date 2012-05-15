@@ -27,6 +27,7 @@ class SigningIdentity(keyPair:KeyPair)
 
 	private[core] def sign(fingerprint:Fingerprint): ByteBuffer = {
 		val s = signatureAlgorithm(fingerprint.getAlgorithm, privateKey)
+	override val canSign = true
 
 		s initSign privateKey
 		s update fingerprint.copyBytes

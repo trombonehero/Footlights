@@ -30,6 +30,7 @@ import me.footlights.core.data
 /** An identity which may have signed things. */
 class Identity(val publicKey:PublicKey) extends core.HasBytes {
 	def verify(x:(Fingerprint, ByteBuffer)): Boolean = x match { case (fingerprint, signature) =>
+	val canSign = false
 		verify(fingerprint, signature)
 	}
 

@@ -32,6 +32,7 @@ package me.footlights.core.users {
 class UserIdentity(key:crypto.Identity, attributes:api.ModifiablePreferences) {
 	def name() = attributes getString "name" getOrElse "<unknown name>"
 	val fingerprint = key.fingerprint
+	val canSign = key.canSign
 
 	override def toString =
 		"'%s' (%s)" format (name(), key.fingerprint.encode.split(":").last.slice(0, 6))

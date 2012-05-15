@@ -70,7 +70,7 @@ public interface KernelInterface
 	public Either<Exception,String> promptUser(String prompt);
 
 	/** Share a {@link Directory} with another user. */
-	public Either<Exception,Directory> share(Directory dir);
+	public Either<Exception,URI> share(Directory dir);
 
 	/** Open a file with another app. */
 	public Either<Exception,File> openWithApplication(File file);

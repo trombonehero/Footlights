@@ -114,15 +114,39 @@ trait IdentityManagement extends core.Footlights {
 	override def identity(uri:java.net.URI) =
 		root openDirectory uri.toString map { (uri.toString, _) } flatMap UserIdentity.apply
 
-	override def share(dir:api.Directory): Either[Exception,api.Directory] = {
-		val userMap = identities map { id => (id.name -> id) } toMap
+	override def share(d:api.Directory): Either[Exception,java.net.URI] = {
+		val ids = identities
+		val userMap = identities map { id => (id.toString -> id) } toMap
 
-		promptUser("Who would you like to share with?", "Choose user", userMap, None) map {
-			user =>
-				// TODO: actually do some sharing!
-				log info { "Sharing %s with %s" format (dir, user) }
-				dir
+		promptUser("Who would you like to share with?", "Choose user", userMap, None) map
+			share(d match { case mutable:data.MutableDirectory => mutable })
+	}
+
+	private def share(dir:data.MutableDirectory)(user:UserIdentity) = {
+		log info { "Sharing %s with %s" format (dir, user) }
+		val link = dir.dir.link
+
+		user.root subdir OutboundShareDir map { case root:data.MutableDirectory =>
+			root.save(link.fingerprint.encode, dir)
+
+			defaultSigningIdentity flatMap {
+				_ sign root.dir.link.fingerprint } map { signature =>
+				Map(
+					"fingerprint" -> link.fingerprint.encode,
+					"key" -> link.key.toUri.toString,
+					"signature" -> signature.uri.toString
+				)
+			} fold (
+				ex => log log (logging.Level.WARNING, "Error sharing with %s" format user.name, ex),
+				rootInfo =>
+					log info { "Updated root for %s: %s" format (user.name, rootInfo) }
+					// TODO: actually signal the recipient somehow
+			)
 		}
+
+		user.fingerprint.toURI
+	}
+
 	// TODO: something more sophisticated (choose identity to sign with?)
 	private def defaultSigningIdentity: Either[Exception,UserIdentity] =
 		identities find { _.canSign } map Right.apply getOrElse { UserIdentity generate root }
@@ -133,6 +157,12 @@ trait IdentityManagement extends core.Footlights {
 	private lazy val root = subsystemRoot("identities")
 
 	private val log = logging.Logger getLogger classOf[IdentityManagement].getCanonicalName
+
+	/** A directory containing everything that this user has shared with me. */
+	private val InboundShareDir = "shared-with-me"
+
+	/** A directory containing everything that I am sharing with this user. */
+	private val OutboundShareDir = "shared"
 }
 
 }

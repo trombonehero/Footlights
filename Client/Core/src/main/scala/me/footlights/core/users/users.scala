@@ -29,7 +29,8 @@ import me.footlights.core.data
 package me.footlights.core.users {
 
 
-class UserIdentity(key:crypto.Identity, attributes:api.ModifiablePreferences) {
+class UserIdentity(key:crypto.Identity, attributes:api.ModifiablePreferences,
+		val root:api.Directory) {
 	def name() = attributes getString "name" getOrElse "<unknown name>"
 	val fingerprint = key.fingerprint
 	val canSign = key.canSign
@@ -65,7 +66,7 @@ object UserIdentity {
 
 		key flatMap { key =>
 			attrs map { attributes =>
-				new UserIdentity(key, attributes)
+				new UserIdentity(key, attributes, dir)
 			}
 		}
 	}
@@ -84,7 +85,7 @@ object UserIdentity {
 
 			attributes foreach { case (k,v) => attrs.set(k,v) }
 
-			new UserIdentity(key, attrs)
+			new UserIdentity(key, attrs, d)
 		}
 	}
 

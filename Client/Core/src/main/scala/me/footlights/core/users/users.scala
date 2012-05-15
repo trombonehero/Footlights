@@ -123,6 +123,10 @@ trait IdentityManagement extends core.Footlights {
 				log info { "Sharing %s with %s" format (dir, user) }
 				dir
 		}
+	// TODO: something more sophisticated (choose identity to sign with?)
+	private def defaultSigningIdentity: Either[Exception,UserIdentity] =
+		identities find { _.canSign } map Right.apply getOrElse { UserIdentity generate root }
+
 	}
 
 	/** The root directory where application data is stored. */

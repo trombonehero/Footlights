@@ -77,6 +77,10 @@ class MutableDirectory(var dir:Directory, footlights:core.Footlights, notify:Dir
 		case m:MutableDirectory => Right(entry2entry(save(name, m.dir)))
 	}
 
+	override def subdir(name:String) =
+		if (dir contains name) openMutableDirectory(name)
+		else mkdir(name)
+
 	override def mkdir(name:String) = {
 		get(name) map { e =>
 			Left(new IllegalArgumentException("%s already exists: %s" format (name, e)))
@@ -160,6 +164,7 @@ class Directory(private val map:Map[String,Entry]) {
 	def apply(name:String) = map get name
 
 	def entries = map.values
+	def contains = map.contains _
 
 	lazy val link = encrypted.head.link
 	lazy val name = link.fingerprint.toURI

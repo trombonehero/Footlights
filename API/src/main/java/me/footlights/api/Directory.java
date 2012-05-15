@@ -77,6 +77,9 @@ public interface Directory
 	 */
 	public Either<Exception,Directory> mkdir(String name);
 
+	/** Open a subdirectory if it exists, create it if it doesn't. */
+	public Either<Exception,Directory> subdir(String name);
+
 	/**
 	 * Remove an entry (file or directory).
 	 *

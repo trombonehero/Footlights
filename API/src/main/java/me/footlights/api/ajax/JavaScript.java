@@ -92,8 +92,6 @@ public class JavaScript implements AjaxResponse
 			;
 	}
 
-	@Override public String toString() { return builder.toString(); }
-
 	/** The user-specified code, without any encapsulation. */
 	public String asScript() { return code(); }
 

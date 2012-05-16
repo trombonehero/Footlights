@@ -127,8 +127,12 @@ open.style.height = '1em';
 open.onclick = %s;
 
 line.appendElement('span').appendText(' ');
-""" format (JavaScript ajax Delete(name.encoded), JavaScript ajax OpenFile(name.encoded)))
-				.append(addLink("line", name.raw, ajax))
+""" format (
+				JavaScript ajax Delete(name.encoded) asFunction,
+				JavaScript ajax OpenFile(name.encoded) asFunction
+			)
+		)
+			.append(addLink("line", name.raw, ajax))
 		} foreach js.append
 
 		js
@@ -140,7 +144,7 @@ line.appendElement('span').appendText(' ');
 	a.appendText('%s');
 	a.onclick = %s;
 })();
-""" format (parent, JavaScript sanitizeText text, ajax)
+""" format (parent, JavaScript sanitizeText text, ajax asFunction)
 
 	private def setStatus(unsafeText:String) =
 		new JavaScript()

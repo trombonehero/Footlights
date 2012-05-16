@@ -35,7 +35,7 @@ sandboxes.create = function(name, parent, log, style)
 
 	var label = container.appendElement('div');
 	label.class = 'sandboxlabel';
-	label.appendText('Sandbox: ' + name);
+	label.appendText(decodeURIComponent(name));
 
 	var sandbox = this.wrap(name, log);
 

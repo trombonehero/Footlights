@@ -66,7 +66,7 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 					.append(launcher + ".appendElement('hr');")
 
 				footlights.identities.toSeq sortBy { _.name } map { user =>
-					launcher + ".appendElement('div').appendText('%s');".format(user.name)
+					clickableAjax(launcher, user.name, EditUser(URLEncoded(user.fingerprint.toURI)))
 				} foreach js.append
 
 				js
@@ -139,6 +139,14 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 									(JavaScript sanitizeText stackTrace.toString)
 								)
 				}
+
+			case EditUser(URLEncoded(uri)) =>
+				URI.create(uri) |>
+					footlights.identity map {
+					_.root } map
+					footlights.openWithApplication
+
+				new JavaScript
 
 			case FillPlaceholder(name) => {
 				JSON(
@@ -293,6 +301,7 @@ var sb = context.globals['sandboxes'].getOrCreate(
 	private val OpenRoot        = "open_root"
 	private val PromptApplication = "prompt_for_app"
 	private val LoadApplication = """load_app/(\S+)""".r
+	private val EditUser        = """edit_user/(\S+)""".r
 
 	private val EmptyPopupResponse = "user_prompt_response/"
 	private val PopupResponse   = ("""%s(\S+)""" format EmptyPopupResponse).r

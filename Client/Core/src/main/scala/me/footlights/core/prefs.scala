@@ -17,7 +17,6 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.security.{Provider,Security}
 import java.security.{GeneralSecurityException,NoSuchAlgorithmException}
-import java.util.{Map,NoSuchElementException}
 import java.util.logging.Logger
 
 import scala.collection.mutable.{ Map => MutableMap }

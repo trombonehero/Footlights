@@ -56,6 +56,9 @@ class Ajax(app:KVEditor) extends AjaxHandler
 		}
 	}
 
+	def fire(ex:Exception) = fireAsynchronousEvent { JavaScript log { "Error: " + ex.getMessage } }
+	def refreshView() = fireAsynchronousEvent { refresh }
+
 	private def refresh() = {
 		val js = reset
 		val foo = app.entries map entry

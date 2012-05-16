@@ -17,6 +17,7 @@ import java.net.URI
 import java.util.NoSuchElementException
 import java.util.logging.Logger
 
+import scala.collection.mutable.{Map => MutableMap}
 import scala.collection.JavaConversions._
 
 import me.footlights.api
@@ -42,7 +43,14 @@ class KVEditor(kernel:api.KernelInterface, appPrefs:api.ModifiablePreferences, l
 	override val ajaxHandler = Some(ajax)
 
 	override def open(d:api.Directory) = {
-		val parsed = d open AttributesFilename map { _.copyContents } map core.Preferences.parse
+		val parsed =
+			d open AttributesFilename map {
+			_.copyContents } map
+			core.Preferences.parse match {
+				case Left(ex:java.io.FileNotFoundException) => Right(MutableMap[String,String]())
+				case other => other
+			}
+
 		val saveModified = (b:java.nio.ByteBuffer) => d.save(AttributesFilename, b)
 
 		parsed map { x =>

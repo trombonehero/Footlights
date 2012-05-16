@@ -89,10 +89,15 @@ trait Footlights extends api.KernelInterface {
 	def loadApplication(uri:URI): Either[Exception,AppWrapper]
 	def unloadApplication(app:AppWrapper)
 
+	/** All known identities. */
 	def identities: Iterable[users.UserIdentity]
+
+	/** The identity whose public key fingerprint is given by this URI. */
 	def identity(uri:URI): Either[Exception,users.UserIdentity]
 
+	/** The identity of the current user. */
 	def identity: Either[Exception,users.UserIdentity]
+
 	/**
 	 * A root directory for a particular subsystem.
 	 *

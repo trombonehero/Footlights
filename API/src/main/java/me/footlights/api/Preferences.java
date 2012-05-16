@@ -15,6 +15,7 @@
  */
 package me.footlights.api;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 import scala.Option;
 
@@ -22,6 +23,9 @@ import scala.Option;
 /** Representation of stored plugin preferences. */
 public interface Preferences
 {
+	public enum PreferenceType { STRING, BOOLEAN, INTEGER, FLOAT };
+	public Iterable<Map.Entry<String,PreferenceType>> keys();
+
 	public Option<String>  getString(String key) throws NoSuchElementException;
 	public Option<Boolean> getBoolean(String key) throws NoSuchElementException;
 	public Option<Integer> getInt(String key) throws NoSuchElementException;

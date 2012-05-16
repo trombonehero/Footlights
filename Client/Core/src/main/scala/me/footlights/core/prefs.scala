@@ -38,6 +38,9 @@ package me.footlights.core {
 abstract class PreferenceStorageEngine extends me.footlights.api.Preferences {
 	private[core] def getAll:Map[String,_]
 
+	override def keys =
+		getAll map { case (k,v) => (k -> api.Preferences.PreferenceType.STRING) } entrySet
+
 	/** Subclasses must implement preferences as raw String objects. */
 	def getRaw(key:String):Option[String]
 

@@ -57,9 +57,8 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 					.append(clickableAjax(launcher, "Load App", PromptApplication))
 					.append(launcher + ".appendElement('hr');")
 
-				footlights.applications map {
-					case Left(ex) => JavaScript log ex.toString
-					case Right((name, classpath)) =>
+				footlights.applications filter { _.isRight } map { _.get } sortBy { _._1 } map {
+					case (name, classpath) =>
 						clickableAjax(launcher, name, LoadApplication(classpath))
 				} foreach js.append
 

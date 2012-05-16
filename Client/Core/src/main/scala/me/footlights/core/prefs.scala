@@ -25,7 +25,7 @@ import collection.JavaConversions._
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
-import me.footlights.api.ModifiablePreferences;
+import me.footlights.api
 
 
 package me.footlights.core {
@@ -61,7 +61,8 @@ object PreferenceStorageEngine {
  *
  * The inheriter must implement {@link #set(String,String).
  */
-abstract class ModifiableStorageEngine extends PreferenceStorageEngine with ModifiablePreferences {
+abstract class ModifiableStorageEngine
+		extends PreferenceStorageEngine with api.ModifiablePreferences {
 	override def set(key:String, value:Boolean) = { set(key, value.toString); this }
 	override def set(key:String, value:Int)     = { set(key, value.toString); this }
 	override def set(key:String, value:Float)   = { set(key, value.toString); this }
@@ -273,7 +274,7 @@ object Preferences {
  */
 final class FileBackedPreferences(properties:java.util.Properties, configFile:java.io.File)
 		extends PreferenceStorageEngine
-		with me.footlights.core.Flushable with ModifiablePreferences {
+		with me.footlights.core.Flushable with api.ModifiablePreferences {
 
 	// PreferenceStorageEngine implementation
 	private[core] override def getAll = asMap

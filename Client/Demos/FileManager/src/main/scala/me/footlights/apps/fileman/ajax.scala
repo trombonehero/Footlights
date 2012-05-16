@@ -98,7 +98,7 @@ class Ajax(app:FileManager) extends AjaxHandler
 		js append {
 			app.breadcrumbs map { path =>
 				val name = URLEncoded(path)
-				addLink("crumbs", name.raw, JavaScript ajax { "chdir/%s" format name.encoded })
+				addLink("crumbs", name.raw, JavaScript ajax ChangeDirectory(URLEncoded(name.encoded)))
 			} reduce {
 				_ + "crumbs.appendText(' >> ');" + _
 			}

@@ -29,9 +29,9 @@ class DemoAjaxHandler extends Context
 	{
 		INIT,
 		TEST_METHODS,
-		LIBRARY_CALLS,
 		SYSCALL,
 		CONTENT,
+		LIBRARY_CALLS,
 		ALL_DONE,
 		CLICKED,
 		OPEN_FILE,
@@ -67,27 +67,7 @@ class DemoAjaxHandler extends Context
 
 				response.append(makeDiv("And a regular method... "+ h.help()));
 
-				response.append(ajax(AjaxRequest.LIBRARY_CALLS.name()));
-				return response;
-			}
-		});
-
-		register(LIBRARY_CALLS.name(), new AjaxHandler()
-		{
-			@Override public JavaScript service(WebRequest request)
-			{
-				JavaScript response = new JavaScript();
-				response.append(makeDiv("Loaded library class: " + Library.class));
-
-				Library lib = new Library();
-				response.append(makeDiv("Instantiated: " + lib));
-
-				response.append(makeDiv("Test static method: v" + Library.version()));
-				response.append(makeDiv("Test regular library method: '" + lib.method() + "'"));
-				response.append(makeDiv("Library-generated JSON: '" + lib.json(42, "foo") + "'"));
-
 				response.append(ajax(AjaxRequest.CONTENT.name()));
-
 				return response;
 			}
 		});
@@ -131,7 +111,27 @@ class DemoAjaxHandler extends Context
 					}
 				}
 
+				response.append(ajax(AjaxRequest.LIBRARY_CALLS.name()));
+				return response;
+			}
+		});
+
+		register(LIBRARY_CALLS.name(), new AjaxHandler()
+		{
+			@Override public JavaScript service(WebRequest request)
+			{
+				JavaScript response = new JavaScript();
+				response.append(makeDiv("Loaded library class: " + Library.class));
+
+				Library lib = new Library();
+				response.append(makeDiv("Instantiated: " + lib));
+
+				response.append(makeDiv("Test static method: v" + Library.version()));
+				response.append(makeDiv("Test regular library method: '" + lib.method() + "'"));
+				response.append(makeDiv("Library-generated JSON: '" + lib.json(42, "foo") + "'"));
+
 				response.append(ajax(AjaxRequest.ALL_DONE.name()));
+
 				return response;
 			}
 		});

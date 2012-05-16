@@ -123,13 +123,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 		synchronized { while (journal.isEmpty) wait() }
 	}
 
-	/**
-	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
-	 */
-	override def flush = {
+	/** Flush any stored blocks to disk/network, blocking until all I/O is complete. */
+	override def flush = while (journal.size > 0) {
 		val toFlush = synchronized { journal }
-
-		log fine "Flushing %d blocks in %s".format (toFlush.size, this)
+		log fine "%s: flushing %d blocks".format (this, toFlush.size)
 
 		var flushResults = toFlush map { name =>
 			cache toRight {
@@ -149,14 +146,10 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 
 		synchronized {
 			journal --= flushed
-			if (journal.isEmpty) {
-				log finer "%s: flushed %d blocks".format(this, flushed.size)
-				resetTimeout
-			}
-			else {
-				log info "%s: %d blocks remain in journal".format(this, journal size)
-				increaseTimeout
-			}
+			log fine "%s: flushed %d blocks, %d remain".format(this, flushed size, journal size)
+
+			if (journal.isEmpty) resetTimeout
+			else increaseTimeout
 		}
 	}
 

@@ -23,6 +23,8 @@ import me.footlights.api
 import me.footlights.api.support.Either._
 import me.footlights.api.support.Tee._
 
+import me.footlights.core
+
 
 package me.footlights.apps.kvedit {
 
@@ -36,7 +38,20 @@ class KVEditor(kernel:api.KernelInterface, appPrefs:api.ModifiablePreferences, l
 	val uses = (appPrefs getInt "uses" map { i:java.lang.Integer => i:Int } getOrElse 0)
 	appPrefs.set("uses", uses + 1)
 
-	override val ajaxHandler = Some(new Ajax(this))
+	private val ajax = new Ajax(this)
+	override val ajaxHandler = Some(ajax)
+
+	override def open(d:api.Directory) = {
+		val parsed = d open AttributesFilename map { _.copyContents } map core.Preferences.parse
+		val saveModified = (b:java.nio.ByteBuffer) => d.save(AttributesFilename, b)
+
+		parsed map { x =>
+			synchronized { prefs = core.ModifiableStorageEngine(x, Some(saveModified)) }
+		} fold (
+			ex => ajax fire ex,
+			success => ajax.refreshView
+		)
+	}
 
 	def entries(): Map[String,_] = {
 		val prefs = synchronized { this.prefs }
@@ -85,6 +100,8 @@ class KVEditor(kernel:api.KernelInterface, appPrefs:api.ModifiablePreferences, l
 	private val Int = classOf[Int].getSimpleName
 	private val Float = classOf[Float].getSimpleName
 	private val String = classOf[String].getSimpleName
+
+	private val AttributesFilename = "attributes"
 }
 
 

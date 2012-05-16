@@ -93,6 +93,7 @@ h1, h2 { color: rgb(230, 221, 35); }
 	padding: .25em;
 
 	width: auto;
+	max-width: 100%;
 
 	color: #333;
 

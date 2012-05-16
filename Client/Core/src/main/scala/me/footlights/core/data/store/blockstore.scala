@@ -64,7 +64,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 	}
 
 	/**
-	 * Retrieve a list of {@link File} names which are known to exist in the {@link Store}.
+	 * Retrieve a list of {@link Block} names which are known to exist in the {@link Store}.
 	 *
 	 * This is not guaranteed to be an exhaustive list; we only list files in the cache (if we
 	 * have one), and even that isn't guaranteed to exhaustively list anything.

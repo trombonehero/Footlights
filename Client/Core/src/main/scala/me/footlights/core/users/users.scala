@@ -29,7 +29,7 @@ import me.footlights.core.data
 package me.footlights.core.users {
 
 
-class UserIdentity(key:crypto.Identity, attributes:api.ModifiablePreferences,
+class UserIdentity(key:crypto.Identity, val attributes:api.ModifiablePreferences,
 		val root:api.Directory) {
 	def name() = attributes getString "name" getOrElse "<unknown name>"
 	val fingerprint = key.fingerprint

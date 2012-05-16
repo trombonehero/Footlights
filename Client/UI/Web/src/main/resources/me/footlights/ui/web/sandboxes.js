@@ -67,7 +67,10 @@ sandboxes.wrap = function(name, log)
 			load: function(filename) { ajax('/' + name + '/static/' + filename, this); },
 			log: log,
 			name: name,
-			translate: function(name, callback) { this.ajax('fill_placeholder/' + name, callback); }
+			translate: function(context, name, callback)
+			{
+				this.ajax('fill_placeholder/' + context + '/' + name, callback);
+			}
 		};
 
 	// Define a place to put global variables, which are automatically added to

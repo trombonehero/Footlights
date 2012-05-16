@@ -61,7 +61,7 @@ trait Footlights extends api.KernelInterface {
 	 * cannot request placeholder evaluation directly; it has to be done by a trusted bit of UI
 	 * code, which inserts the proxied content in such a way that the app UI can't read it.
 	 */
-	def evaluate(placeholder:String): Option[String]
+	def evaluate(context:String, key:String): Either[Exception,String]
 
 	/** Ask the user a question. */
 	private[core] def promptUser(prompt:String, title:String, default:Option[String]):

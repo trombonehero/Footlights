@@ -23,7 +23,9 @@
 'use strict';
 
 // Translate a placeholder into a real value and feed it to a callback function.
-function translate(name, callback) { sandboxes['footlights'].translate(name, callback); }
+function translate(context, key, callback) {
+	sandboxes['footlights'].translate(context, key, callback);
+}
 
 function proxy(node, context)
 {
@@ -66,12 +68,15 @@ function proxy(node, context)
 			return subproxy;
 		},
 
-		appendPlaceholder: function(name)
+		appendPlaceholder: function(context, key)
 		{
 			var subproxy = theProxy.appendElement('span');
 			subproxy.class = 'placeholder';
 
-			translate(name, function interpretPlaceholder(p) { subproxy.appendText(p['value']); });
+			translate(context, key,
+				function interpretPlaceholder(p) { subproxy.appendText(p['value']); }
+			);
+
 			return subproxy;
 		},
 

@@ -23,6 +23,7 @@ import me.footlights.api.Application
 import me.footlights.api.File
 import me.footlights.api.KernelInterface
 import me.footlights.api.ModifiablePreferences
+import me.footlights.api.support.Either._
 import scala.annotation.tailrec
 
 package me.footlights.core {
@@ -36,20 +37,17 @@ import crypto.Keychain
 trait Placeholders extends Footlights {
 	protected def prefs:me.footlights.api.Preferences
 
-	override def evaluate(name:String) = {
-		val collection :: id = name split('.') toList
-		val prefKey = collection match {
-			case "user" => "profileData"
-			case _ => ""
+	override def evaluate(context:String, key:String) = {
+		val user = context match {
+			case "self" => identity
+			case other => Left(
+					new IllegalArgumentException("Unknown placeholder context '%s'" format other))
 		}
 
-		prefs getString prefKey map URI.create flatMap {
-			open(_) match {
-				case Right(file:data.File) => Some(Preferences parse file.copyContents)
-				case _ => None
+		user flatMap {
+			_.attributes getString key toRight {
+				new Exception("No such value '%s'" format key)
 			}
-		} map {
-			_ get { id reduceLeft { _ + _ } }
 		}
 	}
 }

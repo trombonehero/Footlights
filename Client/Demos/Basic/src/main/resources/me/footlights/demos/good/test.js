@@ -15,7 +15,7 @@ context.globals.p = p;
 
 var hello = context.root.appendElement('p');
 hello.appendText('Hello, ');
-hello.appendPlaceholder('user.name');
+hello.appendPlaceholder('self', 'name');
 hello.appendText('!');
 
 var imageSize = 256;

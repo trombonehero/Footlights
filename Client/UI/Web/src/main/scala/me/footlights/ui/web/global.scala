@@ -148,12 +148,11 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 
 				new JavaScript
 
-			case FillPlaceholder(name) => {
+			case FillPlaceholder(context, key) =>
 				JSON(
 					"key" -> name,
-					"value" -> ((footlights evaluate name getOrElse "(unknown)"):String)
+					"value" -> (footlights.evaluate(context, key) get)
 				)
-			}
 
 			case unhandled =>
 				val message = "Unknown Ajax command: '%s'" format unhandled
@@ -297,7 +296,7 @@ var sb = context.globals['sandboxes'].getOrCreate(
 	private val Init            = "init"
 	private val AsyncChannel    = "async_channel"
 	private val Reset           = "reset"
-	private val FillPlaceholder = """fill_placeholder/(\S+)""".r
+	private val FillPlaceholder = """fill_placeholder/(\S+)/(\S+)""".r
 	private val OpenRoot        = "open_root"
 	private val PromptApplication = "prompt_for_app"
 	private val LoadApplication = """load_app/(\S+)""".r

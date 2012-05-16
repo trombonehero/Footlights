@@ -63,6 +63,13 @@ class GlobalContext(footlights:core.Footlights, reset:() => Unit,
 				} foreach js.append
 
 				js
+					.append(launcher + ".appendElement('hr');")
+
+				footlights.identities.toSeq sortBy { _.name } map { user =>
+					launcher + ".appendElement('div').appendText('%s');".format(user.name)
+				} foreach js.append
+
+				js
 					.append(setupAsyncChannel)
 					.append("context.log('UI initialized.');")
 

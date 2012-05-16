@@ -19,7 +19,7 @@ package me.footlights.api.support
 class SubstitutableRegex(r:scala.util.matching.Regex) {
 	def apply(values:Any*) = substitute(values : _*)
 	def substitute(values:Any*) =
-		(r.pattern.pattern /: (values map { _.toString })) { _.replace("""(\S+)""", _) }
+		(r.pattern.pattern /: (values map { _.toString })) { _.replaceFirst("""\(\\S\+\)""", _) }
 }
 
 object Regex {

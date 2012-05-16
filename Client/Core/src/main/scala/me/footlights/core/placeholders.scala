@@ -17,14 +17,18 @@ import java.io.{ByteArrayOutputStream, IOException}
 import java.nio.ByteBuffer
 import java.net.URI
 import java.util.logging.{Level, Logger}
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
+
 import me.footlights.api.Application
 import me.footlights.api.File
 import me.footlights.api.KernelInterface
 import me.footlights.api.ModifiablePreferences
 import me.footlights.api.support.Either._
+
 import scala.annotation.tailrec
+
 
 package me.footlights.core {
 

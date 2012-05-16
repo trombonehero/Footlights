@@ -24,6 +24,7 @@ import scala.actors.Future
 import scala.actors.Futures.future
 import scala.collection.JavaConversions._
 
+import me.footlights.api.support.Either._
 import me.footlights.api.support.Tee._
 
 import me.footlights.core.{Kernel,Preferences,Resolver}
@@ -107,7 +108,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 		cache map { c =>
 			c.store(name, bytes.asReadOnlyBuffer)
 			synchronized {
-				journal add name
+				journal += name
 				notify
 			}
 		} orElse {
@@ -125,29 +126,37 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 	/**
 	 * Flush any stored blocks to disk/network, blocking until all I/O is complete.
 	 */
-	override def flush = synchronized {
-		log finer "Flushing %d blocks in %s".format (journal.size, this)
+	override def flush = {
+		val toFlush = synchronized { journal }
 
-		var unflushed = journal flatMap { name =>
-			cache flatMap { _ retrieve name orElse {
-					log severe "Cache inconsistency: %s not in cache %s".format(name, cache)
-					None
+		log fine "Flushing %d blocks in %s".format (toFlush.size, this)
+
+		var flushResults = toFlush map { name =>
+			cache toRight {
+				new Exception("Cache-less store %s has non-empty journal!" format this)
+			} flatMap {
+				_ retrieve name toRight {
+					new Exception("Cache inconsistency! %s not in cache %s" format (name, cache))
 				}
 			} flatMap { bytes =>
-				try { put(name, bytes); None }
-				catch {
-					case e:IOException =>
-						log log (FINE, "Error flushing %s" format name, e)
-						Option(name)
-				}
+				try { put(name, bytes); Right(name) }
+				catch { case e:IOException => Left(e) }
 			}
 		}
-		journal retain unflushed.contains
 
-		if (journal.isEmpty) resetTimeout
-		else {
-			log info "%s unable to flush %d blocks".format(this, journal size)
-			increaseTimeout
+		for (Left(ex) <- flushResults) log log (WARNING, "Error flushing block store", ex)
+		var flushed = flushResults collect { case Right(name) => name}
+
+		synchronized {
+			journal --= flushed
+			if (journal.isEmpty) {
+				log finer "%s: flushed %d blocks".format(this, flushed.size)
+				resetTimeout
+			}
+			else {
+				log info "%s: %d blocks remain in journal".format(this, journal size)
+				increaseTimeout
+			}
 		}
 	}
 
@@ -159,7 +168,7 @@ abstract class Store protected(cache:Option[LocalStore]) extends me.footlights.c
 	private def increaseTimeout = flushTimeout_ms = math.min(2 * flushTimeout_ms, MaxTimeout_ms)
 	private def resetTimeout = flushTimeout_ms = InitialTimeout_ms
 
-	private val journal = collection.mutable.Set[Fingerprint]()
+	private var journal = Set[Fingerprint]()
 	private val log = java.util.logging.Logger getLogger classOf[Store].getCanonicalName
 }
 

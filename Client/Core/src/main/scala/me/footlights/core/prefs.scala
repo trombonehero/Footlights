@@ -78,11 +78,20 @@ object ModifiableStorageEngine {
 
 		// Create an anonymous mutable version which can save itself
 		new ModifiableStorageEngine {
+			override def delete(key:String) = synchronized {
+				map remove key
+				saveUpdatedValues
+			}
+
 			override def getAll = reader.getAll
 			override def getRaw(name:String) = reader.getRaw(name)
 
 			override def set(key:String, value:String): ModifiableStorageEngine = synchronized {
 				map.put(key, value)
+				saveUpdatedValues
+			}
+
+			private def saveUpdatedValues() = {
 				save foreach { _(Preferences encode map) }
 				this
 			}
@@ -285,6 +294,11 @@ final class FileBackedPreferences(properties:java.util.Properties, configFile:ja
 	override def getRaw(name:String) = Option(properties.getProperty(name))
 
 	// ModifiablePreferences implementation
+	override def delete(key:String) = synchronized {
+		properties remove key
+		this
+	}
+
 	override def set(key:String, value:String) = synchronized {
 		properties.setProperty(key, value)
 		dirty = true

@@ -114,6 +114,11 @@ trait IdentityManagement extends core.Footlights {
 	override def identity(uri:java.net.URI) =
 		root openDirectory uri.toString map { (uri.toString, _) } flatMap UserIdentity.apply
 
+	// TODO: something more sophisticated (choose identity to sign with?)
+	override def identity =
+		identities find { _.canSign } map Right.apply getOrElse { UserIdentity generate root }
+
+
 	override def share(d:api.Directory): Either[Exception,java.net.URI] = {
 		val ids = identities
 		val userMap = identities map { id => (id.toString -> id) } toMap
@@ -129,7 +134,7 @@ trait IdentityManagement extends core.Footlights {
 		user.root subdir OutboundShareDir map { case root:data.MutableDirectory =>
 			root.save(link.fingerprint.encode, dir)
 
-			defaultSigningIdentity flatMap {
+			identity flatMap {
 				_ sign root.dir.link.fingerprint } map { signature =>
 				Map(
 					"fingerprint" -> link.fingerprint.encode,
@@ -146,10 +151,6 @@ trait IdentityManagement extends core.Footlights {
 
 		user.fingerprint.toURI
 	}
-
-	// TODO: something more sophisticated (choose identity to sign with?)
-	private def defaultSigningIdentity: Either[Exception,UserIdentity] =
-		identities find { _.canSign } map Right.apply getOrElse { UserIdentity generate root }
 
 	/** The root directory where application data is stored. */
 	private lazy val root = subsystemRoot("identities")

@@ -90,8 +90,9 @@ object ModifiableStorageEngine {
 
 /** Serves preference information to clients. */
 class Preferences(engine:Option[PreferenceStorageEngine])
-	extends me.footlights.api.Preferences with HasBytes
+	extends PreferenceStorageEngine with HasBytes
 {
+	def getRaw(name:String) = (engine getOrElse defaults) getRaw name
 	def getAll:Map[String,_] = {
 		val everything = MutableMap[String,Any]()
 		everything ++= defaults.getAll

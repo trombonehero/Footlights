@@ -89,7 +89,9 @@ class MasterServer(port:Int, footlights:Footlights)
 					log fine "Response: " + response
 					try { response write client }
 					catch {
-						case BrokenPipe => log fine "Lost connection to client (browser quit?)"
+						case e:java.io.IOException if (e.getMessage.equals(BrokenPipe)) =>
+							log fine "Lost connection to client (browser quit?)"
+
 						case t:Throwable =>
 							log.log(WARNING,
 								"Error responding to " + request + " with " + response, t)
@@ -109,12 +111,7 @@ class MasterServer(port:Int, footlights:Footlights)
 
 
 	private def log = Logger.getLogger(classOf[MasterServer].getCanonicalName)
-	private val BrokenPipe = ExceptionWithMessage("Broken pipe")
-}
-
-object ExceptionWithMessage {
-	def apply(message:String) = new { def unapply(e:Exception) = e.getMessage equals message }
-	def unapply(e:Exception) = e.getMessage equals "Broken pipe"
+	private val BrokenPipe = "Broken pipe"
 }
 
 }

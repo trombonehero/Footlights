@@ -15,6 +15,7 @@
  */
 import java.util.logging
 
+import scala.collection.mutable.{Map => MutableMap}
 import scala.collection.JavaConversions._
 
 import me.footlights.api
@@ -55,7 +56,7 @@ object UserIdentity {
 				core.Preferences.parse leftFlatMap {
 					// Ignore FileNotFoundException: we just haven't created anything yet!
 					ex => ex match {
-						case f:java.io.FileNotFoundException => Right(Map[String,String]())
+						case f:java.io.FileNotFoundException => Right(MutableMap[String,String]())
 						case e:Exception =>
 							log.log(logging.Level.WARNING, "Error loading user attributes", e)
 							Left(e)
@@ -81,7 +82,7 @@ object UserIdentity {
 			d.save(KeyFile, key.getBytes)
 
 			val saveAttrs = (bytes:java.nio.ByteBuffer) => d.save(AttributesFile, bytes)
-			val attrs = core.ModifiableStorageEngine(new java.util.HashMap(), Some(saveAttrs))
+			val attrs = core.ModifiableStorageEngine(MutableMap(), Some(saveAttrs))
 
 			attributes foreach { case (k,v) => attrs.set(k,v) }
 

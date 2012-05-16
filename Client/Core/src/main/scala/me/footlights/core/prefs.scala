@@ -36,7 +36,7 @@ package me.footlights.core {
  * @author Jonathan Anderson <jon@footlights.me>
  */
 abstract class PreferenceStorageEngine extends me.footlights.api.Preferences {
-	private[core] def getAll:Map[String,_]
+	private[core] def getAll:scala.collection.Map[String,_]
 
 	override def keys =
 		getAll map { case (k,v) => (k -> api.Preferences.PreferenceType.STRING) } entrySet
@@ -52,9 +52,9 @@ abstract class PreferenceStorageEngine extends me.footlights.api.Preferences {
 }
 
 object PreferenceStorageEngine {
-	def wrap(map:Map[String,_]) = new PreferenceStorageEngine() {
+	def wrap(map:scala.collection.Map[String,_]) = new PreferenceStorageEngine() {
 		override def getAll = map
-		override def getRaw(s:String) = if (map contains s) Option(map get(s) toString) else None
+		override def getRaw(s:String) = if (map contains s) map get(s) map { _.toString } else None
 	}
 }
 
@@ -73,7 +73,7 @@ abstract class ModifiableStorageEngine
 
 object ModifiableStorageEngine {
 	/** Create a {@link ModifiableStorageEngine} which wraps a {@link Map} and saves itself. */
-	def apply(map:Map[String,String], save:Option[ByteBuffer => Any] = None) = {
+	def apply(map:MutableMap[String,String], save:Option[ByteBuffer => Any] = None) = {
 		val reader = PreferenceStorageEngine wrap map
 
 		// Create an anonymous mutable version which can save itself
@@ -105,12 +105,7 @@ class Preferences(engine:Option[PreferenceStorageEngine])
 	extends PreferenceStorageEngine with HasBytes
 {
 	def getRaw(name:String) = (engine getOrElse defaults) getRaw name
-	def getAll:Map[String,_] = {
-		val everything = MutableMap[String,Any]()
-		everything ++= defaults.getAll
-		engine foreach { everything ++= _.getAll }
-		everything
-	}
+	override def getAll = defaults.getAll ++ (engine map { _.getAll } getOrElse Map())
 
 	/** Get a value (of some type) from either the {@link #engine} or the {@link #defaults}. */ 
 	def get[T](extractor:(PreferenceStorageEngine) => Option[T]) =
@@ -123,27 +118,25 @@ class Preferences(engine:Option[PreferenceStorageEngine])
 
 
 	// Provide some sane default for crypto settings and storage locations.
-	private val defaultPrefs = MutableMap[String,String]()
-	defaultPrefs ++= cryptoDefaults(security.CryptoBackend.get)
-	defaultPrefs += ("init.setup" -> "http://footlights.me/settings/cas.json")
+	private val homeDir =
+		System.getProperty("user.home") +
+		System.getProperty("path.separator") +
+		System.getProperty("os.name") match {
+			case s if s contains "Win" => "Footlights"
+			case unix => ".footlights"
+		}
 
-	try {
-		// OS-specific home directory.
-		var homeDir = System.getProperty("user.home") + System.getProperty("path.separator")
-		if (System.getProperty("os.name").contains("Win")) homeDir += "Footlights"
-		else homeDir += ".footlights"
+	private val defaultPrefs =
+		cryptoDefaults(security.CryptoBackend.get) +
+		("init.setup" -> "http://footlights.me/settings/cas.json") +
+		("home" -> homeDir)
 
-		defaultPrefs += ("home" -> homeDir)
-	} catch {
-		case e:GeneralSecurityException => throw new ConfigurationError(e)
-	}
-
-	private val defaults = PreferenceStorageEngine.wrap(defaultPrefs)
+	private val defaults = PreferenceStorageEngine wrap defaultPrefs
 
 
 	/** Set up sensible crypto options */
-	private def cryptoDefaults(provider:Option[Provider]):Map[String,String] = {
-		val defaults = MutableMap(
+	private def cryptoDefaults(provider:Option[Provider]) = {
+		var defaults = Map(
 			("crypto.asym.algorithm" -> "RSA"),
 			("crypto.asym.keylen"    -> "2048"),
 			("crypto.hash.algorithm" -> "SHA-256"),
@@ -222,14 +215,14 @@ object Preferences {
 
 
 	/** Generate byte encoding of {@link Preferences}. */
-	def encode(snapshot:Map[String,_]): ByteBuffer = {
+	def encode(snapshot:scala.collection.Map[String,_]): ByteBuffer = {
 		var len = MAGIC.length + 4;  // Minimum length is magic + length representation (4B)
 		for ((k,v) <- snapshot)
 			len += (8 + k.length + v.toString.length);
 
 		val encoded = ByteBuffer.allocate(len)
 		encoded.put(MAGIC.toArray);
-		encoded.putInt(snapshot.size());
+		encoded.putInt(snapshot.size);
 
 		for ((key, value) <- snapshot)
 		{
@@ -245,7 +238,7 @@ object Preferences {
 	}
 
 	/** Parse raw bytes into {@link Preferences}. */
-	def parse(bytes:ByteBuffer): Map[String,String] = {
+	def parse(bytes:ByteBuffer) = {
 		val magic = {
 			val a = new Array[Byte](MAGIC.length)
 			bytes get a

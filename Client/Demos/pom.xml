@@ -17,10 +17,11 @@
 
 	<modules>
 		<module>Basic</module>
+		<module>FileManager</module>
+		<module>KVEdit</module>
 		<module>Library</module>
 		<module>Photos</module>
 		<module>TicTacToe</module>
-		<module>Uploader</module>
 		<module>Wicked</module>
 	</modules>
 

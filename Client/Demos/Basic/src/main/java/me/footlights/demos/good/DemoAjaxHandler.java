@@ -92,7 +92,7 @@ class DemoAjaxHandler extends Context
 			{
 				JavaScript response = new JavaScript();
 
-				response.append(makeDiv("Finally, do a 'syscall'..."));
+				response.append(makeDiv("Do a 'syscall'..."));
 				if (kernel == null)
 					response.append(makeDiv("but we can't! our kernel reference is null."));
 				else
@@ -121,6 +121,7 @@ class DemoAjaxHandler extends Context
 			@Override public JavaScript service(WebRequest request)
 			{
 				JavaScript response = new JavaScript();
+				response.append(makeDiv("Finally, use some external library code..."));
 				response.append(makeDiv("Loaded library class: " + Library.class));
 
 				Library lib = new Library();

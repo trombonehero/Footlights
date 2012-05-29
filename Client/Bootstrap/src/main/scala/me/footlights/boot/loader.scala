@@ -25,7 +25,7 @@ import ClasspathLoader.sudo
 
 /** Loads "core" code (footlights.core.*, footlights.ui.*) from a known source */
 class FootlightsClassLoader(
-		classpaths:Iterable[URL], resolveDep:URI=>Option[JarFile]) extends ClassLoader {
+		classpaths:Iterable[URL], resolveDep:URI=>Either[Exception,JarFile]) extends ClassLoader {
 
 	def open(privileged:Boolean = false)(classpath:URL) =
 		ClasspathLoader.create(this, classpath, resolveDep, privileged)

@@ -22,7 +22,6 @@ import java.util.logging.Logger
 
 import collection.JavaConversions._
 
-
 package me.footlights.boot {
 
 import ClasspathLoader.sudo
@@ -41,7 +40,7 @@ private case class Bytecode(bytes:Array[Byte], source:CodeSource)
  *                          this parameter should be "com.foo". Only relevant for core classpaths.
  */
 class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
-		permissions:PermissionCollection, resolveDependency:URI => Option[JarFile],
+		permissions:PermissionCollection, resolveDependency:URI => Either[Exception,JarFile],
 		privileged:Boolean = false)
 	extends ClassLoader(parent) {
 	/**
@@ -154,7 +153,11 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 
 	/** Dependencies declared by the classpath's manifest. */
 	private val dependencies =
-			classpath.dependencies flatMap { resolveDependency(_) } map JARLoader.wrap toSeq
+			classpath.dependencies map
+				resolveDependency filter {
+				_.isRight } map {
+				_.right.get } map
+				JARLoader.wrap toSeq
 
 	/** All classpaths, including dependencies. */
 	private val classpaths = classpath +: dependencies
@@ -170,7 +173,8 @@ class ClasspathLoader(parent:FootlightsClassLoader, classpath:Classpath,
 
 object ClasspathLoader {
 	/** Factory method for {@link ClasspathLoader}. */
-	def create(parent:FootlightsClassLoader, path:URL, resolveDependencyJar:URI => Option[JarFile],
+	def create(parent:FootlightsClassLoader, path:URL,
+			resolveDependencyJar:URI => Either[Exception,JarFile],
 			withPrivilege:Boolean = false):
 			Either[Exception,ClasspathLoader] =
 	{

@@ -66,16 +66,13 @@ object Bootstrapper extends App {
 	}
 
 	/** Uses the loaded {@link me.footlights.core.Kernel} to resolve a dependency URI. */
-	def resolveDependencyJar(uri:URI):Option[JarFile] =
-		if (localizeJar == null) None
+	def resolveDependencyJar(uri:URI): Either[Exception,JarFile] =
+		if (localizeJar == null) Left(new Exception("No localizeJar method in Footlights"))
 		else localizeJar.invoke(footlights, uri) match {
-			case Some(jar:JarFile) => Some(jar)
-			case None =>
-				log warning "Unable to resolve dependency %s".format(uri)
-				None
+			case Left(ex:Exception) => Left(ex)
+			case Right(jar:JarFile) => Right(jar)
 			case a:Any =>
-				log severe "Kernel method %s returned non-JAR: %s".format(footlights, a)
-				None
+				Left(new Exception("Kernel method %s returned non-JAR: %s".format(footlights, a)))
 		}
 
 	val classLoader = new FootlightsClassLoader(coreClasspaths, resolveDependencyJar)

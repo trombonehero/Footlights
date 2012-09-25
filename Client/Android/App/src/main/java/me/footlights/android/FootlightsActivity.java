@@ -60,7 +60,7 @@ public class FootlightsActivity extends RoboActivity
 //		log.log("Created Footlights kernel: " + kernel + "\n");
 
 		Preferences prefs = Preferences.create(Option.apply(PreferenceAdapter.wrap(sharedPrefs)));
-		for (Map.Entry<String,?> entry : prefs.getAll().entrySet())
+		for (Map.Entry<String,?> entry : prefs.getAll())
 			log.log(entry.getKey() + ": " + entry.getValue().toString());
 	}
 

@@ -58,7 +58,7 @@ class EvilAjaxHandler extends Context
 					try
 					{
 						String url = 
-							"jar:file:///Users/jon/Documents/School/Research/Social Networks/Footlights/Client/demos/wicked/wicked.jar!/footlights.core.Test";
+							"jar:file:///Users/jon/Footlights/Client/Demos/wicked/target/wicked.jar!/me.footlights.core.Test";
 						kernel.getClass().getClassLoader().loadClass(url);
 
 						throw new SecurityException(
@@ -132,7 +132,7 @@ class EvilAjaxHandler extends Context
 					try
 					{
 						AccessController.checkPermission(
-							new RuntimePermission("accessClassInPackage.footlights.core"));
+							new RuntimePermission("accessClassInPackage.me.footlights.core"));
 						throw new SecurityException("Access granted to footlights.core");
 					}
 					catch(AccessControlException e) { response.appendText("denied."); }
@@ -180,7 +180,7 @@ class EvilAjaxHandler extends Context
 					try
 					{
 						Class<?> c = kernel.getClass().getClassLoader().loadClass(
-							"jar:file:///home/jra40/Research/Social Networks/Footlights/Client/Demos/good/good.jar!/footlights.demos.good.GoodApp");
+							"jar:file:///Users/jon/Footlights/Client/Demos/Basic/good.jar!/footlights.demos.good.GoodApp");
 
 						Class<?> classes[] = new Class[] { c };
 

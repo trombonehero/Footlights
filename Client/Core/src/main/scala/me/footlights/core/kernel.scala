@@ -102,7 +102,7 @@ abstract class Kernel(
 
 object Kernel {
 	/** Create a Footlights kernel which uses a given ClassLoader to load applications. */
-	def init(appLoader:ClassLoader) = {
+	def init(appLoader:ClassLoader): Kernel = {
 		// This is the Footlights core, the security kernel; ensure that we can do anything.
 		AccessController checkPermission { new AllPermission() }
 

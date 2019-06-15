@@ -17,6 +17,9 @@ package me.footlights.android;
 
 import java.util.Map;
 
+import scala.Option;
+import scala.collection.JavaConversions;
+
 import com.google.inject.Inject;
 
 import android.content.SharedPreferences;
@@ -27,7 +30,6 @@ import android.widget.ListView;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.InjectView;
-import scala.Option;
 
 import me.footlights.core.Kernel;
 import me.footlights.core.Preferences;
@@ -60,8 +62,8 @@ public class FootlightsActivity extends RoboActivity
 //		log.log("Created Footlights kernel: " + kernel + "\n");
 
 		Preferences prefs = Preferences.create(Option.apply(PreferenceAdapter.wrap(sharedPrefs)));
-		for (Map.Entry<String,?> entry : prefs.getAll())
-			log.log(entry.getKey() + ": " + entry.getValue().toString());
+		for (scala.Tuple2<String,?> i : JavaConversions.asJavaIterable(prefs.getAll()))
+			log.log(i._1 + ": " + i._2().toString());
 	}
 
 //	private @Inject Kernel kernel;

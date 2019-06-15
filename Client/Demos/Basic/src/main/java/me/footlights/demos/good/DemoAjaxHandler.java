@@ -111,7 +111,7 @@ class DemoAjaxHandler extends Context
 					}
 				}
 
-				response.append(ajax(AjaxRequest.LIBRARY_CALLS.name()));
+				response.append(ajax(AjaxRequest.ALL_DONE.name()));
 				return response;
 			}
 		});

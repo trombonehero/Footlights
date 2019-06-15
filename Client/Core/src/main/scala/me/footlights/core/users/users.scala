@@ -28,7 +28,8 @@ package me.footlights.core.users {
 
 /** Manages user identities. */
 trait IdentityManagement extends core.Footlights {
-	override def identities =
+	override def identities = {
+		val official =
 		root.subdirs map UserIdentity.apply map {
 			_ fold (
 				ex => {
@@ -38,6 +39,14 @@ trait IdentityManagement extends core.Footlights {
 				id => Some(id)
 			)
 		} flatten
+
+		if (official.nonEmpty) official else {
+			// If we don't have any real users, create some fake ones for the sake of the demo.
+			UserIdentity.generate(root, "name" -> "Alice") ::
+			UserIdentity.generate(root, "name" -> "Bob") ::
+			Nil map { _.get }
+		}
+	}
 
 	override def identity(uri:java.net.URI) =
 		root openDirectory uri.toString map { (uri.toString, _) } flatMap UserIdentity.apply

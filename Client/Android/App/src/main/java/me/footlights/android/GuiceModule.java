@@ -17,14 +17,14 @@ package me.footlights.android;
 
 import com.google.inject.AbstractModule;
 
+import me.footlights.core.Kernel;
+
 
 public class GuiceModule extends AbstractModule
 {
 	@Override protected void configure()
 	{
-		/*
 		ClassLoader loader = GuiceModule.class.getClassLoader();
-		Class<?> kernelClass = Kernel.class;
 
 		Kernel kernel = null;
 		try { kernel = Kernel.init(loader); }
@@ -35,6 +35,5 @@ public class GuiceModule extends AbstractModule
 		}
 
 		bind(Kernel.class).toInstance(kernel);
-		*/
 	}
 }
